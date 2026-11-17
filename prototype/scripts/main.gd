@@ -5,11 +5,13 @@ const T := preload("res://scripts/tuning.gd")
 const PlayerScene := preload("res://scenes/player.tscn")
 const CloneScene := preload("res://scenes/clone.tscn")
 const ROOM_SCENE := preload("res://scenes/room.tscn")
+const PRELOAD_MENU := preload("res://scenes/pause_menu.tscn")
 
 var room: Node3D
 var player: CharacterBody3D
 var clone: CharacterBody3D
 var _hint: Label
+var menu: Control
 
 
 func _ready() -> void:
@@ -77,6 +79,13 @@ func _ready() -> void:
 	for pair in [["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
 		bar.add_child(_key_badge(pair[0], pair[1]))
 
+	# ── МЕНЮ ПАУЗЫ (Esc). Пользователь просил: из игры перейти в витрину,
+	# поменять настройки и выйти из игры. Раньше Esc только освобождал
+	# курсор, и меню не было.
+	menu = PRELOAD_MENU.instantiate()
+	menu.action.connect(_on_menu_action)
+	layer.add_child(menu)
+
 
 ## Плашка «клавиша + подпись». Сделана как кнопка, а не как текст:
 ## пользователь искал витрину и не нашёл, потому что подсказка была
@@ -121,10 +130,47 @@ func _unhandled_input(event: InputEvent) -> void:
 						room.clear_toon(ch)
 	if event.is_action_pressed("cycle_brightness"):
 		T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
-		if room != null and room.has_method("rebuild_lighting"):
-			room.rebuild_lighting(T.TOON_ENABLED)
+		_apply_lighting()
 	if event.is_action_pressed("open_showcase"):
 		get_tree().change_scene_to_file("res://scenes/showcase.tscn")
 	elif event.is_action_pressed("toggle_clone"):
 		if is_instance_valid(clone) and clone.has_method("cycle_mode"):
 			clone.cycle_mode()
+
+
+## Что делает меню паузы. Действия повторяют «горячие» клавиши, но с
+## понятными подписями и без необходимости помнить раскладку.
+func _on_menu_action(id: String) -> void:
+	match id:
+		"showcase":
+			get_tree().change_scene_to_file("res://scenes/showcase.tscn")
+		"brightness":
+			T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
+			_apply_lighting()
+		"toon":
+			T.TOON_ENABLED = not T.TOON_ENABLED
+			_apply_lighting()
+			_apply_toon_to_characters()
+		"clone":
+			if is_instance_valid(clone) and clone.has_method("cycle_mode"):
+				clone.cycle_mode()
+
+
+## Пересобрать свет по текущей яркости.
+func _apply_lighting() -> void:
+	if room != null and room.has_method("rebuild_lighting"):
+		room.rebuild_lighting(T.TOON_ENABLED)
+
+
+## Переприменить/снять селлшейдинг на обоих персонажах.
+func _apply_toon_to_characters() -> void:
+	for who in [player, clone]:
+		if not is_instance_valid(who):
+			continue
+		var ch: Node = who.get_node_or_null("Character")
+		if ch == null:
+			continue
+		if T.TOON_ENABLED and room.has_method("apply_toon"):
+			room.apply_toon(ch)
+		elif room.has_method("clear_toon"):
+			room.clear_toon(ch)

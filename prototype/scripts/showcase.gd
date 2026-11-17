@@ -30,17 +30,17 @@ const BuildScene := preload("res://scripts/build_scene.gd")
 var poses: Array = [
 	{"name": "покой (стойка)", "spec": {}},
 	{"name": "замах правой", "spec": {
-		"upper_arm.R": Vector3(16.0, 40.0, -26.0), "forearm.R": Vector3(148.0, 60.0, 0.0),
+		"upper_arm.R": Vector3(14.0, 20.0, -18.0), "forearm.R": Vector3(150.0, 0.0, 0.0),
 		"hand.R": Vector3(0.0, 0.0, -6.0), "chest": Vector3(4.0, -16.0, 0.0),
 		"spine": Vector3(2.0, -7.0, 0.0), "head": Vector3(0.0, 11.0, 0.0),
 		"upper_arm.L": Vector3(10.0, 0.0, 16.0), "forearm.L": Vector3(112.0, 0.0, 0.0)}},
 	{"name": "удар правой", "spec": {
-		"upper_arm.R": Vector3(66.0, 40.0, -10.0), "forearm.R": Vector3(26.0, 60.0, 0.0),
+		"upper_arm.R": Vector3(72.0, 20.0, -12.0), "forearm.R": Vector3(20.0, 0.0, 0.0),
 		"hand.R": Vector3(0.0, 0.0, -4.0), "chest": Vector3(6.0, 16.0, 0.0),
 		"spine": Vector3(4.0, 8.0, 0.0), "head": Vector3(0.0, -9.0, 0.0),
 		"upper_arm.L": Vector3(14.0, 0.0, -12.0), "forearm.L": Vector3(108.0, 0.0, 0.0)}},
 	{"name": "удар левой", "spec": {
-		"upper_arm.L": Vector3(66.0, 40.0, 10.0), "forearm.L": Vector3(26.0, 60.0, 0.0),
+		"upper_arm.L": Vector3(72.0, 20.0, 12.0), "forearm.L": Vector3(20.0, 0.0, 0.0),
 		"hand.L": Vector3(0.0, 0.0, 4.0), "chest": Vector3(6.0, -16.0, 0.0),
 		"spine": Vector3(4.0, -8.0, 0.0), "head": Vector3(0.0, 9.0, 0.0),
 		"upper_arm.R": Vector3(14.0, 0.0, 12.0), "forearm.R": Vector3(108.0, 0.0, 0.0)}},
@@ -65,8 +65,9 @@ var poses: Array = [
 		"thigh.L": Vector3(26.0, 0.0, 2.0), "thigh.R": Vector3(-14.0, 0.0, -2.0),
 		"shin.L": Vector3(-42.0, 0.0, 0.0), "shin.R": Vector3(-18.0, 0.0, 0.0),
 		"foot.L": Vector3(16.0, 0.0, 0.0), "foot.R": Vector3(10.0, 0.0, 0.0),
-		"upper_arm.L": Vector3(-18.0, 0.0, -24.0), "upper_arm.R": Vector3(-18.0, 0.0, 24.0),
-		"forearm.L": Vector3(38.0, 0.0, 0.0), "forearm.R": Vector3(38.0, 0.0, 0.0),
+		"upper_arm.L": Vector3(20.0, 0.0, 20.0), "upper_arm.R": Vector3(20.0, 0.0, -20.0),
+		"forearm.L": Vector3(110.0, 0.0, 0.0), "forearm.R": Vector3(110.0, 0.0, 0.0),
+		"hand.L": Vector3(0.0, 0.0, 8.0), "hand.R": Vector3(0.0, 0.0, -8.0),
 		"spine": Vector3(8.0, 0.0, 0.0), "head": Vector3(-4.0, 0.0, 0.0)}},
 	{"name": "руки вверх (проверка)", "spec": {
 		"upper_arm.L": Vector3(0.0, 0.0, -95.0), "upper_arm.R": Vector3(0.0, 0.0, 95.0),
