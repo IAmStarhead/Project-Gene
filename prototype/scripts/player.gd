@@ -28,9 +28,13 @@ var _action: String = ""
 var _action_time: float = 0.0
 var _stamina_locked: bool = false
 
-# Буфер ввода: время последнего нажатия и направление
-var _buf_dodge: float = -99.0
-var _buf_attack: float = -99.0
+# Буфер ввода: сколько секунд назад нажата кнопка.
+# ВАЖНО: значение «не нажимали» должно быть БОЛЬШИМ, а не отрицательным —
+# буфер сравнивается по «<= INPUT_BUFFER», и −99 проходил эту проверку,
+# из-за чего удар запускался сам, без нажатия кнопки.
+const BUF_NEVER := 999.0
+var _buf_dodge: float = BUF_NEVER
+var _buf_attack: float = BUF_NEVER
 var _buf_dir: Vector3 = Vector3.ZERO
 
 var _dodge_dir: Vector3 = Vector3.ZERO
@@ -151,11 +155,11 @@ func _try_start_actions() -> void:
 	# Уворот в приоритете: он отменяет всё и не должен «проглатываться»
 	if _buf_dodge <= T.INPUT_BUFFER and _spend_stamina(T.DODGE_STAMINA):
 		_start_dodge()
-		_buf_dodge = -99.0
+		_buf_dodge = BUF_NEVER
 		return
 	if _buf_attack <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
 		_start_attack()
-		_buf_attack = -99.0
+		_buf_attack = BUF_NEVER
 
 
 func _start_dodge() -> void:
@@ -185,7 +189,7 @@ func _process_dodge(delta: float) -> void:
 		# если игрок жал атаку во время уворота — не теряем нажатие
 		if _buf_attack <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
 			_start_attack()
-			_buf_attack = -99.0
+			_buf_attack = BUF_NEVER
 
 
 func _start_attack() -> void:
@@ -217,7 +221,7 @@ func _process_attack(delta: float) -> void:
 	var recovery_time := _action_time - (T.ATTACK_WINDUP + T.ATTACK_ACTIVE)
 	if recovery_time > 0.0 and _buf_dodge <= T.INPUT_BUFFER and _spend_stamina(T.DODGE_STAMINA):
 		_start_dodge()
-		_buf_dodge = -99.0
+		_buf_dodge = BUF_NEVER
 		return
 
 	var total := T.ATTACK_WINDUP + T.ATTACK_ACTIVE + T.ATTACK_RECOVERY
@@ -272,10 +276,18 @@ func _update_debug(delta: float) -> void:
 		state = "атака: " + _attack_phase()
 	elif _action == "dodge":
 		state = "уворот" + ("  [неуязвим]" if _invulnerable else "")
+	var dbg_action := "—"
+	if _action != "":
+		dbg_action = "%.2f" % _action_time
 	label.text = "\n".join([
 		"FPS: %.0f" % _fps,
 		"состояние: %s" % state,
 		"здоровье: %.0f" % health,
 		"стамина: %.0f" % stamina,
 		"цель: %s" % (_last_hit if not _last_hit.is_empty() else "—"),
+		"действие: %s  буфер: удар %s / уворот %s" % [
+			dbg_action,
+			"нет" if _buf_attack > T.INPUT_BUFFER else "%.2f" % _buf_attack,
+			"нет" if _buf_dodge > T.INPUT_BUFFER else "%.2f" % _buf_dodge,
+		],
 	])
