@@ -36,6 +36,13 @@ const T := preload("res://scripts/tuning.gd")
 ## падал при импорте. Геометрия, скелет и веса в ней те же.
 const MODEL_PATH := "res://assets/heroine/female_A_rigged_safe.glb"
 
+## Одежда. Собирается скриптом tools/garment/build_dress.py в JSON и текстуру:
+## готового .glb нет, Blender недоступен, а платье должно пересобираться при
+## правке кроя. Сам GLB модели при этом не меняется.
+const DRESS_JSON := "res://assets/heroine/garments/lab_dress.json"
+const DRESS_TEXTURE := "res://assets/heroine/garments/lab_dress.png"
+const GarmentBuilder := preload("res://scripts/garment.gd")
+
 var skeleton: Skeleton3D
 
 var _idx: Dictionary = {}       ## имя кости -> индекс в скелете
@@ -53,6 +60,27 @@ func _ready() -> void:
 	_fallback = get_node_or_null("Fallback")
 	if not load_character(MODEL_PATH):
 		push_warning("Модель героини не загрузилась — остаётся заглушка-капсула")
+		return
+	# Одежда надевается здесь, а не в сцене: она должна появиться только если
+	# модель реально загрузилась, иначе белое платье повиснет на пустой
+	# капсуле-заглушке.
+	_attach_dress()
+
+
+## Платье — отдельный MeshInstance3D внутри Character, рядом со скелетом.
+## Модель (GLB) при этом не перезаписывается: её можно сравнить с исходной.
+##
+## Параметр T.DRESS_ENABLED позволяет снять одежду, не трогая код — на случай,
+## если понадобится посмотреть анатомию или веса.
+func _attach_dress() -> void:
+	if not T.DRESS_ENABLED:
+		return
+	if not ResourceLoader.exists(DRESS_JSON):
+		push_warning("Одежда: нет файла " + DRESS_JSON + " — запустите tools/garment/build_dress.py")
+		return
+	var dress := GarmentBuilder.attach(self, DRESS_JSON, DRESS_TEXTURE)
+	if dress != null:
+		_dress = dress
 
 
 ## Загружает .glb и находит скелет. Возвращает false, если не вышло.

@@ -6,6 +6,7 @@
 extends Node3D
 
 const T := preload("res://scripts/tuning.gd")
+const ToonLight := preload("res://shaders/toon_light.gd")
 
 ## Селлшейдинг (toon) для персонажей. Включается в tuning.gd, чтобы можно было
 ## сравнивать с обычным освещением, не переписывая код.
@@ -71,7 +72,7 @@ void light() {
 	// Было 0.18 / 0.55 / 0.80 / 1.0 — тень слишком близко к чёрному.
 	// Стало 0.42 / 0.68 / 0.86 / 1.0: разница между ступенями сохранена,
 	// но провала в темноту нет.
-	float amount = 0.42 + 0.26 * s1 + 0.18 * s2 + 0.14 * s3;
+	float amount = 0.50 + 0.24 * s1 + 0.16 * s2 + 0.10 * s3;
 	DIFFUSE_LIGHT += amount * ATTENUATION * LIGHT_COLOR / PI;
 	// Узкий ступенчатый блик — только намёк на коже.
 	SPECULAR_LIGHT += s3 * 0.08 * ATTENUATION * LIGHT_COLOR / PI;
@@ -119,8 +120,9 @@ func _make_materials() -> void:
 
 	_floor_mat = StandardMaterial3D.new()
 	_floor_mat.albedo_color = Color(0.88, 0.90, 0.93)
-	_floor_mat.roughness = 0.28   # пол блестит — как в белой лаборатории
-	_floor_mat.metallic = 0.05
+	_floor_mat.roughness = 0.42   # не зеркало: SSR в Compatibility нет,
+	# поэтому roughness 0.28 давал просто мёртвое пятно вместо блика
+	_floor_mat.metallic = 0.0
 
 
 ## Красит всех персонажей в сцене в селлейдинг. Вызывается из main.gd
@@ -203,76 +205,45 @@ func _find_meshes(node: Node) -> Array:
 
 
 func _make_light() -> void:
-	# Свет, версия 3. История правок:
-	#   v1: ambient 1.15 + sun 1.5 + 2 лампы + FILMIC — кожа уходила в белое,
-	#       «зашакалено», ни одного теневого перехода.
-	#   v2: ambient 0.45 + sun 1.0 + 1 лампа + LINEAR — объём появился, но
-	#       стало ТУСКЛО: белая лаборатория должна быть яркой.
-	#   v3 (это): ярко, но с контрастом.
+	# ── Свет, версия 4. Числа живут в shaders/toon_light.gd, здесь только сборка.
 	#
-	# Секрет в том, что яркость и «плоскость» — разные вещи. Плоско бывает
-	# не от большого света, а от РАВНОМЕРНОГО света: когда заполняющий свет
-	# почти равен основному, тени исчезают. Поэтому поднимаем общую яркость,
-	# но держим основной источник заметно сильнее заполняющего.
+	# ПОЧЕМУ v4, а не очередная подкрутка v3. Три жалобы «темновато» подряд я
+	# лечил увеличением яркости, и каждый раз получалось либо тускло, либо
+	# пересвечено. Причина не в числах: Compatibility-рендерер рисует источники
+	# С тенями отдельным многопроходным путём и смешивает их в sRGB, а источники
+	# без теней — в линейном пространстве. Два пространства в одной сцене.
+	# Отсюда и «плоско»: ступени селлшейдинга съедал пересвет, а тени проваливались.
+	#
+	# Что изменилось принципиально:
+	#   • яркость набирает заполняющий свет БЕЗ теней и ambient;
+	#   • солнце с тенями стало слабым (0.42 вместо 1.75) — так и надо в
+	#     Compatibility, там его энергию уменьшают, а не увеличивают;
+	#   • tonemap FILMIC вместо LINEAR: линейный обрезал светлую кожу в белый;
+	#   • glow почти выключен: в Compatibility нет HDR, glow размазывал белое.
+	var level: int = clampi(T.BRIGHTNESS, 0, 2)
+
 	var env := WorldEnvironment.new()
-	var e := Environment.new()
-	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color(0.78, 0.82, 0.88)
-	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.72, 0.77, 0.86)
-	# Три уровня яркости. Заполняющий свет идёт ВВЕРХ сильнее, чем солнце:
-	# именно он вытягивает тени из черноты, а солнце добавляет контраста.
-	# 0: сумрачно (как было) / 1: средне / 2: ярко
-	var b: int = clampi(T.BRIGHTNESS, 0, 2)
-	var amb_table := [0.62, 0.95, 1.30]
-	var sun_table := [1.35, 1.75, 2.10]
-	var fill_table := [0.30, 0.55, 0.85]
-	e.ambient_light_color = [Color(0.72, 0.77, 0.86), Color(0.82, 0.86, 0.93), Color(0.90, 0.93, 0.98)][b]
-	e.background_color = [Color(0.78, 0.82, 0.88), Color(0.86, 0.89, 0.94), Color(0.93, 0.95, 0.98)][b]
-	e.ambient_light_energy = amb_table[b] if T.TOON_ENABLED else amb_table[b] + 0.15
-	e.tonemap_mode = Environment.TONE_MAPPER_LINEAR
-	e.tonemap_exposure = 1.0
-	# мягкое свечение: белая лаборатория должна «дышать» светом
-	e.glow_enabled = true
-	e.glow_intensity = 0.35
-	e.glow_bloom = 0.06
-	e.glow_hdr_threshold = 1.1
-	env.environment = e
+	env.environment = ToonLight.make_environment(level)
 	add_child(env)
 	_env = env
-	# Ничего не пишем в project.godot во время игры: сохранение настроек
-	# проекта из кода — лишний побочный эффект, который потом удивляет.
 
-	# Основной свет. Резкий угол и тень — именно он даёт объём на теле.
-	# Разница с заполняющим должна быть ощутимой: 1.6 против 0.35.
+	# Единственный источник с тенями. Каждый дополнительный источник с тенями
+	# добавил бы ещё один sRGB-проход и снова сдвинул цвет всей сцены.
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-52, -40, 0)
-	sun.light_color = Color(1.0, 0.99, 0.97)
-	sun.light_energy = sun_table[b] if T.TOON_ENABLED else sun_table[b] + 0.25
-	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 30.0
-	sun.shadow_bias = 0.02
-	sun.shadow_normal_bias = 1.0
+	ToonLight.configure_sun(sun, level)
 	add_child(sun)
 	_sun = sun
 
-	# Заполняющий свет: только чтобы тени не были чёрными. Слабый намеренно.
 	var fill := OmniLight3D.new()
-	fill.position = Vector3(0.0, 4.0, 3.0)
-	fill.light_color = Color(0.88, 0.93, 1.0)
-	fill.light_energy = fill_table[b]
-	fill.omni_range = 18.0
-	fill.shadow_enabled = false
+	fill.position = Vector3(0.0, 4.2, 2.4)
+	ToonLight.configure_fill(fill, level)
 	add_child(fill)
 	_fill = fill
 
 	# Подхват снизу: белый пол отражает свет вверх, в лаборатории это заметно.
 	var bounce := OmniLight3D.new()
 	bounce.position = Vector3(0.0, 0.35, 2.0)
-	bounce.light_color = Color(0.95, 0.96, 1.0)
-	bounce.light_energy = 0.20 + 0.15 * b
-	bounce.omni_range = 9.0
-	bounce.shadow_enabled = false
+	ToonLight.configure_bounce(bounce, level)
 	add_child(bounce)
 	_bounce = bounce
 
