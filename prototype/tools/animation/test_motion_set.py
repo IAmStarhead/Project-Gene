@@ -91,7 +91,11 @@ class MotionSetTests(unittest.TestCase):
         for name in ['attack_left', 'attack_right', 'dodge', 'land', 'hit']:
             end = self.globals(name, self.data['clips'][name]['duration'])
             np.testing.assert_allclose(end, idle, atol=2e-7, err_msg=name)
-        np.testing.assert_allclose(self.globals('jump_start', .14), self.globals('jump_up', 0), atol=2e-7)
+        for a, b in [('guard', 'jump_start'), ('jump_start', 'jump_up'),
+                     ('jump_up', 'jump_down'), ('jump_down', 'land')]:
+            at = 0 if a == 'guard' else self.data['clips'][a]['duration']
+            np.testing.assert_allclose(self.globals(a, at), self.globals(b, 0),
+                                       atol=2e-7, err_msg=f'{a} -> {b}')
 
     def test_punches_extend_forward_and_free_hand_covers(self):
         for name in ['attack_left', 'attack_right']:
@@ -117,7 +121,10 @@ class MotionSetTests(unittest.TestCase):
             c = self.data['clips'][name]
             for side, offset in [('L', 0), ('R', .5)]:
                 points = []
-                for phase in np.linspace(c['duty'] * .15, c['duty'] * .72, 28):
+                # Running toe-off now starts at 52% of contact: the ANKLE
+                # must rise there. Test its flat interval, then the toe below.
+                flat_end = .48 if name == 'run' else .72
+                for phase in np.linspace(c['duty'] * .15, c['duty'] * flat_end, 28):
                     t = ((phase - offset) % 1) * c['duration']
                     point = self.joint(self.globals(name, t), 'foot.' + side).copy()
                     point[2] += c['speed'] * t
@@ -149,13 +156,79 @@ class MotionSetTests(unittest.TestCase):
             print(f'\n  {name}: hips {min(hips):.3f}–{max(hips):.3f} m; '
                   f'support knee mean {np.mean(bends):.1f}°, max {max(bends):.1f}°')
 
-    def test_hands_stay_in_front_and_joints_do_not_hyperextend(self):
+    def test_running_toe_off_keeps_the_forefoot_planted(self):
+        c = self.data['clips']['run']
+        for side, offset in [('L', 0), ('R', .5)]:
+            toes, ankles = [], []
+            for phase in np.linspace(c['duty'] * .55, c['duty'] * .95, 32):
+                t = ((phase - offset) % 1) * c['duration']
+                g = self.globals('run', t)
+                for bone, points in [('toe.', toes), ('foot.', ankles)]:
+                    point = self.joint(g, bone + side).copy()
+                    point[2] += c['speed'] * t
+                    points.append(point)
+            # Toe pivot, NOT sliding the entire foot back through the floor.
+            self.assertLess(np.ptp(toes, axis=0).max(), .004, side)
+            self.assertGreater(ankles[-1][1] - ankles[0][1], .05, side)
+
+    def test_run_arms_swing_from_low_elbows_not_around_the_neck(self):
+        c = self.data['clips']['run']
+        elbows_z = {'L': [], 'R': []}
+        for phase in np.linspace(0, 1, 241, endpoint=False):
+            g = self.globals('run', phase * c['duration'])
+            for side, sign in [('L', 1), ('R', -1)]:
+                shoulder, elbow, wrist = [self.joint(g, b + '.' + side)
+                                          for b in ['upper_arm', 'forearm', 'hand']]
+                self.assertLess(elbow[1] - shoulder[1], -.21, side)
+                self.assertLess(wrist[1] - shoulder[1], -.09, side)
+                self.assertGreater(wrist[1], 1.0, side)
+                self.assertGreater(wrist[0] * sign, .13, side)
+                bend = flexion(shoulder, elbow, wrist)
+                self.assertGreater(bend, 90, side)
+                self.assertLess(bend, 110, side)
+                elbows_z[side].append(elbow[2] - shoulder[2])
+        for side, values in elbows_z.items():
+            self.assertGreater(np.ptp(values), .21, (side, 'shoulder is not swinging'))
+        # Left leg lands in front while left arm is back; reverse half a cycle later.
+        for phase, sign in [(0, -1), (.5, 1)]:
+            g = self.globals('run', phase * c['duration'])
+            self.assertGreater(sign * (self.joint(g, 'forearm.L')[2]
+                                       - self.joint(g, 'forearm.R')[2]), .20)
+
+    def test_jump_extends_then_folds_and_prepares_for_contact(self):
+        ends = {name: self.globals(name, self.data['clips'][name]['duration'])
+                for name in ['jump_start', 'jump_up', 'jump_down']}
+        compression = self.globals('land', .075)
+        for side in ['L', 'R']:
+            bends = {name: flexion(*[self.joint(g, b + '.' + side)
+                     for b in ['thigh', 'shin', 'foot']]) for name, g in ends.items()}
+            self.assertLess(bends['jump_start'], 30, (side, 'take-off did not extend'))
+            self.assertGreater(bends['jump_up'], 75, (side, 'legs never fold'))
+            self.assertLess(bends['jump_down'], 25, (side, 'contact is still tucked'))
+            self.assertGreater(flexion(*[self.joint(compression, b + '.' + side)
+                for b in ['thigh', 'shin', 'foot']]), 60, side)
+            self.assertGreater(self.joint(ends['jump_up'], 'foot.' + side)[1]
+                               - self.joint(ends['jump_start'], 'foot.' + side)[1], .12)
+        for name in ['jump_up', 'jump_down']:
+            c = self.data['clips'][name]
+            self.assertFalse(c['loop'], name)
+            self.assertGreater(np.ptp(np.asarray(c['rotations']), axis=0).max(), .10,
+                               f'{name} regressed to a frozen pose')
+        for t in np.linspace(0, self.data['clips']['land']['duration'], 61):
+            g = self.globals('land', t)
+            for side, target in [('L', [.125, .08, .155]), ('R', [-.135, .08, -.135])]:
+                np.testing.assert_allclose(self.joint(g, 'foot.' + side), target, atol=.002)
+
+    def test_hand_clearance_and_joints_do_not_hyperextend(self):
         for name, c in self.data['clips'].items():
             for t in np.linspace(0, c['duration'], 35):
                 g = self.globals(name, t)
                 for side in ['L', 'R']:
                     hand = self.joint(g, 'hand.' + side)
-                    self.assertGreater(hand[1], 1.10, (name, side))
+                    # Guard/attacks stay high; relaxed running and balancing
+                    # arms on landing must NOT be forced back to combat guard.
+                    self.assertGreater(hand[1], .95 if name in ('run', 'jump_down', 'land') else 1.10,
+                                       (name, side))
                     self.assertGreater(hand[2], .10, (name, side))
                     self.assertLess(flexion(*[self.joint(g, b + '.' + side)
                                               for b in ['thigh', 'shin', 'foot']]), 135)

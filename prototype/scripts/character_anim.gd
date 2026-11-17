@@ -29,6 +29,8 @@ var _phase := 0.0
 var _gait_blend := 0.0
 var _move_weight := 0.0
 var _air_time := 0.0
+var _air_launched := false
+var _air_launch_speed := 0.0
 var _land_time := 100.0
 var _hit_time := 100.0
 var _was_grounded := true
@@ -173,7 +175,14 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	if grounded and not _was_grounded:
 		_land_time = 0.0
 	if not grounded:
-		_air_time = 0.0 if _was_grounded else _air_time + delta
+		# Явный импульс также перезапускает визуальный взлёт при coyote-jump,
+		# когда персонаж уже кадр-два не касается пола. Сход с края НЕ прыжок.
+		if _was_grounded or context.get("jump_started", false):
+			_air_time = 0.0
+			_air_launch_speed = float(context.get("vertical_speed", 0.0))
+			_air_launched = _air_launch_speed > 1.0
+		else:
+			_air_time += delta
 	_was_grounded = grounded
 
 	var planar := Vector2(local_velocity.x, local_velocity.z).length()
@@ -210,10 +219,10 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		# На бегу амортизируем в основном корпусом, не перебиваем шаг целиком.
 		pose = _blend_pose(landing, pose, _move_weight * .7)
 
-	if state != _state:
+	if state != _state or (state == "air" and context.get("jump_started", false)):
 		_transition_from = _last_pose
 		_transition_elapsed = 0.0
-		_transition_length = .055 if state == "land" else .075 if state.begins_with("attack") else .12
+		_transition_length = .055 if state in ["air", "land"] else .075 if state.begins_with("attack") else .12
 		_state = state
 	_transition_elapsed += delta
 	if not _transition_from.is_empty() and _transition_elapsed < _transition_length:
@@ -233,11 +242,28 @@ func _locomotion_pose() -> Dictionary:
 
 
 func _air_pose(context: Dictionary) -> Dictionary:
-	if _air_time < clip_duration("jump_start"):
-		return sample_clip("jump_start", _air_time)
 	var vertical: float = context.get("vertical_speed", 0.0)
-	return _blend_pose(sample_clip("jump_up", 0.0), sample_clip("jump_down", 0.0),
-		1.0 - smoothstep(-2.0, 1.0, vertical))
+	var takeoff := clip_duration("jump_start")
+	if _air_launched and _air_time < takeoff and vertical > 0.0:
+		return sample_clip("jump_start", _air_time)
+	if _air_launched and vertical > 0.0:
+		# Прогресс после разгибания до вершины траектории; не зацикливаем
+		# короткий клип и не держим один неподвижный кадр в воздухе.
+		var remaining_speed := maxf(.1, _air_launch_speed - T.GRAVITY * takeoff)
+		var rise := clampf(1.0 - vertical / remaining_speed, 0.0, 1.0)
+		return sample_clip("jump_up", rise * clip_duration("jump_up"))
+	var impact_speed := sqrt(2.0 * T.GRAVITY_FALL * T.JUMP_HEIGHT)
+	var fall := clampf(-vertical / impact_speed, 0.0, 1.0)
+	if not _air_launched:
+		fall = maxf(fall, .7)  # Сошли с уступа: не изображаем подбор ног при взлёте.
+	var floor_distance: float = context.get("floor_distance", -1.0)
+	if floor_distance >= 0.0:
+		# На высокой площадке контакт раньше, чем на исходном полу. Луч
+		# используется ТОЛЬКО для позы, не двигает тело и не меняет коллизии.
+		var speed := maxf(0.0, -vertical)
+		var until_contact := (sqrt(speed*speed + 2.0*T.GRAVITY_FALL*floor_distance) - speed) / T.GRAVITY_FALL
+		fall = maxf(fall, 1.0 - clampf(until_contact / .18, 0.0, 1.0))
+	return sample_clip("jump_down", fall * clip_duration("jump_down"))
 
 
 ## Телепорт/новый тест: не переносим фазу шага и отдачу из прошлой жизни.
@@ -247,6 +273,8 @@ func reset_motion() -> void:
 	_gait_blend = 0.0
 	_move_weight = 0.0
 	_air_time = 0.0
+	_air_launched = false
+	_air_launch_speed = 0.0
 	_land_time = 100.0
 	_hit_time = 100.0
 	_was_grounded = true

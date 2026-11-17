@@ -51,6 +51,7 @@ func _run() -> void:
 	_test_attack_clock(character)
 	_test_distance_and_air(character)
 	_test_locomotion_posture(character)
+	_test_air_progress(character)
 	_test_combat()
 	_test_showcase()
 	character.free()
@@ -163,6 +164,57 @@ func _test_locomotion_posture(character: Node3D) -> void:
 			hip_sum += height
 		check(min_hip > .80, "no crouched locomotion floor at %.2f m/s" % speed)
 		check(hip_sum / 180 > .845, "upright average pelvis in runtime blend at %.2f m/s" % speed)
+
+
+func knee_bend(character: Node3D, side: String) -> float:
+	var thigh := joint(character, "thigh." + side)
+	var shin := joint(character, "shin." + side)
+	var foot := joint(character, "foot." + side)
+	return rad_to_deg((shin - thigh).angle_to(foot - shin))
+
+
+func _test_air_progress(character: Node3D) -> void:
+	var launch := sqrt(2.0 * T.GRAVITY * T.JUMP_HEIGHT)
+	for fps in [30, 60, 120]:
+		character.reset_motion()
+		character.update_motion(0, Vector3.ZERO, "", 0, "R",
+			{"grounded": false, "vertical_speed": launch, "jump_started": true})
+		var previous := joint(character, "foot.L")
+		var max_step := 0.0
+		var time := 0.0
+		while time < launch / T.GRAVITY:
+			var dt := minf(1.0 / fps, launch / T.GRAVITY - time)
+			time += dt
+			character.update_motion(dt, Vector3.ZERO, "", 0, "R",
+				{"grounded": false, "vertical_speed": maxf(0, launch - T.GRAVITY*time)})
+			var foot := joint(character, "foot.L")
+			max_step = maxf(max_step, foot.distance_to(previous))
+			previous = foot
+		check(max_step < .075, "no frozen-pose switch during ascent at %d FPS" % fps)
+		check(joint(character, "foot.L").y > .30, "legs fold by the apex at %d FPS" % fps)
+		for i in fps / 3:
+			var vertical: float = -T.GRAVITY_FALL * (i + 1.0) / fps
+			character.update_motion(1.0 / fps, Vector3.ZERO, "", 0, "R",
+				{"grounded": false, "vertical_speed": vertical})
+		check(joint(character, "foot.L").y < .09 and knee_bend(character, "L") < 25,
+			"legs extend before impact at %d FPS" % fps)
+
+	character.reset_motion()
+	character.update_motion(.016, Vector3.ZERO, "", 0, "R",
+		{"grounded": false, "vertical_speed": -.3})
+	check(not character._air_launched, "stepping off a ledge does not play take-off")
+	character.update_motion(.10, Vector3.ZERO, "", 0, "R",
+		{"grounded": false, "vertical_speed": -1.0})
+	check(joint(character, "foot.L").y < .15, "ledge fall starts in a braced pose, not an apex tuck")
+	character.update_motion(.016, Vector3.ZERO, "", 0, "R",
+		{"grounded": false, "vertical_speed": launch, "jump_started": true})
+	check(character._air_launched and character._air_time == 0.0,
+		"coyote jump restarts take-off even when already airborne")
+	character._air_time = 1.0
+	character._apply_pose(character._air_pose({"vertical_speed": -1.0, "floor_distance": .01}))
+	check(joint(character, "foot.L").y < .10, "nearby raised floor prepares feet before early contact")
+	character.reset_motion()
+	check(not character._air_launched, "reset clears jump flight history")
 
 
 func _test_combat() -> void:
@@ -280,4 +332,27 @@ func _test_actual_physics() -> void:
 		await physics_frame
 		invulnerable_seen = invulnerable_seen or player._invulnerable
 	check(invulnerable_seen and player._action == "", "dodge iframes and recovery still work")
+
+	# A raised landing must use the player's real downward ray, not just a
+	# synthetic floor_distance passed directly to the sampler above.
+	box(Vector3(3, .6, 3), Vector3(5, .3, 3))
+	player.position = Vector3(2.8, 0, 3)
+	player.velocity = Vector3.ZERO
+	for i in 5:
+		await physics_frame
+	Input.action_press("move_right")
+	Input.action_press("run")
+	player._jump_buffer = 0.0
+	var braced_early := false
+	var landed_high := false
+	for i in 65:
+		await physics_frame
+		if not player.is_on_floor() and player.velocity.y < -1.0 \
+				and player.position.y < .83 and player.position.x > 3.6:
+			braced_early = braced_early or knee_bend(player.character, "L") < 35
+		landed_high = landed_high or (player.is_on_floor() and player.position.y > .55)
+	Input.action_release("move_right")
+	Input.action_release("run")
+	check(braced_early, "real floor-distance ray unfolds legs for early platform contact")
+	check(landed_high, "real running jump lands on a raised platform")
 	player.free()

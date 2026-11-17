@@ -40,7 +40,15 @@ try {
       const joints = await page.evaluate(() => window.motionLab.joints);
       assert.equal(joints.length, 21);
       assert(joints.every((joint) => joint.position.every(Number.isFinite)), `Non-finite joint in ${name}`);
-      assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > 1.1 && joint.position[2] > .1));
+      const minHandHeight = ['run', 'jump_down', 'land'].includes(name) ? .95 : 1.1;
+      assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > .1));
+      if (name === 'run') {
+        for (const side of ['L', 'R']) {
+          const get = (bone) => joints.find((joint) => joint.name === `${bone}.${side}`).position;
+          assert(get('forearm')[1] < get('upper_arm')[1] - .21, 'Running elbow must stay below the shoulder');
+          assert(get('hand')[1] < get('upper_arm')[1] - .09, 'Running fist must not return to the neck');
+        }
+      }
       if (name === 'walk' || name === 'run') {
         assert(joints.find((joint) => joint.name === 'hips').position[1] > (name === 'walk' ? .80 : .825),
           `Locomotion must not sink into a crouch: ${name}`);
@@ -75,7 +83,8 @@ try {
     for (const [name, times] of [
       ['walk', quarters('walk')], ['run', quarters('run')],
       ['attack_left', [0, .10, .18, .30]], ['attack_right', [0, .10, .18, .30]],
-      ['dodge', [0, .08, .20, .34]], ['land', [0, .065, .16, .26]],
+      ['dodge', [0, .08, .20, .34]], ['land', [0, .075, .18, data.clips.land.duration]],
+      ...['jump_start', 'jump_up', 'jump_down'].map((name) => [name, quarters(name)]),
     ]) {
       for (let i = 0; i < times.length; i++) {
         await page.evaluate(({ name, t }) => { window.motionLab.select(name); window.motionLab.seek(t); window.motionLab.setView('side'); }, { name, t: times[i] });

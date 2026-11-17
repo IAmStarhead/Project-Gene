@@ -61,6 +61,7 @@ var _dodge_dir: Vector3 = Vector3.ZERO
 var _invulnerable: bool = false
 var _coyote: float = 0.0          ## сколько ещё можно прыгнуть после схода с края
 var _jump_buffer: float = BUF_NEVER
+var _jump_started := false       ## одно физическое обновление: отличаем прыжок от падения
 
 var _targets: Array = []
 var _fps_accum: float = 0.0
@@ -127,6 +128,7 @@ func _input_direction() -> Vector3:
 
 func _physics_process(delta: float) -> void:
 	var previous_position := global_position
+	_jump_started = false
 	_update_buffers(delta)
 	_update_stamina(delta)
 
@@ -166,6 +168,7 @@ func _physics_process(delta: float) -> void:
 ## Прыжок с заданной высоты: скорость = sqrt(2 * g * h).
 func _try_jump() -> void:
 	velocity.y = sqrt(2.0 * T.GRAVITY * T.JUMP_HEIGHT)
+	_jump_started = true
 	_jump_buffer = BUF_NEVER
 	_coyote = 0.0
 
@@ -180,9 +183,17 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 	if character != null and character.has_method("update_motion"):
 		var planar := Vector3(displacement.x, 0.0, displacement.z)
 		var local_velocity := character.global_basis.inverse() * (planar / maxf(delta, .001))
+		var floor_distance := -1.0
+		if not is_on_floor() and velocity.y <= 0.0:
+			var query := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP*.06,
+				global_position + Vector3.DOWN*3.0, collision_mask, [get_rid()])
+			var hit := get_world_3d().direct_space_state.intersect_ray(query)
+			if not hit.is_empty():
+				floor_distance = maxf(0.0, global_position.y - (hit["position"] as Vector3).y)
 		character.update_motion(delta, local_velocity, _action, _action_time, _attack_side, {
 			"distance": planar.length(), "grounded": is_on_floor(),
-			"vertical_speed": velocity.y,
+			"vertical_speed": velocity.y, "jump_started": _jump_started,
+			"floor_distance": floor_distance,
 			"attack_timing": Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
 		})
 

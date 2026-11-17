@@ -18,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
-from rig_math import Rig
+from rig_math import Rig, unit
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / 'prototype/assets/heroine/female_A_rigged_safe.glb'
@@ -76,12 +76,60 @@ GAITS = {
     # Slightly shorter walking steps allow upright single support on these
     # 0.82 m legs. Cadence changes with the stride, NOT the gameplay speed.
     'walk': {'duration': .76, 'stride': 1.25, 'duty': .58, 'clearance': .105},
-    # Less overstriding: a shorter contact segment, then an actual flight phase.
-    'run': {'duration': .54, 'stride': 2.40, 'duty': .26, 'clearance': .23},
+    # Touch down close to the pelvis, extend BEHIND it, recover heel first.
+    'run': {'duration': .54, 'stride': 2.40, 'duty': .25, 'clearance': .24},
 }
 
 
+def swing_targets(p, side, shoulder_angle, elbow_bend, spread=.055):
+    """Anatomical shoulder swing, NOT a fist orbit around a fixed elbow pole.
+
+    Degrees: zero upper arm hangs down; positive swings forward. Elbow flexion
+    stays independent of the shoulder. Directions are in the model's sagittal
+    plane; the small lateral component keeps the arm clear of the torso.
+    Human references and the adaptation are documented in ANIMATIONS.md.
+    """
+    sign = 1 if side == 'L' else -1
+    root = p.world('upper_arm.' + side)[:3, 3].copy()
+    upper_angle, lower_angle = np.deg2rad([shoulder_angle, shoulder_angle + elbow_bend])
+    upper = unit([sign * spread, -np.cos(upper_angle), np.sin(upper_angle)])
+    lower = unit([sign * .015, -np.cos(lower_angle), np.sin(lower_angle)])
+    upper_length = np.linalg.norm(p.rig.positions[p.rig.index['forearm.' + side]])
+    lower_length = np.linalg.norm(p.rig.positions[p.rig.index['hand.' + side]])
+    elbow = root + upper_length * upper
+    return elbow + lower_length * lower, elbow
+
+
+def swing_arm(p, side, shoulder_angle, elbow_bend, spread=.055):
+    wrist, elbow = swing_targets(p, side, shoulder_angle, elbow_bend, spread)
+    p.arm(side, wrist, pole=elbow, roll=5 if side == 'L' else -5)
+
+
+def run_foot_path(phase, gait):
+    stride, duty = gait['stride'], gait['duty']
+    # Asymmetric contact: a modest reach forward, a long push behind the hip.
+    # Ankle motion remains exactly -stride during flat support (no skating).
+    touchdown = .16
+    if phase <= duty:
+        u = phase / duty
+        return .08, touchdown - stride * phase, curve(u, [
+            (0, 3), (.12, 0), (.52, 0), (.8, 35), (1, 60)])
+    v = (phase - duty) / (1 - duty)
+    start, end = touchdown - stride * duty, touchdown
+    m = -stride * (1 - duty)
+    z = (2*v**3 - 3*v**2 + 1)*start + (v**3 - 2*v**2 + v)*m \
+        + (-2*v**3 + 3*v**2)*end + (v**3 - v**2)*m
+    # The heel folds up early BEHIND the body, then the knee advances and the
+    # foot lowers. A single symmetric sine arc looked like seated pedalling.
+    y = curve(v, [(0, .08), (.10, .26), (.28, .08 + gait['clearance']),
+                  (.60, .24), (.82, .19), (.90, .14), (1, .08)])
+    pitch = curve(v, [(0, 60), (.15, 45), (.35, 18), (.60, -2), (.85, 0), (1, 3)])
+    return y, z, pitch
+
+
 def foot_path(phase, gait):
+    if gait['duty'] < .5:
+        return run_foot_path(phase, gait)
     stride, duty = gait['stride'], gait['duty']
     travel = stride * duty
     if phase <= duty:
@@ -96,12 +144,11 @@ def foot_path(phase, gait):
         z = (2*v**3 - 3*v**2 + 1) * (-travel / 2) + (v**3 - 2*v**2 + v) * m \
             + (-2*v**3 + 3*v**2) * (travel / 2) + (v**3 - v**2) * m
         lift = np.sin(np.pi * v)
-        # Keep the recovering run foot clear longer, especially before landing.
-        # The old narrow arc forced the pelvis down to keep the leg reachable.
-        # Endpoint velocity remains zero (lift**1.5), without raising the peak.
-        arc = lift ** 1.5 * (1 + 1.4 * (1 - lift) if duty < .5 else 1)
+        # Preserve the accepted walking arc. Running has its own recovery
+        # sequence above; both end with zero vertical swing velocity.
+        arc = lift ** 1.5
         y = .08 + gait['clearance'] * arc
-        pitch = curve(v, [(0, 25), (.3, 12 if duty > .5 else 38), (.7, -10), (1, -7)])
+        pitch = curve(v, [(0, 25), (.3, 12), (.7, -10), (1, -7)])
     return y, z, pitch
 
 
@@ -120,16 +167,19 @@ def gait_pose(rig, t, name):
                  lean=(4, 2), roll=1.3 * step_sin)
         guard_hands(p, height - .835, .012 * step_sin)
     else:
-        # Brief load absorption, then push-off and a higher flight/recovery.
-        # Moving the whole Character node up would only make the feet float.
-        height = curve(half, [(0, .845), (.10, .838), (.27, .866), (.36, .897),
-                              (.48, .843), (.5, .845)])
-        p = body(rig, hip=(.012 * step_sin, height, .04),
-                 yaw=(5 * step_sin, -3 * step_sin, -7 * step_sin),
-                 lean=(6, 3), roll=2 * step_sin)
-        # Compact reciprocal arm action: fists stay in front of the ribs.
-        p.arm('L', [.15, 1.22 + height - .75 + .035 * step_sin, .23 - .095 * step_sin], roll=10)
-        p.arm('R', [-.15, 1.22 + height - .75 - .035 * step_sin, .23 + .095 * step_sin], roll=-10)
+        # Short compression -> extension/toe-off -> flight. The hip isn't held
+        # low while the recovery leg passes. Only the skeleton moves, not the
+        # CharacterBody / collider / gameplay trajectory.
+        height = curve(half, [(0, .878), (.07, .863), (.17, .867), (.25, .874),
+                              (.37, .937), (.48, .885), (.5, .878)])
+        p = body(rig, hip=(.008 * step_sin, height, .04),
+                 yaw=(3 * step_sin, -2 * step_sin, -4 * step_sin),
+                 lean=(3, 2), roll=step_sin)
+        # Opposite arm and leg: L foot touches down at phase 0 while L arm is
+        # BACK, not raised beside the neck. Elbows stay below the shoulders.
+        drive = np.cos(phase * np.pi * 2)
+        swing_arm(p, 'L', 2.5 - 25 * drive, 100 + 5 * drive)
+        swing_arm(p, 'R', 2.5 + 25 * drive, 100 - 5 * drive)
     for side, offset, sign in [('L', 0, 1), ('R', .5, -1)]:
         fp = (phase + offset) % 1
         y, z, pitch = foot_path(fp, gait)
@@ -178,30 +228,68 @@ def dodge(rig, t):
     return p
 
 
-def air_pose(rig, falling=False):
-    p = body(rig, hip=(0, .86, .02), yaw=(-4, -3, -4), lean=(6 if falling else 8, 2))
-    guard_hands(p, -.04 if falling else -.02, .018)
-    p.foot('L', [.12, .17 if falling else .31, .19], pitch=6 if falling else 12, yaw=3)
-    p.foot('R', [-.13, .13 if falling else .19, -.13], pitch=12 if falling else 24, yaw=-5)
-    return p
+JUMP_START = .10
+JUMP_UP = .22
+JUMP_DOWN = .26
+LAND = .30
 
 
 def jump_start(rig, t):
-    # Visual take-off only: no extra input delay is introduced into the controller.
-    u = smooth(t / .14)
-    p = body(rig, hip=(0, .835 + .025 * u, .02), yaw=(-6 + 2*u, -4 + u, -7 + 3*u),
-             lean=(3 + 5*u, 2))
-    guard_hands(p, -.02*u, .018*u)
-    p.foot('L', [.125 - .005*u, .08 + .23*u, .155 + .035*u], pitch=12*u, yaw=6 - 3*u)
-    p.foot('R', [-.135 + .005*u, .08 + .11*u, -.135 + .005*u], pitch=24*u, yaw=-10 + 5*u)
+    # Immediate game jump: EXTEND before folding, rather than pulling both feet
+    # up on the first frame. Physics supplies the entire ballistic root motion.
+    u = smooth(t / JUMP_START)
+    p = body(rig, hip=(0, .835 + .100 * u, .02),
+             yaw=(-6 + 4*u, -4 + 3*u, -7 + 5*u), lean=(3, 2))
+    for side, sign, start in [('L', 1, [.145, 1.295, .265]),
+                              ('R', -1, [-.145, 1.305, .205])]:
+        wrist, elbow = swing_targets(p, side, 38, 72, .16)
+        p.arm(side, mix(start, wrist, u),
+              pole=mix([sign*.30, .99, .12], elbow, u),
+              roll=(8 - 3*u) * sign)
+    p.foot('L', [.125 - .005*u, .08 + .01*u, .155 - .035*u], pitch=28*u, yaw=6 - 3*u)
+    p.foot('R', [-.135 + .005*u, .08 + .01*u, -.135 + .035*u], pitch=26*u, yaw=-10 + 5*u)
+    return p
+
+
+def air_pose(rig, t, falling=False):
+    # Non-looping segments, sampled by vertical velocity in character_anim.gd.
+    # The ascent ends in the SAME crest pose that begins the descent. Feet
+    # unfold before contact; the apex is not a switch between frozen poses.
+    u = smooth(t / (JUMP_DOWN if falling else JUMP_UP))
+    if falling:
+        height, lean = .88 - .005*u, 6 - 3*u
+        shoulder, elbow, spread = 15 + 3*u, 100 - 35*u, .16 + .04*u
+        left = mix([.12, .31, .21], [.125, .08, .155], u)
+        right = mix([-.13, .24, -.10], [-.135, .08, -.135], u)
+        pitches, yaws = (4*(1-u), 12*(1-u)), (3 + 3*u, -5 - 5*u)
+    else:
+        height, lean = .935 - .055*u, 3 + 3*u
+        shoulder, elbow, spread = 38 - 23*u, 72 + 28*u, .16
+        left = mix([.12, .09, .12], [.12, .31, .21], u)
+        right = mix([-.13, .09, -.10], [-.13, .24, -.10], u)
+        pitches, yaws = (28 - 24*u, 26 - 14*u), (3, -5)
+    p = body(rig, hip=(0, height, .02), yaw=(-2, -1, -2), lean=(lean, 2))
+    for side in ['L', 'R']:
+        swing_arm(p, side, shoulder, elbow, spread)
+    p.foot('L', left, pitch=pitches[0], yaw=yaws[0])
+    p.foot('R', right, pitch=pitches[1], yaw=yaws[1])
     return p
 
 
 def land(rig, t):
-    compress = curve(t, [(0, .35), (.065, 1), (.16, .3), (.26, 0)])
-    p = body(rig, hip=(0, .835 - .115 * compress, .02),
-             lean=(3 + 8 * compress, 2 + 3 * compress))
-    guard_hands(p, -.10 * compress, .01 * compress)
+    compress = curve(t, [(0, 0), (.075, 1), (.18, .32), (LAND, 0)])
+    recover = smooth(t / LAND)
+    height = .875 - .04*recover - .125*compress
+    p = body(rig, hip=(0, height, .02),
+             yaw=(-2 - 4*recover, -1 - 3*recover, -2 - 5*recover),
+             lean=(3 + 8*compress, 2 + 3*compress))
+    # Arms balance the landing first, then return to the existing combat guard.
+    for side, sign, end in [('L', 1, [.145, 1.295, .265]),
+                            ('R', -1, [-.145, 1.305, .205])]:
+        wrist, elbow = swing_targets(p, side, 18 + 6*compress, 65 + 10*compress, .20)
+        p.arm(side, mix(wrist, end, recover),
+              pole=mix(elbow, [sign*.30, .99, .12], recover),
+              roll=(5 + 3*recover) * sign)
     guard_feet(p)
     return p
 
@@ -227,10 +315,10 @@ def definitions():
         ('attack_right', .56, False, lambda r, t: attack(r, t, 'R'),
          {'windup': .18, 'active_end': .30, 'impact': .18, 'side': 'R'}),
         ('dodge', .42, False, dodge, {}),
-        ('jump_start', .14, False, jump_start, {}),
-        ('jump_up', .2, True, lambda r, t: air_pose(r), {}),
-        ('jump_down', .2, True, lambda r, t: air_pose(r, True), {}),
-        ('land', .26, False, land, {}),
+        ('jump_start', JUMP_START, False, jump_start, {}),
+        ('jump_up', JUMP_UP, False, lambda r, t: air_pose(r, t), {}),
+        ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
+        ('land', LAND, False, land, {}),
         ('hit', .32, False, hit, {}),
     ]
 
@@ -241,9 +329,12 @@ def bake():
             'coordinates': '+Y up, +Z forward, metres; full parent-local xyzw quaternions',
             'bones': rig.names, 'clips': {}}
     for name, duration, loop, author, meta in definitions():
-        # Include BOTH endpoints and all authored timing events exactly.
-        times = np.unique(np.round(np.r_[np.arange(0, duration, 1 / FPS), duration,
-            [v for k, v in meta.items() if k in ('impact', 'active_end')]], 9))
+        # Include BOTH endpoints and authored timing/contact events exactly.
+        events = [v for k, v in meta.items() if k in ('impact', 'active_end')]
+        if name == 'run':
+            events += [duration * (offset + u * meta['duty'])
+                       for offset in (0, .5) for u in (.12, .52, .8, 1)]
+        times = np.unique(np.round(np.r_[np.arange(0, duration, 1 / FPS), duration, events], 9))
         quats, hips = [], []
         before = len(rig.unreachable)
         for t in times:
