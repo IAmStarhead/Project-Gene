@@ -19,17 +19,19 @@ extends CharacterBody3D
 
 const T := preload("res://scripts/tuning.gd")
 
-enum Mode { SLEEP, FOLLOW, FIGHT }
+## Два режима, а не три: пользователь просил «включение и выключение боя».
+## Третий режим («следит, но не бьёт») на практике путал: непонятно, почему
+## противник подошёл и не атакует.
+enum Mode { OFF, ON }
 
 const MODE_NAMES := {
-	Mode.SLEEP: "спит",
-	Mode.FOLLOW: "следит",
-	Mode.FIGHT: "бьёт",
+	Mode.OFF: "бой ВЫКЛ",
+	Mode.ON: "бой ВКЛ",
 }
 
 @onready var character: Node3D = $Character
 
-var mode: int = Mode.SLEEP
+var mode: int = Mode.OFF
 
 var health: float = T.CLONE_HEALTH
 var _attack_time: float = -1.0
@@ -37,7 +39,7 @@ var _cooldown: float = 0.0
 var _recover: float = 0.0
 var _flash: float = 0.0
 var _player: Node3D
-var _label: Label
+var _label: Label3D
 
 
 func _ready() -> void:
@@ -48,23 +50,32 @@ func _ready() -> void:
 
 
 func _make_label() -> void:
-	# подпись над головой: режим и здоровье
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	_label = Label.new()
-	_label.position = Vector2(20, 74)
-	_label.add_theme_color_override("font_color", Color(0.55, 0.05, 0.10))
-	_label.add_theme_font_size_override("font_size", 16)
-	layer.add_child(_label)
+	# Подпись — Label3D над головой, а не Label в CanvasLayer.
+	# Прошлый вариант рисовал текст в постоянной точке экрана (20, 74) и
+	# наезжал на отладочный текст героини: было непонятно, чей это статус.
+	# Теперь видно, к кому относится надпись, и она поворачивается к камере.
+	var l := Label3D.new()
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.fixed_size = true
+	l.pixel_size = 0.0009
+	l.font_size = 64
+	l.outline_size = 20
+	l.modulate = Color(0.85, 0.18, 0.22)
+	l.outline_modulate = Color(0.06, 0.06, 0.08)
+	l.position = Vector3(0.0, 2.05, 0.0)
+	add_child(l)
+	_label = l
 
 
 ## Переключение режима: вызывается из main.gd по клавише T.
 func cycle_mode() -> void:
-	mode = (mode + 1) % 3
-	if mode == Mode.SLEEP:
+	mode = Mode.ON if mode == Mode.OFF else Mode.OFF
+	if mode == Mode.OFF:
 		velocity = Vector3.ZERO
 	_attack_time = -1.0
 	_recover = 0.0
+	_cooldown = 0.35      # короткая пауза, чтобы не бить в ту же секунду
 
 
 func mode_name() -> String:
@@ -83,11 +94,9 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	match mode:
-		Mode.SLEEP:
+		Mode.OFF:
 			_slow_down(delta, 18.0)
-		Mode.FOLLOW:
-			_move_toward_player(delta, T.CLONE_KEEP_DISTANCE + 0.8, T.CLONE_WALK)
-		Mode.FIGHT:
+		Mode.ON:
 			_fight(delta)
 
 	move_and_slide()
@@ -181,7 +190,7 @@ func _deal_damage(dist: float) -> void:
 
 func _face(delta: float) -> void:
 	var look := velocity
-	if mode == Mode.FIGHT and _attack_time >= 0.0:
+	if mode == Mode.ON and _attack_time >= 0.0:
 		look = _dir_to_player()
 	if look.length() < 0.05 and is_instance_valid(_player):
 		look = _dir_to_player()
@@ -193,19 +202,17 @@ func _face(delta: float) -> void:
 
 ## Получает урон от героини.
 func take_damage(amount: float, _from_dir: Vector3) -> void:
-	if mode == Mode.SLEEP:
-		return                      # спящего не бьют: он для тестов
+	if mode == Mode.OFF:
+		return                      # выключенного не бьют: он для тестов
 	health = maxf(0.0, health - amount)
 	_flash = 1.0
 	if health <= 0.0:
 		health = T.CLONE_HEALTH
 		global_position = Vector3(-3.0, 1.0, -6.0)
-		mode = Mode.SLEEP
+		mode = Mode.OFF
 
 
 func _update_label() -> void:
 	if _label == null:
 		return
-	_label.text = "КЛОН: %s   здоровье %.0f / %.0f   [T — переключить режим]" % [
-		mode_name(), health, T.CLONE_HEALTH,
-	]
+	_label.text = "%s   %.0f/%.0f" % [mode_name(), health, T.CLONE_HEALTH]

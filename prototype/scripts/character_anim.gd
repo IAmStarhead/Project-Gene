@@ -110,14 +110,18 @@ func update_anim(delta: float, speed_ratio: float, action: String, action_time: 
 	# модель встаёт «парализованной»: руки висят вдоль туловища как палки.
 	# Лёгкое покачивание в противофазе делает стойку живой.
 	_breathe(want, 1.0)
+	# Локоть 55, а не 26: при 26° руки висят почти вдоль тела и стойка
+	# читается как «парализованная». Проверено рендером: при 55 кисти
+	# оказываются на 0.20 м впереди бёдер, при 70 — уже как у боксёра,
+	# что для soulslike слишком агрессивно.
 	var idle_sway := sin(_clock * 1.15) * 2.2
-	want["upper_arm.L"] = Vector3(4.0 + idle_sway, 0.0, -11.0)
-	want["upper_arm.R"] = Vector3(4.0 - idle_sway, 0.0, 11.0)
-	want["forearm.L"] = Vector3(26.0, 0.0, 0.0)
-	want["forearm.R"] = Vector3(26.0, 0.0, 0.0)
+	want["upper_arm.L"] = Vector3(10.0 + idle_sway, 0.0, -9.0)
+	want["upper_arm.R"] = Vector3(10.0 - idle_sway, 0.0, 9.0)
+	want["forearm.L"] = Vector3(55.0, 0.0, 0.0)
+	want["forearm.R"] = Vector3(55.0, 0.0, 0.0)
 	# кисти чуть внутрь — чтобы руки не торчали в стороны
-	want["hand.L"] = Vector3(0.0, 0.0, 4.0)
-	want["hand.R"] = Vector3(0.0, 0.0, -4.0)
+	want["hand.L"] = Vector3(0.0, 0.0, 6.0)
+	want["hand.R"] = Vector3(0.0, 0.0, -6.0)
 
 	# ───────────────────────────────────────── шаг и бег
 	_phase = fmod(_phase + delta * (2.6 + 6.0 * w), TAU)
@@ -169,8 +173,8 @@ func _walk(want: Dictionary, w: float) -> void:
 	# руки: левая вперёд, когда правая нога впереди
 	want["upper_arm.L"] = Vector3(arm * s, 0.0, -5.0)
 	want["upper_arm.R"] = Vector3(-arm * s, 0.0, 5.0)
-	want["forearm.L"] = Vector3(28.0 + 12.0 * w, 0.0, 0.0)
-	want["forearm.R"] = Vector3(28.0 + 12.0 * w, 0.0, 0.0)
+	want["forearm.L"] = Vector3(45.0 + 14.0 * w, 0.0, 0.0)
+	want["forearm.R"] = Vector3(45.0 + 14.0 * w, 0.0, 0.0)
 
 	# корпус: наклон вперёд на бегу, легкое покачивание плеч
 	want["spine"] = Vector3(2.0 + 7.0 * w, 0.0, 0.0)

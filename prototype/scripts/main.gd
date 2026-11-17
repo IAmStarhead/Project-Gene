@@ -4,7 +4,6 @@ extends Node3D
 const T := preload("res://scripts/tuning.gd")
 const PlayerScene := preload("res://scenes/player.tscn")
 const CloneScene := preload("res://scenes/clone.tscn")
-const DummyScene := preload("res://scenes/dummy_target.tscn")
 const ROOM_SCENE := preload("res://scenes/room.tscn")
 
 var room: Node3D
@@ -27,13 +26,8 @@ func _ready() -> void:
 	clone.position = Vector3(-3.0, 1.0, -5.0)
 	add_child(clone)
 
-	# Столб оставлен рядом: на нём удобно проверять конус удара, не трогая клона.
-	var dummy := DummyScene.instantiate()
-	dummy.position = Vector3(5.0, 1.0, -2.0)
-	add_child(dummy)
-
 	_hint = Label.new()
-	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар · Пробел — уворот · T — режим клона · Esc — курсор"
+	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар · Пробел — уворот · T — бой клона вкл/выкл · Esc — курсор"
 	_hint.position = Vector2(16, 12)
 	_hint.add_theme_color_override("font_color", Color(0.1, 0.12, 0.16))
 	add_child(_hint)

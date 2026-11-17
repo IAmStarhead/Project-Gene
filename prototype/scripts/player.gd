@@ -356,5 +356,4 @@ func _update_debug(delta: float) -> void:
 		"стамина: %.0f" % stamina,
 		"цель: %s" % (_last_hit if not _last_hit.is_empty() else "—"),
 		"буфер: удар %s / уворот %s" % [buf_atk, buf_dg],
-		"на земле: %s" % ("да" if is_on_floor() else "нет"),
 	])

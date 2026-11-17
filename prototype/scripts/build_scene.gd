@@ -31,45 +31,63 @@ func _make_materials() -> void:
 
 
 func _make_light() -> void:
-	# Свет переделан 17.11. Проблема была не в яркости, а в том, что её
-	# слишком много сразу: ambient 1.15 + sun 1.5 + две лампы + тональная
-	# компрессия FILMIC. Кожа (её собственная яркость 0.77) уходила в белое,
-	# и на теле не оставалось ни одного теневого перехода — «зашакалено».
+	# Свет, версия 3. История правок:
+	#   v1: ambient 1.15 + sun 1.5 + 2 лампы + FILMIC — кожа уходила в белое,
+	#       «зашакалено», ни одного теневого перехода.
+	#   v2: ambient 0.45 + sun 1.0 + 1 лампа + LINEAR — объём появился, но
+	#       стало ТУСКЛО: белая лаборатория должна быть яркой.
+	#   v3 (это): ярко, но с контрастом.
 	#
-	# Теперь: мягкий рассеянный свет, один направленный с тенью, и снизу
-	# подхват, чтобы под подбородком не было чёрной дыры. Суммарная
-	# освещённость примерно втрое ниже прежней.
+	# Секрет в том, что яркость и «плоскость» — разные вещи. Плоско бывает
+	# не от большого света, а от РАВНОМЕРНОГО света: когда заполняющий свет
+	# почти равен основному, тени исчезают. Поэтому поднимаем общую яркость,
+	# но держим основной источник заметно сильнее заполняющего.
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color(0.62, 0.66, 0.72)
+	e.background_color = Color(0.78, 0.82, 0.88)
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.55, 0.60, 0.68)
-	e.ambient_light_energy = 0.45
-	# LINEAR вместо FILMIC: без двойного сжатия яркости, цвета предсказуемее
+	e.ambient_light_color = Color(0.72, 0.77, 0.86)
+	e.ambient_light_energy = 0.75          # фон не чёрный, но и не «всё белое»
 	e.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	e.tonemap_exposure = 1.0
+	# мягкое свечение: белая лаборатория должна «дышать» светом
+	e.glow_enabled = true
+	e.glow_intensity = 0.35
+	e.glow_bloom = 0.06
+	e.glow_hdr_threshold = 1.1
 	env.environment = e
 	add_child(env)
 
-	# основной свет: жёстче и под углом, чтобы читался объём
+	# Основной свет. Резкий угол и тень — именно он даёт объём на теле.
+	# Разница с заполняющим должна быть ощутимой: 1.6 против 0.35.
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-48, -34, 0)
-	sun.light_color = Color(1.0, 0.97, 0.93)
-	sun.light_energy = 1.0
+	sun.rotation_degrees = Vector3(-52, -40, 0)
+	sun.light_color = Color(1.0, 0.99, 0.97)
+	sun.light_energy = 1.6
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 30.0
-	sun.shadow_bias = 0.03
+	sun.shadow_bias = 0.02
+	sun.shadow_normal_bias = 1.0
 	add_child(sun)
 
-	# заполняющий свет сверху: мягкий, без тени — чтобы тени не были чёрными
+	# Заполняющий свет: только чтобы тени не были чёрными. Слабый намеренно.
 	var fill := OmniLight3D.new()
-	fill.position = Vector3(0, 4.2, 2.0)
-	fill.light_color = Color(0.85, 0.90, 1.0)
+	fill.position = Vector3(0.0, 4.0, 3.0)
+	fill.light_color = Color(0.88, 0.93, 1.0)
 	fill.light_energy = 0.35
-	fill.omni_range = 16.0
+	fill.omni_range = 18.0
 	fill.shadow_enabled = false
 	add_child(fill)
+
+	# Подхват снизу: белый пол отражает свет вверх, в лаборатории это заметно.
+	var bounce := OmniLight3D.new()
+	bounce.position = Vector3(0.0, 0.35, 2.0)
+	bounce.light_color = Color(0.95, 0.96, 1.0)
+	bounce.light_energy = 0.20
+	bounce.omni_range = 9.0
+	bounce.shadow_enabled = false
+	add_child(bounce)
 
 
 func _box(size: Vector3, pos: Vector3, mat: Material, parent: Node = self) -> MeshInstance3D:
