@@ -50,6 +50,7 @@ func _run() -> void:
 	_test_native_tracks(character)
 	_test_attack_clock(character)
 	_test_distance_and_air(character)
+	_test_locomotion_posture(character)
 	_test_combat()
 	_test_showcase()
 	character.free()
@@ -115,10 +116,11 @@ func _test_attack_clock(character: Node3D) -> void:
 
 func _test_distance_and_air(character: Node3D) -> void:
 	character.reset_motion()
+	var walk_stride := float(Character.MOTIONS.get_animation("walk").get_meta("stride"))
 	for i in 100:
-		character.update_motion(.01, Vector3(0, 0, 1.65), "", 0, "R",
-			{"grounded": true, "distance": 1.35 / 100})
-	check(absf(wrapf(character._phase + .5, 0, 1) - .5) < .00001, "one stride per travelled 1.35 m")
+		character.update_motion(.01, Vector3(0, 0, T.WALK_SPEED), "", 0, "R",
+			{"grounded": true, "distance": walk_stride / 100})
+	check(absf(wrapf(character._phase + .5, 0, 1) - .5) < .00001, "one cycle per authored walking stride")
 	var before: float = character._phase
 	for i in 40:
 		character.update_motion(1.0 / 60, Vector3(0, 0, 4.6), "", 0, "R",
@@ -142,6 +144,25 @@ func _test_distance_and_air(character: Node3D) -> void:
 	var hit_pose: Dictionary = character._add_hit(character._last_pose, 1.0)
 	var leg_after: Quaternion = hit_pose["rotations"][character.skeleton.find_bone("thigh.L")]
 	check(absf(leg_before.dot(leg_after)) > .999999, "additive hit reaction does not replace the legs")
+
+
+func _test_locomotion_posture(character: Node3D) -> void:
+	# Exercise the actual sampler/blender too, including the clone's 3.4 m/s
+	# walk/run mix. Raising the Character node cannot satisfy these bone checks.
+	for speed in [T.WALK_SPEED, T.CLONE_RUN, T.RUN_SPEED]:
+		character.reset_motion()
+		var context := {"grounded": true, "distance": speed / 60.0}
+		for i in 60:
+			character.update_motion(1.0 / 60, Vector3(0, 0, speed), "", 0, "R", context)
+		var min_hip := INF
+		var hip_sum := 0.0
+		for i in 180:
+			character.update_motion(1.0 / 60, Vector3(0, 0, speed), "", 0, "R", context)
+			var height := joint(character, "hips").y
+			min_hip = minf(min_hip, height)
+			hip_sum += height
+		check(min_hip > .80, "no crouched locomotion floor at %.2f m/s" % speed)
+		check(hip_sum / 180 > .845, "upright average pelvis in runtime blend at %.2f m/s" % speed)
 
 
 func _test_combat() -> void:

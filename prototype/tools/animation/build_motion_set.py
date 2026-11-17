@@ -73,8 +73,11 @@ def idle(rig, t):
 
 
 GAITS = {
-    'walk': {'duration': .82, 'stride': 1.35, 'duty': .58, 'clearance': .105},
-    'run': {'duration': .54, 'stride': 2.40, 'duty': .36, 'clearance': .23},
+    # Slightly shorter walking steps allow upright single support on these
+    # 0.82 m legs. Cadence changes with the stride, NOT the gameplay speed.
+    'walk': {'duration': .76, 'stride': 1.25, 'duty': .58, 'clearance': .105},
+    # Less overstriding: a shorter contact segment, then an actual flight phase.
+    'run': {'duration': .54, 'stride': 2.40, 'duty': .26, 'clearance': .23},
 }
 
 
@@ -92,7 +95,12 @@ def foot_path(phase, gait):
         m = -stride * (1 - duty)
         z = (2*v**3 - 3*v**2 + 1) * (-travel / 2) + (v**3 - 2*v**2 + v) * m \
             + (-2*v**3 + 3*v**2) * (travel / 2) + (v**3 - v**2) * m
-        y = .08 + gait['clearance'] * np.sin(np.pi * v) ** 1.5
+        lift = np.sin(np.pi * v)
+        # Keep the recovering run foot clear longer, especially before landing.
+        # The old narrow arc forced the pelvis down to keep the leg reachable.
+        # Endpoint velocity remains zero (lift**1.5), without raising the peak.
+        arc = lift ** 1.5 * (1 + 1.4 * (1 - lift) if duty < .5 else 1)
+        y = .08 + gait['clearance'] * arc
         pitch = curve(v, [(0, 25), (.3, 12 if duty > .5 else 38), (.7, -10), (1, -7)])
     return y, z, pitch
 
@@ -101,18 +109,24 @@ def gait_pose(rig, t, name):
     gait = GAITS[name]
     phase = (t / gait['duration']) % 1
     step_sin = np.sin(phase * np.pi * 2)
+    half = phase % .5
     if name == 'walk':
-        height = .800 - .025 * np.cos(phase * np.pi * 4)
+        # Rise over the supporting leg, rather than keeping BOTH knees bent.
+        # The lower double-support moments are brief; the foot stays on the floor.
+        height = curve(half, [(0, .813), (.08, .85), (.23, .885), (.35, .874),
+                              (.42, .85), (.48, .812), (.5, .813)])
         p = body(rig, hip=(.014 * step_sin, height, .02),
                  yaw=(-4 + 3 * step_sin, -2, -5 - 5 * step_sin),
                  lean=(4, 2), roll=1.3 * step_sin)
         guard_hands(p, height - .835, .012 * step_sin)
     else:
-        half = phase % .5
-        height = curve(half, [(0, .730), (.13, .715), (.28, .735), (.36, .755), (.43, .775), (.5, .730)])
+        # Brief load absorption, then push-off and a higher flight/recovery.
+        # Moving the whole Character node up would only make the feet float.
+        height = curve(half, [(0, .845), (.10, .838), (.27, .866), (.36, .897),
+                              (.48, .843), (.5, .845)])
         p = body(rig, hip=(.012 * step_sin, height, .04),
                  yaw=(5 * step_sin, -3 * step_sin, -7 * step_sin),
-                 lean=(10, 5), roll=2 * step_sin)
+                 lean=(6, 3), roll=2 * step_sin)
         # Compact reciprocal arm action: fists stay in front of the ribs.
         p.arm('L', [.15, 1.22 + height - .75 + .035 * step_sin, .23 - .095 * step_sin], roll=10)
         p.arm('R', [-.15, 1.22 + height - .75 - .035 * step_sin, .23 + .095 * step_sin], roll=-10)

@@ -125,6 +125,30 @@ class MotionSetTests(unittest.TestCase):
                 # SLERP between baked IK poses introduces sub-mm path error.
                 self.assertLess(np.ptp(points, axis=0).max(), .002, (name, side))
 
+    def test_locomotion_has_upright_support_not_a_continuous_crouch(self):
+        # A valid, reachable IK pose can still be a bad gait: the previous set
+        # averaged 49 degrees of support-knee bend walking, 65 running. Measure
+        # the SUPPORT leg here; a folded recovery leg is expected in a run.
+        for name, hip_floor, knee_mean_limit in [('walk', .80, 32), ('run', .825, 40)]:
+            c = self.data['clips'][name]
+            hips, support = [], {'L': [], 'R': []}
+            for phase in np.linspace(0, 1, 241, endpoint=False):
+                g = self.globals(name, phase * c['duration'])
+                hips.append(self.joint(g, 'hips')[1])
+                for side, offset in [('L', 0), ('R', .5)]:
+                    if (phase + offset) % 1 <= c['duty']:
+                        support[side].append(flexion(*[self.joint(g, b + '.' + side)
+                            for b in ['thigh', 'shin', 'foot']]))
+            self.assertGreater(min(hips), hip_floor, name)
+            self.assertGreater(np.mean(hips), .85, name)
+            for side, bends in support.items():
+                self.assertLess(np.mean(bends), knee_mean_limit, (name, side))
+                self.assertLess(max(bends), 50, (name, side))
+                self.assertLess(min(bends), 25, (name, side, 'leg never extends'))
+            bends = support['L'] + support['R']
+            print(f'\n  {name}: hips {min(hips):.3f}–{max(hips):.3f} m; '
+                  f'support knee mean {np.mean(bends):.1f}°, max {max(bends):.1f}°')
+
     def test_hands_stay_in_front_and_joints_do_not_hyperextend(self):
         for name, c in self.data['clips'].items():
             for t in np.linspace(0, c['duration'], 35):

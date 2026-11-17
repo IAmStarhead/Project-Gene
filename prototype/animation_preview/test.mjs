@@ -26,7 +26,7 @@ try {
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   await page.goto(base, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => window.motionLab?.ready, { timeout: 30000 });
+  await page.waitForFunction(() => window.motionLab?.ready, null, { timeout: 30000 });
   const data = await (await fetch(base + '/assets/heroine/animations/motion_set.json')).json();
   const model = await (await fetch(base + '/assets/heroine/female_A_rigged_safe.glb')).arrayBuffer();
   assert.equal(createHash('sha256').update(Buffer.from(model)).digest('hex'), data.model_sha256);
@@ -41,6 +41,10 @@ try {
       assert.equal(joints.length, 21);
       assert(joints.every((joint) => joint.position.every(Number.isFinite)), `Non-finite joint in ${name}`);
       assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > 1.1 && joint.position[2] > .1));
+      if (name === 'walk' || name === 'run') {
+        assert(joints.find((joint) => joint.name === 'hips').position[1] > (name === 'walk' ? .80 : .825),
+          `Locomotion must not sink into a crouch: ${name}`);
+      }
       frames++;
     }
     if (name.startsWith('attack')) {
@@ -67,8 +71,9 @@ try {
   if (output) await page.screenshot({ path: resolve(output, 'preview-desktop.png') });
   await page.locator('#trail').uncheck();
   if (output) {
+    const quarters = (name) => [0, .25, .5, .75].map((phase) => phase * data.clips[name].duration);
     for (const [name, times] of [
-      ['walk', [0, .205, .41, .615]], ['run', [0, .135, .27, .405]],
+      ['walk', quarters('walk')], ['run', quarters('run')],
       ['attack_left', [0, .10, .18, .30]], ['attack_right', [0, .10, .18, .30]],
       ['dodge', [0, .08, .20, .34]], ['land', [0, .065, .16, .26]],
     ]) {
