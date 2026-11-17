@@ -132,7 +132,8 @@ func _process_move(delta: float) -> void:
 	velocity.z = move_toward(velocity.z, target.z, rate * delta)
 
 	if dir.length() > 0.0:
-		var want := atan2(dir.x, dir.z)
+		# модель смотрит в +Z, поэтому поворот считается от -Z
+		var want := atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, want, min(1.0, delta * T.TURN_SPEED))
 
 
@@ -156,7 +157,7 @@ func _start_dodge() -> void:
 		_dodge_dir = -global_transform.basis.z
 	_dodge_dir.y = 0.0
 	_dodge_dir = _dodge_dir.normalized()
-	rotation.y = atan2(_dodge_dir.x, _dodge_dir.z)
+	rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
 	_invulnerable = false
 
 
