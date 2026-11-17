@@ -19,7 +19,7 @@ func _ready() -> void:
 	_set_bar(1.0)
 
 
-func take_damage(amount: float, from_dir: Vector3) -> void:
+func take_damage(amount: float, _from_dir: Vector3) -> void:
 	health = max(0.0, health - amount)
 	_flash = 1.0
 	_set_bar(health / T.DUMMY_HEALTH)
@@ -33,9 +33,10 @@ func take_damage(amount: float, from_dir: Vector3) -> void:
 func _process(delta: float) -> void:
 	if _flash > 0.0:
 		_flash = max(0.0, _flash - delta * 4.0)
-		var mat := mesh.get_active_material(0)
+		var mat: Material = mesh.get_active_material(0)
 		if mat is StandardMaterial3D:
-			mat.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35), _flash)
+			var std := mat as StandardMaterial3D
+			std.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35), _flash)
 
 
 func _set_bar(ratio: float) -> void:
