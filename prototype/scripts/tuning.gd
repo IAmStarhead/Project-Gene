@@ -13,6 +13,10 @@ const ACCELERATION := 16.0       ## как быстро набирается с�
 const DECELERATION := 20.0       ## как быстро гасится скорость
 const TURN_SPEED := 14.0         ## скорость поворота тела к направлению движения
 const GRAVITY := 24.0
+const GRAVITY_FALL := 34.0       ## падение тяжелее подъёма — так прыжок «собраннее»
+const JUMP_HEIGHT := 1.15        ## метры; скорость считается из высоты
+const AIR_CONTROL := 0.55        ## доля управления в воздухе
+const COYOTE_TIME := 0.10        ## прыжок возможен чуть позже схода с края
 const STEP_UP := 0.35            ## высота ступеньки, которую персонаж переступает
 
 # ─────────────────────────────────────────────── КАМЕРА
@@ -52,6 +56,19 @@ const STAMINA_REGEN_DELAY := 0.55 ## пауза после траты, преж�
 # ─────────────────────────────────────────────── СПРАЙТ-ПРОВЕРКА (заглушка врага)
 const DUMMY_HEALTH := 60.0
 const DUMMY_KNOCKBACK := 0.35
+
+# ─────────────────────────────────────────────── КЛОН-ПРОТИВНИК
+const CLONE_HEALTH := 120.0
+const CLONE_WALK := 2.6          ## м/с, спокойный шаг
+const CLONE_RUN := 4.6           ## м/с, сближение
+const CLONE_ACCEL := 12.0
+const CLONE_KEEP_DISTANCE := 1.6 ## ближе не подходит, пока не бьёт
+const CLONE_RANGE := 2.0         ## радиус удара
+const CLONE_DAMAGE := 14.0
+const CLONE_WINDUP := 0.34       ## замах заметно длиннее, чем у игрока
+const CLONE_ACTIVE := 0.12
+const CLONE_RECOVER := 0.45
+const CLONE_COOLDOWN := 0.9      ## пауза между ударами
 
 # ─────────────────────────────────────────────── ОКРУЖЕНИЕ
 const ROOM_WIDTH := 18.0

@@ -31,34 +31,45 @@ func _make_materials() -> void:
 
 
 func _make_light() -> void:
-	# белый стерильный свет: много рассеянного, мало жёстких теней
+	# Свет переделан 17.11. Проблема была не в яркости, а в том, что её
+	# слишком много сразу: ambient 1.15 + sun 1.5 + две лампы + тональная
+	# компрессия FILMIC. Кожа (её собственная яркость 0.77) уходила в белое,
+	# и на теле не оставалось ни одного теневого перехода — «зашакалено».
+	#
+	# Теперь: мягкий рассеянный свет, один направленный с тенью, и снизу
+	# подхват, чтобы под подбородком не было чёрной дыры. Суммарная
+	# освещённость примерно втрое ниже прежней.
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color(0.82, 0.86, 0.92)
+	e.background_color = Color(0.62, 0.66, 0.72)
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.86, 0.90, 0.96)
-	e.ambient_light_energy = 1.15
-	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	e.ambient_light_color = Color(0.55, 0.60, 0.68)
+	e.ambient_light_energy = 0.45
+	# LINEAR вместо FILMIC: без двойного сжатия яркости, цвета предсказуемее
+	e.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	e.tonemap_exposure = 1.0
 	env.environment = e
 	add_child(env)
 
+	# основной свет: жёстче и под углом, чтобы читался объём
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-62, -38, 0)
-	sun.light_color = Color(1.0, 0.99, 0.97)
-	sun.light_energy = 1.5
+	sun.rotation_degrees = Vector3(-48, -34, 0)
+	sun.light_color = Color(1.0, 0.97, 0.93)
+	sun.light_energy = 1.0
 	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 40.0
+	sun.directional_shadow_max_distance = 30.0
+	sun.shadow_bias = 0.03
 	add_child(sun)
 
-	# два дешёвых заполняющих источника без теней
-	for spec in [[Vector3(0, 4.4, 1.5), 0.85], [Vector3(0, 4.4, -6.5), 0.6]]:
-		var lamp := OmniLight3D.new()
-		lamp.position = spec[0]
-		lamp.light_energy = spec[1]
-		lamp.omni_range = 14.0
-		lamp.shadow_enabled = false
-		add_child(lamp)
+	# заполняющий свет сверху: мягкий, без тени — чтобы тени не были чёрными
+	var fill := OmniLight3D.new()
+	fill.position = Vector3(0, 4.2, 2.0)
+	fill.light_color = Color(0.85, 0.90, 1.0)
+	fill.light_energy = 0.35
+	fill.omni_range = 16.0
+	fill.shadow_enabled = false
+	add_child(fill)
 
 
 func _box(size: Vector3, pos: Vector3, mat: Material, parent: Node = self) -> MeshInstance3D:

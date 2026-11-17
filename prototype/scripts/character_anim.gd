@@ -130,6 +130,9 @@ func update_anim(delta: float, speed_ratio: float, action: String, action_time: 
 	# ───────────────────────────────────────── уворот
 	elif action == "dodge":
 		hip_offset = _dodge(want, action_time)
+	# ───────────────────────────────────────── полёт (прыжок)
+	elif action == "air":
+		_air(want)
 
 	_apply(want, hip_offset, delta)
 
@@ -234,6 +237,24 @@ func _attack(want: Dictionary, t: float) -> void:
 	elif t <= total:
 		var u := smoothstep(0.0, 1.0, (t - active_end) / T.ATTACK_RECOVERY)
 		_mix(want, pose_hit, 1.0 - u)
+
+
+## Полёт: ноги подобраны, руки разведены для баланса.
+## Отдельная поза нужна потому, что при прыжке ноги не должны «шагать»:
+## процедурный шаг в воздухе читается как бег по воздуху.
+func _air(want: Dictionary) -> void:
+	want["thigh.L"] = Vector3(26.0, 0.0, 2.0)
+	want["thigh.R"] = Vector3(-14.0, 0.0, -2.0)
+	want["shin.L"] = Vector3(-42.0, 0.0, 0.0)
+	want["shin.R"] = Vector3(-18.0, 0.0, 0.0)
+	want["foot.L"] = Vector3(16.0, 0.0, 0.0)
+	want["foot.R"] = Vector3(10.0, 0.0, 0.0)
+	want["upper_arm.L"] = Vector3(-18.0, 0.0, -24.0)
+	want["upper_arm.R"] = Vector3(-18.0, 0.0, 24.0)
+	want["forearm.L"] = Vector3(38.0, 0.0, 0.0)
+	want["forearm.R"] = Vector3(38.0, 0.0, 0.0)
+	want["spine"] = Vector3(8.0, 0.0, 0.0)
+	want["head"] = Vector3(-4.0, 0.0, 0.0)
 
 
 ## Уворот: присед, подбор ног, наклон корпуса. Возвращает смещение таза.

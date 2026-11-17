@@ -56,6 +56,8 @@ var _buf_dir: Vector3 = Vector3.ZERO
 
 var _dodge_dir: Vector3 = Vector3.ZERO
 var _invulnerable: bool = false
+var _coyote: float = 0.0          ## сколько ещё можно прыгнуть после схода с края
+var _jump_buffer: float = BUF_NEVER
 
 var _targets: Array = []
 var _fps_accum: float = 0.0
@@ -97,6 +99,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("dodge"):
 		_buf_dodge = 0.0
 		_buf_dir = _input_direction()
+	elif event.is_action_pressed("jump"):
+		_jump_buffer = 0.0
 
 
 ## Направление движения в осях КАМЕРЫ. Это и есть стандарт экшенов:
@@ -122,15 +126,35 @@ func _physics_process(delta: float) -> void:
 		_process_move(delta)
 		_try_start_actions()
 
+	# Прыжок. Как в Elden Ring: F — прыжок, Space — уворот.
+	# Буфер позволяет нажать чуть раньше приземления, coyote — чуть позже
+	# схода с края. Без этих двух мелочей прыжок ощущается «глухим».
+	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and _coyote > 0.0:
+		_try_jump()
+
 	_update_character_anim(delta)
 
-	# гравитация и движение
+	# Гравитация разная для подъёма и падения: падать быстрее, чем взлетать, —
+	# так прыжок читается собранным, а не «на луне».
 	if not is_on_floor():
-		velocity.y -= T.GRAVITY * delta
+		var g := T.GRAVITY if velocity.y > 0.0 else T.GRAVITY_FALL
+		velocity.y -= g * delta
 	elif _action != "dodge":
 		velocity.y = 0.0
 	move_and_slide()
 	_update_debug(delta)
+
+
+## Прыжок с заданной высоты: скорость = sqrt(2 * g * h).
+func _try_jump() -> void:
+	velocity.y = sqrt(2.0 * T.GRAVITY * T.JUMP_HEIGHT)
+	_jump_buffer = BUF_NEVER
+	_coyote = 0.0
+
+
+## Доля управления в воздухе: на земле 1.0, в прыжке ниже.
+func _air_control() -> float:
+	return 1.0 if is_on_floor() else T.AIR_CONTROL
 
 
 ## Передаёт модели скорость и текущее действие: она считает позу кодом.
@@ -138,12 +162,21 @@ func _update_character_anim(delta: float) -> void:
 	if character != null and character.has_method("update_anim"):
 		var planar := Vector2(velocity.x, velocity.z).length()
 		var ratio := planar / T.RUN_SPEED
-		character.update_anim(delta, ratio, _action, _action_time)
+		# в воздухе показываем отдельную позу, если не идёт удар или уворот
+		var act := _action
+		if act == "" and not is_on_floor():
+			act = "air"
+		character.update_anim(delta, ratio, act, _action_time)
 
 
 func _update_buffers(delta: float) -> void:
 	_buf_dodge += delta
 	_buf_attack += delta
+	_jump_buffer += delta
+	if is_on_floor():
+		_coyote = T.COYOTE_TIME
+	else:
+		_coyote = maxf(0.0, _coyote - delta)
 
 
 ## Камера следует за героиней по позиции, но НЕ по повороту.
@@ -173,7 +206,8 @@ func _process_move(delta: float) -> void:
 	var dir := _input_direction()
 	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED
 	var target := dir * speed
-	var rate := T.ACCELERATION if dir.length() > 0.0 else T.DECELERATION
+	var ac := _air_control()
+	var rate := (T.ACCELERATION if dir.length() > 0.0 else T.DECELERATION) * ac
 	velocity.x = move_toward(velocity.x, target.x, rate * delta)
 	velocity.z = move_toward(velocity.z, target.z, rate * delta)
 
@@ -322,4 +356,5 @@ func _update_debug(delta: float) -> void:
 		"стамина: %.0f" % stamina,
 		"цель: %s" % (_last_hit if not _last_hit.is_empty() else "—"),
 		"буфер: удар %s / уворот %s" % [buf_atk, buf_dg],
+		"на земле: %s" % ("да" if is_on_floor() else "нет"),
 	])
