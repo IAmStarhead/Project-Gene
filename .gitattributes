@@ -1,0 +1,17 @@
+# Единый перевод строки LF во всех файлах проекта.
+# Без этого Git на Windows постоянно предупреждает про CRLF/LF.
+* text=auto eol=lf
+
+# Двоичные файлы — не трогать перевод строк
+*.glb binary
+*.gltf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.zip binary
+*.mp4 binary
+*.blend binary
+*.ttf binary
+*.otf binary
+*.wav binary
+*.ogg binary
