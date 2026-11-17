@@ -14,7 +14,9 @@
 extends Node3D
 
 const T := preload("res://scripts/tuning.gd")
-const MODEL_PATH := "res://assets/heroine/female_A_rigged.glb"
+## Версия модели без blend shapes и без анимаций: на исходной редактор Godot
+## падал при импорте. Геометрия, скелет и веса в ней те же.
+const MODEL_PATH := "res://assets/heroine/female_A_rigged_safe.glb"
 
 var skeleton: Skeleton3D
 
