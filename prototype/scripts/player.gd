@@ -67,6 +67,7 @@ var _fps_accum: float = 0.0
 var _fps_frames: int = 0
 var _fps: float = 0.0
 var _last_hit: String = ""
+var show_details := false   ## F3: подробная отладка
 
 
 func _ready() -> void:
@@ -111,6 +112,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_buf_dir = _input_direction()
 	elif event.is_action_pressed("jump"):
 		_jump_buffer = 0.0
+	elif event.is_action_pressed("toggle_debug_details"):
+		show_details = not show_details
 
 
 
@@ -427,11 +430,16 @@ func _update_debug(delta: float) -> void:
 		state = "уворот" + ("  [неуязвим]" if _invulnerable else "")
 	var buf_atk := "нет" if _buf_attack > T.INPUT_BUFFER else "%.2f" % _buf_attack
 	var buf_dg := "нет" if _buf_dodge > T.INPUT_BUFFER else "%.2f" % _buf_dodge
-	label.text = "\n".join([
+	# Отладка сокращена до пяти строк. Раньше их было 13, и они закрывали
+	# треть экрана, перекрывая подсказку по управлению и надпись над клоном.
+	# Подробности (буферы, цель) включаются клавишей F3 — см. show_details.
+	var lines := [
 		"FPS: %.0f" % _fps,
 		"состояние: %s" % state,
-		"здоровье: %.0f" % health,
-		"стамина: %.0f" % stamina,
-		"цель: %s" % (_last_hit if not _last_hit.is_empty() else "—"),
-		"буфер: удар %s / уворот %s" % [buf_atk, buf_dg],
-	])
+		"здоровье: %.0f   стамина: %.0f" % [health, stamina],
+	]
+	if show_details:
+		lines.append("буфер: удар %s / уворот %s" % [buf_atk, buf_dg])
+		lines.append("цель: %s" % (_last_hit if not _last_hit.is_empty() else "—"))
+	lines.append("яркость: %s" % T.BRIGHTNESS_NAMES[clampi(T.BRIGHTNESS, 0, 2)])
+	label.text = "\n".join(lines)

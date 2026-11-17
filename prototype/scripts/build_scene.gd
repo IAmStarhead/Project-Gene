@@ -67,7 +67,11 @@ void light() {
 	float s1 = smoothstep(0.00 - softness, 0.00 + softness, ndl);
 	float s2 = smoothstep(0.38 - softness, 0.38 + softness, ndl);
 	float s3 = smoothstep(0.72 - softness, 0.72 + softness, ndl);
-	float amount = 0.18 + 0.37 * s1 + 0.25 * s2 + 0.20 * s3;
+	// Подняты ВСЕ ступени, особенно нижняя: именно она давала «темновато».
+	// Было 0.18 / 0.55 / 0.80 / 1.0 — тень слишком близко к чёрному.
+	// Стало 0.42 / 0.68 / 0.86 / 1.0: разница между ступенями сохранена,
+	// но провала в темноту нет.
+	float amount = 0.42 + 0.26 * s1 + 0.18 * s2 + 0.14 * s3;
 	DIFFUSE_LIGHT += amount * ATTENUATION * LIGHT_COLOR / PI;
 	// Узкий ступенчатый блик — только намёк на коже.
 	SPECULAR_LIGHT += s3 * 0.08 * ATTENUATION * LIGHT_COLOR / PI;
@@ -216,9 +220,16 @@ func _make_light() -> void:
 	e.background_color = Color(0.78, 0.82, 0.88)
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color(0.72, 0.77, 0.86)
-	# Под селлейдинг заполняющий свет надо СЛАБЕЕ: он размывает ступени.
-	# Это не «темнее ради темноты» — это чтобы границы ступеней читались.
-	e.ambient_light_energy = 0.75 if not T.TOON_ENABLED else 0.62
+	# Три уровня яркости. Заполняющий свет идёт ВВЕРХ сильнее, чем солнце:
+	# именно он вытягивает тени из черноты, а солнце добавляет контраста.
+	# 0: сумрачно (как было) / 1: средне / 2: ярко
+	var b: int = clampi(T.BRIGHTNESS, 0, 2)
+	var amb_table := [0.62, 0.95, 1.30]
+	var sun_table := [1.35, 1.75, 2.10]
+	var fill_table := [0.30, 0.55, 0.85]
+	e.ambient_light_color = [Color(0.72, 0.77, 0.86), Color(0.82, 0.86, 0.93), Color(0.90, 0.93, 0.98)][b]
+	e.background_color = [Color(0.78, 0.82, 0.88), Color(0.86, 0.89, 0.94), Color(0.93, 0.95, 0.98)][b]
+	e.ambient_light_energy = amb_table[b] if T.TOON_ENABLED else amb_table[b] + 0.15
 	e.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	e.tonemap_exposure = 1.0
 	# мягкое свечение: белая лаборатория должна «дышать» светом
@@ -237,7 +248,7 @@ func _make_light() -> void:
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-52, -40, 0)
 	sun.light_color = Color(1.0, 0.99, 0.97)
-	sun.light_energy = 1.6 if not T.TOON_ENABLED else 1.35
+	sun.light_energy = sun_table[b] if T.TOON_ENABLED else sun_table[b] + 0.25
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 30.0
 	sun.shadow_bias = 0.02
@@ -249,7 +260,7 @@ func _make_light() -> void:
 	var fill := OmniLight3D.new()
 	fill.position = Vector3(0.0, 4.0, 3.0)
 	fill.light_color = Color(0.88, 0.93, 1.0)
-	fill.light_energy = 0.35 if not T.TOON_ENABLED else 0.30
+	fill.light_energy = fill_table[b]
 	fill.omni_range = 18.0
 	fill.shadow_enabled = false
 	add_child(fill)
@@ -259,7 +270,7 @@ func _make_light() -> void:
 	var bounce := OmniLight3D.new()
 	bounce.position = Vector3(0.0, 0.35, 2.0)
 	bounce.light_color = Color(0.95, 0.96, 1.0)
-	bounce.light_energy = 0.20
+	bounce.light_energy = 0.20 + 0.15 * b
 	bounce.omni_range = 9.0
 	bounce.shadow_enabled = false
 	add_child(bounce)

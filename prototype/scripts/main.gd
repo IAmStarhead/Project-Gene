@@ -36,11 +36,71 @@ func _ready() -> void:
 		if cc != null:
 			room.apply_toon(cc)
 
+	# ── Оверлей. Раньше это была одна длинная строка мелким текстом, и
+	# пользователь её не увидел: она сливалась с отладочным текстом героини
+	# в 13 полей. Информация о витрине тонула.
+	# Теперь три блока: слева управление (крупно), справа — кнопки-подсказки
+	# с рамкой, которые читаются как кнопки, а не как текст.
+	# Слой ВЫШЕ отладочного текста героини: у неё Layer 10, значит этот
+	# должен быть больше, иначе её 13 строк рисовались поверх подсказки.
+	var layer := CanvasLayer.new()
+	layer.layer = 20
+	add_child(layer)
+
+	var panel := PanelContainer.new()
+	panel.position = Vector2(12, 10)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.07, 0.09, 0.12, 0.72)
+	style.border_color = Color(0.55, 0.62, 0.72, 0.55)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 7
+	style.content_margin_bottom = 7
+	panel.add_theme_stylebox_override("panel", style)
+	layer.add_child(panel)
+
 	_hint = Label.new()
-	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот · T — бой клона · H — витрина · G — селлшейдинг · Esc — курсор"
-	_hint.position = Vector2(16, 12)
-	_hint.add_theme_color_override("font_color", Color(0.1, 0.12, 0.16))
-	add_child(_hint)
+	_hint.add_theme_font_size_override("font_size", 13)
+	_hint.add_theme_color_override("font_color", Color(0.86, 0.90, 0.96))
+	_hint.text = "WASD — идти · Shift — бег · F — прыжок\n" \
+		+ "ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот"
+	_hint.add_theme_constant_override("line_spacing", 3)
+	panel.add_child(_hint)
+
+	# Кнопки-подсказки: клавиша в рамке + что делает.
+	var bar := HBoxContainer.new()
+	bar.add_theme_constant_override("separation", 8)
+	bar.position = Vector2(12, 96)
+	layer.add_child(bar)
+	for pair in [["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
+		bar.add_child(_key_badge(pair[0], pair[1]))
+
+
+## Плашка «клавиша + подпись». Сделана как кнопка, а не как текст:
+## пользователь искал витрину и не нашёл, потому что подсказка была
+## строчкой в общем тексте.
+func _key_badge(key: String, caption: String) -> Control:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", 5)
+	var k := Label.new()
+	k.text = " " + key + " "
+	k.add_theme_font_size_override("font_size", 13)
+	k.add_theme_color_override("font_color", Color(0.10, 0.12, 0.16))
+	var ks := StyleBoxFlat.new()
+	ks.bg_color = Color(0.86, 0.90, 0.96)
+	ks.set_corner_radius_all(4)
+	ks.content_margin_left = 3
+	ks.content_margin_right = 3
+	k.add_theme_stylebox_override("normal", ks)
+	box.add_child(k)
+	var c := Label.new()
+	c.text = caption
+	c.add_theme_font_size_override("font_size", 13)
+	c.add_theme_color_override("font_color", Color(0.80, 0.85, 0.92))
+	box.add_child(c)
+	return box
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -59,6 +119,10 @@ func _unhandled_input(event: InputEvent) -> void:
 						room.apply_toon(ch)
 					else:
 						room.clear_toon(ch)
+	if event.is_action_pressed("cycle_brightness"):
+		T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
+		if room != null and room.has_method("rebuild_lighting"):
+			room.rebuild_lighting(T.TOON_ENABLED)
 	if event.is_action_pressed("open_showcase"):
 		get_tree().change_scene_to_file("res://scenes/showcase.tscn")
 	elif event.is_action_pressed("toggle_clone"):

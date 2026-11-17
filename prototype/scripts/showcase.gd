@@ -117,13 +117,16 @@ func _ready() -> void:
 
 func _make_hud() -> void:
 	var layer := CanvasLayer.new()
+	layer.layer = 20
 	add_child(layer)
 	_hud = Label.new()
 	_hud.position = Vector2(18, 14)
 	_hud.add_theme_color_override("font_color", Color(0.12, 0.14, 0.18))
 	_hud.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.85))
 	_hud.add_theme_constant_override("outline_size", 6)
-	_hud.add_theme_font_size_override("font_size", 15)
+	_hud.add_theme_font_size_override("font_size", 16)
+	_hud.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
+	_hud.add_theme_constant_override("outline_size", 5)
 	layer.add_child(_hud)
 
 
@@ -165,10 +168,10 @@ func _update_hud() -> void:
 	var lines := [
 		"ВИТРИНА — отработка анимаций",
 		"поза %d/%d: %s" % [_pose_index + 1, poses.size(), poses[_pose_index]["name"]],
-		"скорость: %.2fx   селлшейдинг: %s" % [SPEEDS[_speed_index], "вкл" if T.TOON_ENABLED else "выкл"],
+		"скорость: %.2fx   селлшейдинг: %s   свет: %s" % [SPEEDS[_speed_index], "вкл" if T.TOON_ENABLED else "выкл", T.BRIGHTNESS_NAMES[clampi(T.BRIGHTNESS, 0, 2)]],
 		"",
 		"1…0 поза · ← → листать · Пробел — проиграть удар",
-		"L скорость · G селлшейдинг · R камера · колесо — зум · Esc/H — в игру",
+		"L скорость · G селлшейдинг · B яркость · R камера · Esc/H — в игру",
 		"мышь — вращать",
 	]
 	_hud.text = "\n".join(lines)
@@ -204,6 +207,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_yaw = 25.0
 			_pitch = -8.0
 			_dist = 3.1
+		elif k == KEY_B:
+			T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
+			if _world != null and _world.has_method("rebuild_lighting"):
+				_world.rebuild_lighting(T.TOON_ENABLED)
 		elif k == KEY_G:
 			T.TOON_ENABLED = not T.TOON_ENABLED
 			if _world.has_method("rebuild_lighting"):
