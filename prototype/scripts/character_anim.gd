@@ -145,9 +145,9 @@ func _breathe(want: Dictionary, weight: float) -> void:
 ## Шаг и бег. w — доля скорости: 0 стоит, 1 бежит на полную.
 func _walk(want: Dictionary, w: float) -> void:
 	var s := sin(_phase)
-	var hip_swing := 22.0 * w        # бедро: вперёд-назад
-	var knee := 10.0 + 34.0 * w      # колено гнётся ТОЛЬКО назад, поэтому минус
-	var arm := 16.0 * w              # руки качаются в противофазе
+	var hip_swing := 15.0 * w        # бедро: вперёд-назад
+	var knee := 8.0 + 26.0 * w       # колено гнётся ТОЛЬКО назад, поэтому минус
+	var arm := 14.0 * w              # руки качаются в противофазе
 
 	# ноги
 	want["thigh.L"] = Vector3(hip_swing * s, 0.0, 0.0)
@@ -177,26 +177,38 @@ func _walk(want: Dictionary, w: float) -> void:
 
 
 ## Удар правой рукой: замах, удар, возврат.
+##
+## Почему углы именно такие. В первой версии рука уходила махом через грудь
+## на левую сторону. На модели это давало два видимых дефекта, которые
+## пользователь и заметил:
+##   1) кисть проходила СКВОЗЬ торс;
+##   2) вершины груди, часть веса которых принадлежит плечу, тянулись за
+##      рукой — «кусок кожи поднимался».
+## Поэтому плечо отведено в СТОРОНУ (ось Z) и держится снаружи корпуса,
+## а удар идёт вперёд (ось X), не пересекая среднюю линию тела.
 func _attack(want: Dictionary, t: float) -> void:
 	var windup := T.ATTACK_WINDUP
 	var active_end := windup + T.ATTACK_ACTIVE
 	var total := active_end + T.ATTACK_RECOVERY
 
-	# Три опорные позы: замах -> удар -> стойка.
+	# Плечо R: отведение в сторону = ОТРИЦАТЕЛЬНЫЙ Z (проверено расчётом:
+	# при z=-35 кисть уходит на X≈-0.45, то есть наружу от корпуса).
 	var pose_back := {
-		"upper_arm.R": Vector3(-40.0, 0.0, 12.0),
-		"forearm.R": Vector3(95.0, 0.0, 0.0),
-		"chest": Vector3(4.0, -20.0, 0.0),
-		"spine": Vector3(2.0, -8.0, 0.0),
-		"head": Vector3(0.0, 14.0, 0.0),
+		"upper_arm.R": Vector3(-62.0, 0.0, -32.0),
+		"forearm.R": Vector3(102.0, 0.0, 0.0),
+		"hand.R": Vector3(0.0, 0.0, -6.0),
+		"chest": Vector3(4.0, -16.0, 0.0),
+		"spine": Vector3(2.0, -7.0, 0.0),
+		"head": Vector3(0.0, 12.0, 0.0),
 	}
 	var pose_hit := {
-		"upper_arm.R": Vector3(55.0, 0.0, -6.0),
-		"forearm.R": Vector3(12.0, 0.0, 0.0),
-		"chest": Vector3(6.0, 22.0, 0.0),
-		"spine": Vector3(4.0, 9.0, 0.0),
-		"head": Vector3(0.0, -12.0, 0.0),
-		"upper_arm.L": Vector3(20.0, 0.0, -14.0),
+		"upper_arm.R": Vector3(70.0, 0.0, -14.0),
+		"forearm.R": Vector3(34.0, 0.0, 0.0),
+		"hand.R": Vector3(0.0, 0.0, -4.0),
+		"chest": Vector3(6.0, 18.0, 0.0),
+		"spine": Vector3(4.0, 8.0, 0.0),
+		"head": Vector3(0.0, -10.0, 0.0),
+		"upper_arm.L": Vector3(14.0, 0.0, -12.0),
 	}
 
 	if t < windup:
