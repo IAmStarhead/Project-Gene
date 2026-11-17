@@ -1,0 +1,345 @@
+{
+  "bones": [
+    {
+      "name": "hips",
+      "head": [
+        0.0,
+        0.9,
+        0.02
+      ],
+      "tail": [
+        0.0,
+        1.02,
+        0.02
+      ]
+    },
+    {
+      "name": "spine",
+      "head": [
+        0.0,
+        1.02,
+        0.02
+      ],
+      "tail": [
+        0.0,
+        1.18,
+        0.0
+      ]
+    },
+    {
+      "name": "chest",
+      "head": [
+        0.0,
+        1.18,
+        0.0
+      ],
+      "tail": [
+        0.0,
+        1.36,
+        0.0
+      ]
+    },
+    {
+      "name": "neck",
+      "head": [
+        0.0,
+        1.39,
+        0.02
+      ],
+      "tail": [
+        0.0,
+        1.48,
+        0.03
+      ]
+    },
+    {
+      "name": "head",
+      "head": [
+        0.0,
+        1.48,
+        0.03
+      ],
+      "tail": [
+        0.0,
+        1.66,
+        0.03
+      ]
+    },
+    {
+      "name": "shoulder.L",
+      "head": [
+        0.03,
+        1.355,
+        0.0
+      ],
+      "tail": [
+        0.17,
+        1.35,
+        0.0
+      ]
+    },
+    {
+      "name": "upper_arm.L",
+      "head": [
+        0.17,
+        1.35,
+        0.0
+      ],
+      "tail": [
+        0.2,
+        1.08,
+        0.01
+      ]
+    },
+    {
+      "name": "forearm.L",
+      "head": [
+        0.2,
+        1.08,
+        0.01
+      ],
+      "tail": [
+        0.21,
+        0.85,
+        0.02
+      ]
+    },
+    {
+      "name": "hand.L",
+      "head": [
+        0.21,
+        0.85,
+        0.02
+      ],
+      "tail": [
+        0.21,
+        0.69,
+        0.02
+      ]
+    },
+    {
+      "name": "shoulder.R",
+      "head": [
+        -0.03,
+        1.355,
+        0.0
+      ],
+      "tail": [
+        -0.17,
+        1.35,
+        0.0
+      ]
+    },
+    {
+      "name": "upper_arm.R",
+      "head": [
+        -0.17,
+        1.35,
+        0.0
+      ],
+      "tail": [
+        -0.2,
+        1.08,
+        0.01
+      ]
+    },
+    {
+      "name": "forearm.R",
+      "head": [
+        -0.2,
+        1.08,
+        0.01
+      ],
+      "tail": [
+        -0.21,
+        0.85,
+        0.02
+      ]
+    },
+    {
+      "name": "hand.R",
+      "head": [
+        -0.21,
+        0.85,
+        0.02
+      ],
+      "tail": [
+        -0.21,
+        0.69,
+        0.02
+      ]
+    },
+    {
+      "name": "thigh.L",
+      "head": [
+        0.09,
+        0.9,
+        0.02
+      ],
+      "tail": [
+        0.1,
+        0.47,
+        0.01
+      ]
+    },
+    {
+      "name": "shin.L",
+      "head": [
+        0.1,
+        0.47,
+        0.01
+      ],
+      "tail": [
+        0.1,
+        0.08,
+        0.0
+      ]
+    },
+    {
+      "name": "foot.L",
+      "head": [
+        0.1,
+        0.08,
+        0.0
+      ],
+      "tail": [
+        0.1,
+        0.02,
+        0.12
+      ]
+    },
+    {
+      "name": "toe.L",
+      "head": [
+        0.1,
+        0.02,
+        0.12
+      ],
+      "tail": [
+        0.1,
+        0.02,
+        0.17
+      ]
+    },
+    {
+      "name": "thigh.R",
+      "head": [
+        -0.09,
+        0.9,
+        0.02
+      ],
+      "tail": [
+        -0.1,
+        0.47,
+        0.01
+      ]
+    },
+    {
+      "name": "shin.R",
+      "head": [
+        -0.1,
+        0.47,
+        0.01
+      ],
+      "tail": [
+        -0.1,
+        0.08,
+        0.0
+      ]
+    },
+    {
+      "name": "foot.R",
+      "head": [
+        -0.1,
+        0.08,
+        0.0
+      ],
+      "tail": [
+        -0.1,
+        0.02,
+        0.12
+      ]
+    },
+    {
+      "name": "toe.R",
+      "head": [
+        -0.1,
+        0.02,
+        0.12
+      ],
+      "tail": [
+        -0.1,
+        0.02,
+        0.17
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "mesh": "female_body",
+      "vertices": 18176,
+      "dominant_bones": {
+        "hips": 732,
+        "spine": 124,
+        "chest": 2187,
+        "head": 6763,
+        "shoulder.L": 16,
+        "upper_arm.L": 354,
+        "forearm.L": 163,
+        "hand.L": 1880,
+        "shoulder.R": 16,
+        "upper_arm.R": 354,
+        "forearm.R": 163,
+        "hand.R": 1880,
+        "thigh.L": 355,
+        "shin.L": 310,
+        "foot.L": 739,
+        "toe.L": 368,
+        "thigh.R": 355,
+        "shin.R": 310,
+        "foot.R": 739,
+        "toe.R": 368
+      }
+    },
+    {
+      "mesh": "female_eyes",
+      "vertices": 96,
+      "dominant_bones": {
+        "head": 96
+      }
+    },
+    {
+      "mesh": "upper_eyelid_line",
+      "vertices": 854,
+      "dominant_bones": {
+        "head": 854
+      }
+    },
+    {
+      "mesh": "female_face_blink",
+      "vertices": 18176,
+      "dominant_bones": {
+        "hips": 694,
+        "spine": 177,
+        "chest": 2139,
+        "head": 6762,
+        "shoulder.L": 32,
+        "upper_arm.L": 346,
+        "forearm.L": 171,
+        "hand.L": 1897,
+        "shoulder.R": 32,
+        "upper_arm.R": 346,
+        "forearm.R": 171,
+        "hand.R": 1897,
+        "thigh.L": 339,
+        "shin.L": 320,
+        "foot.L": 721,
+        "toe.L": 376,
+        "thigh.R": 339,
+        "shin.R": 320,
+        "foot.R": 721,
+        "toe.R": 376
+      }
+    }
+  ]
+}
