@@ -352,12 +352,15 @@ def main():
             w[np.arange(nverts), hard] = 1.0
 
             # 2) размытие весов по рёбрам: даёт плавный переход в суставах,
-            #    но не переносит вес через «перемычки» вроде подмышки
+            #    но не переносит вес через «перемычки» вроде подмышки.
+            #    После сглаживания оставляем только 3 влияния на вершину: так у
+            #    каждой вершины есть запасной слот для «добивки» суммы весов до 1.
             w = smooth_weights(w, idx_conn, iterations=14, keep=0.5)
             order = np.argsort(-w, axis=1)[:, :MAX_INFLUENCES]
-            wsel = np.take_along_axis(w, order, axis=1)
-            wsel = np.maximum(wsel - 0.02, 0.0)          # отбрасываем «пыль»
-            wsel /= wsel.sum(axis=1, keepdims=True) + 1e-12
+            wsel = np.take_along_axis(w, order, axis=1).astype(np.float32)
+            wsel /= wsel.sum(axis=1, keepdims=True)
+            # сумма весов должна быть ровно 1 во float32 — этого требует валидатор
+            wsel[:, 0] += (1.0 - wsel.sum(axis=1)).astype(np.float32)
             joints = order.astype(np.uint16)
             prim["attributes"]["JOINTS_0"] = add_ushort_accessor(gltf, binc, joints)
             prim["attributes"]["WEIGHTS_0"] = add_float_accessor(
@@ -374,7 +377,8 @@ def main():
                 }
             )
 
-    for mi, node in enumerate(gltf["nodes"]):
+    # привязать все меши к скелету
+    for node in gltf["nodes"]:
         if "mesh" in node:
             node["skin"] = skin_index
 
