@@ -113,6 +113,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_jump_buffer = 0.0
 
 
+
 ## Направление движения в осях КАМЕРЫ. Это и есть стандарт экшенов:
 ## W — от камеры, A — влево на экране, и так далее.
 func _input_direction() -> Vector3:

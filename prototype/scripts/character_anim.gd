@@ -129,15 +129,20 @@ func update_anim(delta: float, speed_ratio: float, action: String,
 	var stance_arms := action != "attack"
 	if stance_arms:
 		var idle_sway := sin(_clock * 1.4) * 1.6
-		# Плечо чуть вперёд (20-24°), локоть согнут на 140°, кулак у
-		# подбородка: проверено перебором, кисть выходит на Y 1.28-1.31,
-		# X -0.15, Z +0.25, а локоть опущен на Y 1.10. При 45° локтя кулак
-		# висел на уровне пояса (Y 0.91) — это была ошибка.
+		# Плечо вперёд 30°, отведено НАЗАД по скрутке (-20 для правой), локоть
+		# 130°. Кисть выходит на Y 1.29 (уровень подбородка), X -0.10 (ближе
+		# к центру, не торчит в сторону), Z +0.27 (перед корпусом), локоть
+		# опущен на Y 1.10 и держится ПЕРЕД корпусом, а не выставлен вбок.
+		#
+		# История: при локте 45° кулак висел на уровне пояса (Y 0.91); при
+		# 140° локти разъезжались в стороны и в кадре из-за спины выглядели
+		# как «руки подняты и расставлены». Проверено рендером с четырёх
+		# ракурсов, включая вид из-за спины.
 		# Скрутка (Y) разворачивает кулаки тыльной стороной наружу.
-		want["upper_arm.L"] = Vector3(20.0 + idle_sway, -10.0, -10.0)
-		want["upper_arm.R"] = Vector3(24.0 - idle_sway, 10.0, 10.0)
-		want["forearm.L"] = Vector3(140.0, 0.0, 0.0)
-		want["forearm.R"] = Vector3(140.0, 0.0, 0.0)
+		want["upper_arm.L"] = Vector3(30.0 + idle_sway, 20.0, 5.0)
+		want["upper_arm.R"] = Vector3(30.0 - idle_sway, -20.0, -5.0)
+		want["forearm.L"] = Vector3(130.0, 0.0, 0.0)
+		want["forearm.R"] = Vector3(130.0, 0.0, 0.0)
 		want["hand.L"] = Vector3(0.0, 0.0, 8.0)
 		want["hand.R"] = Vector3(0.0, 0.0, -8.0)
 	# корпус вполоборота: правое плечо назад, левое вперёд
@@ -306,10 +311,10 @@ func _attack(want: Dictionary, t: float, side: String = "R") -> void:
 	# Возврат: от удара обратно к стойке (а не к нулю — иначе после удара
 	# руки падают вниз, и стойка «разваливается» на полсекунды).
 	var stance_pose := {
-		"upper_arm.L": Vector3(20.0, -10.0, -10.0),
-		"upper_arm.R": Vector3(24.0, 10.0, 10.0),
-		"forearm.L": Vector3(140.0, 0.0, 0.0),
-		"forearm.R": Vector3(140.0, 0.0, 0.0),
+		"upper_arm.L": Vector3(30.0, 20.0, 5.0),
+		"upper_arm.R": Vector3(30.0, -20.0, -5.0),
+		"forearm.L": Vector3(130.0, 0.0, 0.0),
+		"forearm.R": Vector3(130.0, 0.0, 0.0),
 		"hand.L": Vector3(0.0, 0.0, 8.0),
 		"hand.R": Vector3(0.0, 0.0, -8.0),
 		"chest": Vector3(2.0, 8.0, 0.0),
@@ -393,6 +398,22 @@ func _lerp_pose(want: Dictionary, from: Dictionary, to: Dictionary, u: float) ->
 		var a: Vector3 = from.get(k, Vector3.ZERO)
 		var b: Vector3 = to.get(k, Vector3.ZERO)
 		want[k] = a.lerp(b, u)
+
+
+## Ставит позу БЕЗ сглаживания — для витрины, где нужен точный кадр.
+## В игре так делать нельзя: поза переключилась бы рывком за один кадр.
+func set_pose_direct(spec: Dictionary) -> void:
+	if not _loaded:
+		return
+	for name in _idx:
+		var target: Vector3 = spec.get(name, Vector3.ZERO)
+		_bend[name] = target
+		var bend := Quaternion(Vector3.RIGHT, deg_to_rad(target.x)) \
+			* Quaternion(Vector3.BACK, deg_to_rad(target.z)) \
+			* Quaternion(Vector3.UP, deg_to_rad(target.y))
+		skeleton.set_bone_pose_rotation(_idx[name], _rest_rot[name] * bend)
+	if _idx.has("hips"):
+		skeleton.set_bone_pose_position(_idx["hips"], _rest_pos["hips"])
 
 
 ## Переводит «изгиб в градусах» в позу кости и ставит её.

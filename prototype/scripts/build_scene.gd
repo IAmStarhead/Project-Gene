@@ -13,49 +13,64 @@ const TOON_SHADER := """
 shader_type spatial;
 render_mode diffuse_toon, specular_toon, cull_disabled;
 
-// ── Селлшейдинг для персонажей ────────────────────────────────────────────
-// Зачем: обычное освещение на этой модели не даёт объёма. Кожа — почти
-// ровная заливка (яркость 0.77, стандартное отклонение 0.09 по замеру из
-// отчёта 19), нормал-карт нет. При плавном затенении лицо и тело выглядят
-// плоским пятном, сколько ни подбирай лампы.
+// ── Селлшейдинг для персонажей, версия 2 ─────────────────────────────────
+// ЧТО БЫЛО НЕ ТАК В ПЕРВОЙ ВЕРСИИ (пользователь: «выглядят как манекены»):
 //
-// Toon решает это иначе: вместо плавного градиента — ТРИ ступени (тень,
-// полутень, свет). Границы между ними и создают объём, даже когда сама
-// поверхность ровная. Плюс контровой контур по краю силуэта, чтобы
-// персонаж не сливался с белой стеной лаборатории.
+//   1. Я ЗАМЕНИЛ МАТЕРИАЛ МОДЕЛИ ЦЕЛИКОМ и потерял текстуру кожи. А в этой
+//      текстуре лежит ВСЁ лицо: брови, ноздри, линия губ, румяна. Остался
+//      ровный телесный цвет — отсюда кукла без черт лица.
+//   2. Затенение было ступенчатым, но с очень низким контрастом: тень 0.30
+//      при ambient 0.75 давала «серую заливку», ступеней не читалось.
+//   3. Контровой контур шёл по всему силуэту белым — на белом фоне это
+//      превращало фигуру в светлое пятно.
+//
+// Теперь: текстура сохраняется, ступени видны, контур узкий и тёплый.
 
-uniform vec4 base_color : source_color = vec4(0.95, 0.82, 0.76, 1.0);
-uniform float light_amount = 1.0;
+// Текстура кожи из модели. Если её нет, работает base_color.
+uniform sampler2D albedo_tex : source_color, hint_default_white;
+uniform bool use_texture = true;
+uniform vec4 base_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 
-// Контровой свет по краю силуэта.
-uniform vec4 rim_color : source_color = vec4(1.0, 0.98, 0.96, 1.0);
-uniform float rim_strength = 0.5;
-uniform float rim_power = 2.5;
+// Тёмный контур по краю силуэта. У светлого персонажа на светлом фоне
+// именно ТЁМНЫЙ кант читается как обводка, а не белое свечение.
+uniform vec4 rim_color : source_color = vec4(0.34, 0.27, 0.31, 1.0);
+uniform float rim_strength = 0.55;
+uniform float rim_power = 3.0;
 
-// Мягкость границ между ступенями. 0 — жёсткие «ступеньки» (манга),
-// 0.06 — почти незаметная плавность (мягкий toon, ближе к аниме).
+// Мягкость границ между ступенями. 0.02 — почти жёсткие ступеньки.
 uniform float softness = 0.02;
 
 void fragment() {
-	ALBEDO = base_color.rgb * light_amount;
+	vec3 tex = use_texture ? texture(albedo_tex, UV).rgb : vec3(1.0);
+	// Локальный контраст: черты лица (брови, ноздри, линия губ) в текстуре
+	// очень бледные. Без подтяжки при ступенчатом свете они пропадают, и
+	// лицо становится пустым — это и была жалоба «манекены».
+	vec3 grey = vec3(dot(tex, vec3(0.299, 0.587, 0.114)));
+	tex = clamp(mix(grey, tex, 1.15) * 1.02, 0.0, 1.0);
+	// затемняем всё, что заметно темнее среднего: это и есть черты лица
+	float dark = smoothstep(0.86, 0.62, dot(tex, vec3(0.299, 0.587, 0.114)));
+	tex *= 1.0 - 0.22 * dark;
+	ALBEDO = tex * base_color.rgb;
 	ROUGHNESS = 0.9;
 	METALLIC = 0.0;
-	// Край силуэта: чем больше угол между нормалью и взглядом, тем ярче.
-	// Считается во фрагменте, потому что во light() нет VIEW.
+	// Кант по силуэту: чем «боковее» фрагмент, тем темнее край. Затемняем
+	// именно ALBEDO, а не добавляем EMISSION: свечение на светлом персонаже
+	// даёт «ореол», а нужен тёмный контур, как обводка в рисунке.
 	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), rim_power);
-	EMISSION = rim_color.rgb * rim * rim_strength;
+	ALBEDO *= mix(vec3(1.0), rim_color.rgb, rim * rim_strength);
 }
 
 void light() {
 	float ndl = dot(NORMAL, LIGHT);
-	// Три ступени: 0.30 (тень) -> 0.62 (полутень) -> 0.88 (свет) -> 1.0
-	float s1 = smoothstep(0.0 - softness, 0.0 + softness, ndl);
-	float s2 = smoothstep(0.45 - softness, 0.45 + softness, ndl);
-	float s3 = smoothstep(0.80 - softness, 0.80 + softness, ndl);
-	float amount = 0.30 + 0.32 * s1 + 0.26 * s2 + 0.12 * s3;
+	// ЧЕТЫРЕ ступени с большим разбросом, чтобы их было видно на экране:
+	// 0.18 (глубокая тень) -> 0.55 -> 0.80 -> 1.0
+	float s1 = smoothstep(0.00 - softness, 0.00 + softness, ndl);
+	float s2 = smoothstep(0.38 - softness, 0.38 + softness, ndl);
+	float s3 = smoothstep(0.72 - softness, 0.72 + softness, ndl);
+	float amount = 0.18 + 0.37 * s1 + 0.25 * s2 + 0.20 * s3;
 	DIFFUSE_LIGHT += amount * ATTENUATION * LIGHT_COLOR / PI;
-	// Узкий ступенчатый блик: на коже он нужен только как намёк.
-	SPECULAR_LIGHT += s3 * 0.10 * ATTENUATION * LIGHT_COLOR / PI;
+	// Узкий ступенчатый блик — только намёк на коже.
+	SPECULAR_LIGHT += s3 * 0.08 * ATTENUATION * LIGHT_COLOR / PI;
 }
 """
 
@@ -63,11 +78,33 @@ var _white: StandardMaterial3D
 var _floor_mat: StandardMaterial3D
 
 
+var _env: WorldEnvironment
+var _sun: DirectionalLight3D
+var _fill: OmniLight3D
+var _bounce: OmniLight3D
+
+
 func _ready() -> void:
+	add_to_group("world")
 	_make_materials()
 	_make_light()
 	_make_room()
 	_make_props()
+
+
+## Пересобирает свет под текущий стиль. Вызывается клавишей G из player.gd.
+## Нужна потому, что под toon заполняющий свет должен быть слабее, иначе
+## ступени затенения размываются и снова получается «манекен».
+func rebuild_lighting(_toon: bool) -> void:
+	if is_instance_valid(_sun):
+		_sun.queue_free()
+	if is_instance_valid(_fill):
+		_fill.queue_free()
+	if is_instance_valid(_bounce):
+		_bounce.queue_free()
+	if is_instance_valid(_env):
+		_env.queue_free()
+	_make_light()
 
 
 func _make_materials() -> void:
@@ -90,22 +127,66 @@ func apply_toon(root: Node) -> void:
 		return
 	var shader := Shader.new()
 	shader.code = TOON_SHADER
-	var mat := ShaderMaterial.new()
-	mat.shader = shader
-	# Тон кожи берём из модели: у неё текстура почти ровная (средняя яркость
-	# 0.77 по замеру из отчёта 19), а цвет лица в палитре — тёплый бежевый.
-	mat.set_shader_parameter("base_color", Color(0.95, 0.815, 0.765))
 	for mesh in _find_meshes(root):
 		var mi := mesh as MeshInstance3D
 		if mi.mesh == null:
 			continue
 		for i in mi.mesh.get_surface_count():
 			var base := mi.mesh.surface_get_material(i)
-			# Глаза и линию века оставляем оригинальными: у них своя текстура
-			# и они должны оставаться тёмными, иначе взгляд пропадает.
+			# Глаза и линию века НЕ ТРОГАЕМ. У них своя текстура и свой
+			# тёмный цвет; если перекрасить их в кожу — как раз и получится
+			# взгляд манекена (два серых овала вместо глаз).
 			if base != null and base.resource_name.contains("eye"):
 				continue
+			var mat := ShaderMaterial.new()
+			mat.shader = shader
+			# ГЛАВНОЕ: забираем текстуру у родного материала модели.
+			# В ней брови, ноздри, линия губ. Без неё лицо пустое.
+			var tex: Texture2D = null
+			if base is BaseMaterial3D:
+				var b3 := base as BaseMaterial3D
+				if b3.albedo_texture != null:
+					tex = b3.albedo_texture
+			if tex != null:
+				mat.set_shader_parameter("albedo_tex", tex)
+				mat.set_shader_parameter("use_texture", true)
+				mat.set_shader_parameter("base_color", Color(1, 1, 1))
+			else:
+				mat.set_shader_parameter("use_texture", false)
+				mat.set_shader_parameter("base_color", Color(0.95, 0.82, 0.76))
 			mi.set_surface_override_material(i, mat)
+
+
+## Свет специально для витрины: нейтрально-серый фон и сильный контраст
+## между светом и тенью. В игре нужен «стерильный» яркий свет, но на витрине
+## задача другая — видеть, как легла складка и куда ушёл локоть.
+func showcase_lighting() -> void:
+	if is_instance_valid(_env):
+		_env.queue_free()
+	if is_instance_valid(_sun):
+		_sun.queue_free()
+	if is_instance_valid(_fill):
+		_fill.queue_free()
+	if is_instance_valid(_bounce):
+		_bounce.queue_free()
+	_make_light()
+	if is_instance_valid(_env) and _env.environment != null:
+		_env.environment.background_color = Color(0.30, 0.32, 0.36)
+		_env.environment.ambient_light_color = Color(0.55, 0.58, 0.66)
+		_env.environment.ambient_light_energy = 0.55
+	if is_instance_valid(_sun):
+		_sun.light_energy = 2.3
+		_sun.rotation_degrees = Vector3(-38, -55, 0)
+
+
+## Возвращает родные материалы модели (выключение селлшейдинга).
+func clear_toon(root: Node) -> void:
+	for mesh in _find_meshes(root):
+		var mi := mesh as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			mi.set_surface_override_material(i, null)
 
 
 func _find_meshes(node: Node) -> Array:
@@ -135,7 +216,9 @@ func _make_light() -> void:
 	e.background_color = Color(0.78, 0.82, 0.88)
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	e.ambient_light_color = Color(0.72, 0.77, 0.86)
-	e.ambient_light_energy = 0.75          # фон не чёрный, но и не «всё белое»
+	# Под селлейдинг заполняющий свет надо СЛАБЕЕ: он размывает ступени.
+	# Это не «темнее ради темноты» — это чтобы границы ступеней читались.
+	e.ambient_light_energy = 0.75 if not T.TOON_ENABLED else 0.62
 	e.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	e.tonemap_exposure = 1.0
 	# мягкое свечение: белая лаборатория должна «дышать» светом
@@ -145,27 +228,32 @@ func _make_light() -> void:
 	e.glow_hdr_threshold = 1.1
 	env.environment = e
 	add_child(env)
+	_env = env
+	# Ничего не пишем в project.godot во время игры: сохранение настроек
+	# проекта из кода — лишний побочный эффект, который потом удивляет.
 
 	# Основной свет. Резкий угол и тень — именно он даёт объём на теле.
 	# Разница с заполняющим должна быть ощутимой: 1.6 против 0.35.
 	var sun := DirectionalLight3D.new()
 	sun.rotation_degrees = Vector3(-52, -40, 0)
 	sun.light_color = Color(1.0, 0.99, 0.97)
-	sun.light_energy = 1.6
+	sun.light_energy = 1.6 if not T.TOON_ENABLED else 1.35
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 30.0
 	sun.shadow_bias = 0.02
 	sun.shadow_normal_bias = 1.0
 	add_child(sun)
+	_sun = sun
 
 	# Заполняющий свет: только чтобы тени не были чёрными. Слабый намеренно.
 	var fill := OmniLight3D.new()
 	fill.position = Vector3(0.0, 4.0, 3.0)
 	fill.light_color = Color(0.88, 0.93, 1.0)
-	fill.light_energy = 0.35
+	fill.light_energy = 0.35 if not T.TOON_ENABLED else 0.30
 	fill.omni_range = 18.0
 	fill.shadow_enabled = false
 	add_child(fill)
+	_fill = fill
 
 	# Подхват снизу: белый пол отражает свет вверх, в лаборатории это заметно.
 	var bounce := OmniLight3D.new()
@@ -175,6 +263,7 @@ func _make_light() -> void:
 	bounce.omni_range = 9.0
 	bounce.shadow_enabled = false
 	add_child(bounce)
+	_bounce = bounce
 
 
 func _box(size: Vector3, pos: Vector3, mat: Material, parent: Node = self) -> MeshInstance3D:
