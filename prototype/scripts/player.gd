@@ -13,7 +13,7 @@ const T := preload("res://scripts/tuning.gd")
 @onready var pivot: Node3D = $CameraPivot
 @onready var spring: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
-@onready var mesh: MeshInstance3D = $Body
+@onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
 
 var health: float = T.MAX_HEALTH
@@ -89,6 +89,8 @@ func _physics_process(delta: float) -> void:
 		_process_move(delta)
 		_try_start_actions()
 
+	_update_character_anim(delta)
+
 	# гравитация и движение
 	if not is_on_floor():
 		velocity.y -= T.GRAVITY * delta
@@ -96,6 +98,14 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 	move_and_slide()
 	_update_debug(delta)
+
+
+## Передаёт модели скорость и текущее действие: она считает позу кодом.
+func _update_character_anim(delta: float) -> void:
+	if character != null and character.has_method("update_anim"):
+		var planar := Vector2(velocity.x, velocity.z).length()
+		var ratio := planar / T.RUN_SPEED
+		character.update_anim(delta, ratio, _action, _action_time)
 
 
 func _update_buffers(delta: float) -> void:
