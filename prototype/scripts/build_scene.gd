@@ -7,6 +7,58 @@ extends Node3D
 
 const T := preload("res://scripts/tuning.gd")
 
+## Селлшейдинг (toon) для персонажей. Включается в tuning.gd, чтобы можно было
+## сравнивать с обычным освещением, не переписывая код.
+const TOON_SHADER := """
+shader_type spatial;
+render_mode diffuse_toon, specular_toon, cull_disabled;
+
+// ── Селлшейдинг для персонажей ────────────────────────────────────────────
+// Зачем: обычное освещение на этой модели не даёт объёма. Кожа — почти
+// ровная заливка (яркость 0.77, стандартное отклонение 0.09 по замеру из
+// отчёта 19), нормал-карт нет. При плавном затенении лицо и тело выглядят
+// плоским пятном, сколько ни подбирай лампы.
+//
+// Toon решает это иначе: вместо плавного градиента — ТРИ ступени (тень,
+// полутень, свет). Границы между ними и создают объём, даже когда сама
+// поверхность ровная. Плюс контровой контур по краю силуэта, чтобы
+// персонаж не сливался с белой стеной лаборатории.
+
+uniform vec4 base_color : source_color = vec4(0.95, 0.82, 0.76, 1.0);
+uniform float light_amount = 1.0;
+
+// Контровой свет по краю силуэта.
+uniform vec4 rim_color : source_color = vec4(1.0, 0.98, 0.96, 1.0);
+uniform float rim_strength = 0.5;
+uniform float rim_power = 2.5;
+
+// Мягкость границ между ступенями. 0 — жёсткие «ступеньки» (манга),
+// 0.06 — почти незаметная плавность (мягкий toon, ближе к аниме).
+uniform float softness = 0.02;
+
+void fragment() {
+	ALBEDO = base_color.rgb * light_amount;
+	ROUGHNESS = 0.9;
+	METALLIC = 0.0;
+	// Край силуэта: чем больше угол между нормалью и взглядом, тем ярче.
+	// Считается во фрагменте, потому что во light() нет VIEW.
+	float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), rim_power);
+	EMISSION = rim_color.rgb * rim * rim_strength;
+}
+
+void light() {
+	float ndl = dot(NORMAL, LIGHT);
+	// Три ступени: 0.30 (тень) -> 0.62 (полутень) -> 0.88 (свет) -> 1.0
+	float s1 = smoothstep(0.0 - softness, 0.0 + softness, ndl);
+	float s2 = smoothstep(0.45 - softness, 0.45 + softness, ndl);
+	float s3 = smoothstep(0.80 - softness, 0.80 + softness, ndl);
+	float amount = 0.30 + 0.32 * s1 + 0.26 * s2 + 0.12 * s3;
+	DIFFUSE_LIGHT += amount * ATTENUATION * LIGHT_COLOR / PI;
+	// Узкий ступенчатый блик: на коже он нужен только как намёк.
+	SPECULAR_LIGHT += s3 * 0.10 * ATTENUATION * LIGHT_COLOR / PI;
+}
+"""
+
 var _white: StandardMaterial3D
 var _floor_mat: StandardMaterial3D
 
@@ -28,6 +80,41 @@ func _make_materials() -> void:
 	_floor_mat.albedo_color = Color(0.88, 0.90, 0.93)
 	_floor_mat.roughness = 0.28   # пол блестит — как в белой лаборатории
 	_floor_mat.metallic = 0.05
+
+
+## Красит всех персонажей в сцене в селлейдинг. Вызывается из main.gd
+## после спавна героини и клона: материалы уже импортированы, остаётся
+## подменить их на шейдер.
+func apply_toon(root: Node) -> void:
+	if not T.TOON_ENABLED:
+		return
+	var shader := Shader.new()
+	shader.code = TOON_SHADER
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	# Тон кожи берём из модели: у неё текстура почти ровная (средняя яркость
+	# 0.77 по замеру из отчёта 19), а цвет лица в палитре — тёплый бежевый.
+	mat.set_shader_parameter("base_color", Color(0.95, 0.815, 0.765))
+	for mesh in _find_meshes(root):
+		var mi := mesh as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			var base := mi.mesh.surface_get_material(i)
+			# Глаза и линию века оставляем оригинальными: у них своя текстура
+			# и они должны оставаться тёмными, иначе взгляд пропадает.
+			if base != null and base.resource_name.contains("eye"):
+				continue
+			mi.set_surface_override_material(i, mat)
+
+
+func _find_meshes(node: Node) -> Array:
+	var out: Array = []
+	if node is MeshInstance3D:
+		out.append(node)
+	for c in node.get_children():
+		out.append_array(_find_meshes(c))
+	return out
 
 
 func _make_light() -> void:

@@ -40,6 +40,7 @@ var _recover: float = 0.0
 var _flash: float = 0.0
 var _player: Node3D
 var _label: Label3D
+var _last_deal: float = 0.0
 
 
 func _ready() -> void:
@@ -85,6 +86,8 @@ func mode_name() -> String:
 func _physics_process(delta: float) -> void:
 	_cooldown = maxf(0.0, _cooldown - delta)
 	_recover = maxf(0.0, _recover - delta)
+	if _last_deal > 0.0:
+		_last_deal = maxf(0.0, _last_deal - delta)
 	if _flash > 0.0:
 		_flash = maxf(0.0, _flash - delta * 3.0)
 
@@ -181,8 +184,10 @@ func _fight(delta: float) -> void:
 
 
 func _deal_damage(dist: float) -> void:
-	if dist > T.CLONE_RANGE + 0.35:
+	if dist > T.CLONE_RANGE:
+		_last_deal = 0.0
 		return
+	_last_deal = 1.4
 	if is_instance_valid(_player) and _player.has_method("take_damage"):
 		var dir := _dir_to_player().normalized()
 		_player.take_damage(T.CLONE_DAMAGE, dir)
@@ -215,4 +220,11 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 func _update_label() -> void:
 	if _label == null:
 		return
-	_label.text = "%s   %.0f/%.0f" % [mode_name(), health, T.CLONE_HEALTH]
+	# Показываем и результат удара: если клон бьёт, но урона нет, видно, что
+	# он промахнулся, а не что в коде дыра.
+	var extra := ""
+	if _last_deal > 0.0:
+		extra = "   удар!"
+	elif mode == Mode.ON and _attack_time < 0.0 and _cooldown > 0.0:
+		extra = "   (перезаряд)"
+	_label.text = "%s   %.0f/%.0f%s" % [mode_name(), health, T.CLONE_HEALTH, extra]

@@ -26,6 +26,12 @@ func _ready() -> void:
 	clone.position = Vector3(-3.0, 1.0, -5.0)
 	add_child(clone)
 
+	# Селлшейдинг применяется ПОСЛЕ спавна: до этого у мешей ещё нет
+	# материалов, и подменять нечего.
+	if room != null and room.has_method("apply_toon"):
+		room.apply_toon(player.get_node("Character"))
+		room.apply_toon(clone.get_node("Character"))
+
 	_hint = Label.new()
 	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот · T — бой клона вкл/выкл · Esc — курсор"
 	_hint.position = Vector2(16, 12)

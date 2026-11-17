@@ -156,6 +156,87 @@ def fix_burnthrough_weights(gltf: dict, binary: bytes) -> tuple[bytes, dict]:
     return bytes(buf), {"changed": changed, "pairs": per_pair}
 
 
+def bake_fists_into_geometry(gltf: dict, binary: bytes) -> tuple[bytes, dict]:
+    """Впечатывает морф «кулак» прямо в геометрию и убирает все морфы.
+
+    ── Зачем ──────────────────────────────────────────────────────────────
+    В скелете НЕТ костей пальцев: их всего 21, и последняя — кисть. То есть
+    пальцами пошевелить нельзя, и кулака тоже нет: кисть всегда раскрыта.
+    Пользователь это и увидел — «бьют тыльной стороной ладони, на удар
+    кулаком не похоже».
+
+    При этом в исходной модели есть готовый морф `Fists` (а также три
+    промежуточных «сжатия»). Он двигает РОВНО кисти: 3400 вершин, все
+    принадлежат hand.L / hand.R (1700 + 1700), область Y 0.69..0.84 — то
+    есть выше кистей ничего не задет. Максимальный сдвиг 98 мм.
+
+    ── Почему впечатываем в геометрию, а не используем морф в Godot ───────
+    Именно морфы и стали причиной падения редактора Godot при импорте
+    (godotengine/godot#78897). Тащить их обратно в проект — наступать на
+    те же грабли. Поэтому: берём смещения из морфа `POSITION` и `NORMAL`
+    (там есть и нормали, это важно — без них освещение кулака было бы
+    неверным), прибавляем к базовым, и морфы выкидываем.
+
+    Кулак становится постоянным. Для soulslike с оружием в руке это
+    нормально: рука всё равно сжата. Раскрытая ладонь больше не нужна.
+
+    Оригинал (`models/heroine/female_A_rigged.glb`) не изменяется.
+    """
+    import numpy as np
+
+    report = {"baked": 0, "moved": 0, "max_shift_mm": 0.0, "removed_targets": 0}
+
+    body = [m for m in gltf.get("meshes", []) if m.get("name") == "female_body"]
+    if not body:
+        return binary, {"note": "тело не найдено"}
+    prim = body[0]["primitives"][0]
+    targets = prim.get("targets") or []
+    names = (body[0].get("extras") or {}).get("targetNames") or []
+    fist_index = -1
+    for i, n in enumerate(names):
+        if n == "Fists":
+            fist_index = i
+            break
+    if fist_index < 0 and targets:
+        fist_index = 0          # морф 0 и есть Fists, но проверим по сдвигу
+    if fist_index < 0:
+        return binary, {"note": "морфа кулака нет"}
+    target = targets[fist_index]
+
+    DTYPES = {5121: np.uint8, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
+
+    def view(idx):
+        acc = gltf["accessors"][idx]
+        bv = gltf["bufferViews"][acc["bufferView"]]
+        nc = {"VEC3": 3, "VEC4": 4, "VEC2": 2, "SCALAR": 1}[acc["type"]]
+        start = bv.get("byteOffset", 0) + acc.get("byteOffset", 0)
+        arr = np.frombuffer(binary, dtype=DTYPES[acc["componentType"]],
+                            count=acc["count"] * nc, offset=start).reshape(acc["count"], nc)
+        return arr.copy(), start, acc
+
+    buf = bytearray(binary)
+    for attr, kind in (("POSITION", "POSITION"), ("NORMAL", "NORMAL")):
+        if attr not in prim["attributes"] or kind not in target:
+            continue
+        base, start, acc = view(prim["attributes"][attr])
+        delta = view(target[kind])[0].astype(np.float32)
+        mag = float(np.linalg.norm(delta, axis=1).max())
+        out = (base.astype(np.float32) + delta).astype(np.float32)
+        if attr == "NORMAL":
+            # нормали после сдвига могут перестать быть единичными
+            ln = np.linalg.norm(out, axis=1, keepdims=True)
+            ln[ln == 0] = 1.0
+            out = out / ln
+        buf[start:start + out.size * 4] = out.tobytes()
+        if attr == "POSITION":
+            report["max_shift_mm"] = mag * 1000.0
+            report["moved"] = int((np.linalg.norm(delta, axis=1) > 1e-5).sum())
+        report["baked"] += 1
+
+    report["removed_targets"] = len(targets)
+    return bytes(buf), report
+
+
 def weld_seam_weights(gltf: dict, binary: bytes) -> tuple[bytes, dict]:
     """Сшивает швы: у совпадающих вершин веса делаются одинаковыми.
 
@@ -305,6 +386,10 @@ def main() -> None:
         raise SystemExit(__doc__)
     src, dst = Path(sys.argv[1]), Path(sys.argv[2])
     gltf, binary = read_glb(src)
+    # Порядок важен: кулак впечатывается ДО strip(), потому что strip()
+    # удаляет морф-таргеты, а нам нужны их смещения.
+    # И ДО сшивки швов: сшивка усредняет веса, геометрию не трогает.
+    binary, freport = bake_fists_into_geometry(gltf, binary)
     report = strip(gltf)
     binary, wreport = fix_burnthrough_weights(gltf, binary)
     # Швы сшиваются ПОСЛЕ чистки прожжённых весов: чистка меняет веса внутри
@@ -312,6 +397,9 @@ def main() -> None:
     # иначе чистка снова развела бы уже сшитый шов.
     binary, sreport = weld_seam_weights(gltf, binary)
     write_glb(dst, gltf, binary)
+    print(f"кулак впечатан: сдвинуто вершин {freport.get('moved', 0)}, "
+          f"максимум {freport.get('max_shift_mm', 0.0):.1f} мм, "
+          f"убрано морфов {freport.get('removed_targets', 0)}")
     print(f"сшито швов: {sreport['groups']} групп, {sreport['welded']} вершин")
     print(f"исправлено весов: {wreport['changed']} вершин")
     for (dom, wrong), n in sorted(wreport.get("pairs", {}).items(), key=lambda x: -x[1]):

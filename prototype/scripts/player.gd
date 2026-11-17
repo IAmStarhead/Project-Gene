@@ -77,8 +77,7 @@ func _ready() -> void:
 	rig.setup(self, yaw, pitch)
 	get_tree().current_scene.add_child(rig)
 
-	for n in get_tree().get_nodes_in_group("damageable"):
-		_targets.append(n)
+	_refresh_targets()
 
 
 func _exit_tree() -> void:
@@ -137,21 +136,38 @@ func _physics_process(delta: float) -> void:
 		_process_move(delta)
 		_try_start_actions()
 
-	# Прыжок. Как в Elden Ring: F — прыжок, Space — уворот.
-	# Буфер позволяет нажать чуть раньше приземления, coyote — чуть позже
-	# схода с края. Без этих двух мелочей прыжок ощущается «глухим».
-	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and _coyote > 0.0:
-		_try_jump()
-
+	# ── Прыжок. ПОЧЕМУ ОН РАНЬШЕ НЕ РАБОТАЛ ────────────────────────────────
+	# Ошибка была не в кнопке и не в буфере, а в порядке строк. Вот что
+	# происходило при нажатии F:
+	#
+	#   1. _try_jump() ставит velocity.y = +7.43 (скорость для высоты 1.15 м);
+	#   2. СЛЕДУЮЩАЯ строка: `elif _action != "dodge": velocity.y = 0.0` —
+	#      персонаж ещё на полу, ветка is_on_floor() ложная? нет, true,
+	#      значит скорость взлёта обнуляется В ТОМ ЖЕ кадре;
+	#   3. move_and_slide() вызывается с нулевой вертикальной скоростью.
+	#
+	# То есть прыжок физически не мог начаться: его гасили через одну строку
+	# после запуска. Теперь «прилипание к полу» выполняется ДО прыжка, а не
+	# после, и прыжок не попадает под него.
 	_update_character_anim(delta)
 
 	# Гравитация разная для подъёма и падения: падать быстрее, чем взлетать, —
 	# так прыжок читается собранным, а не «на луне».
-	if not is_on_floor():
+	if is_on_floor():
+		# держим на полу только если мы не в прыжке и не в увороте
+		if _action != "dodge" and velocity.y <= 0.0:
+			velocity.y = 0.0
+	else:
 		var g := T.GRAVITY if velocity.y > 0.0 else T.GRAVITY_FALL
 		velocity.y -= g * delta
-	elif _action != "dodge":
-		velocity.y = 0.0
+
+	# Прыжок. Как в Elden Ring: F — прыжок, Space — уворот.
+	# Буфер позволяет нажать чуть раньше приземления, coyote — чуть позже
+	# схода с края. Без этих двух мелочей прыжок ощущается «глухим».
+	# Ставится ПОСЛЕ гашения вертикальной скорости — иначе его же и обнулит.
+	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and _coyote > 0.0:
+		_try_jump()
+
 	move_and_slide()
 	_update_debug(delta)
 
@@ -327,22 +343,58 @@ func _process_attack(delta: float) -> void:
 
 
 func _do_hit() -> void:
-	var origin := global_position + Vector3.UP * 1.0
+	_refresh_targets()
+	var origin := global_position
 	var forward := -global_transform.basis.z
+	# Выбираем БЛИЖАЙШУЮ цель в конусе, а не первую попавшуюся в списке:
+	# иначе при двух противниках удар уходил бы в дальнего.
+	var best: Node = null
+	var best_dist := INF
 	for victim in _targets:
 		if not is_instance_valid(victim):
 			continue
 		var to_target: Vector3 = victim.global_position - origin
 		to_target.y = 0.0
-		if to_target.length() > T.ATTACK_RANGE:
+		var dist := to_target.length()
+		if dist > T.ATTACK_RANGE or dist < 0.001:
 			continue
 		var angle := rad_to_deg(forward.angle_to(to_target.normalized()))
 		if angle > T.ATTACK_ANGLE:
 			continue
-		_last_hit = String(victim.name)
-		if victim.has_method("take_damage"):
-			victim.take_damage(T.ATTACK_DAMAGE, forward)
-		break
+		if dist < best_dist:
+			best_dist = dist
+			best = victim
+	if best == null:
+		# диагностика: видно, почему удар не прошёл
+		_last_hit = "мимо (до цели %.1f м)" % _nearest_distance()
+		return
+	_last_hit = String(best.name)
+	if best.has_method("take_damage"):
+		best.take_damage(T.ATTACK_DAMAGE, forward)
+
+
+## Расстояние до ближайшей цели — только для отладочной строки.
+func _nearest_distance() -> float:
+	var best := INF
+	for v in _targets:
+		if is_instance_valid(v):
+			var d: Vector3 = v.global_position - global_position
+			d.y = 0.0
+			best = minf(best, d.length())
+	return best
+
+
+## Обновляет список целей.
+##
+## ПОЧЕМУ ЭТО ОТДЕЛЬНАЯ ФУНКЦИЯ. Раньше список набирался ОДИН РАЗ в _ready().
+## Но порядок добавления детей в сцене такой, что героиня оказывается в дереве
+## раньше клона: на момент её _ready() в группе "damageable" ещё никого нет,
+## список остаётся пустым на весь бой. Отсюда «хп у клона не отнимается».
+## Теперь список пополняется перед каждым ударом — это три узла, дёшево.
+func _refresh_targets() -> void:
+	for n in get_tree().get_nodes_in_group("damageable"):
+		if not _targets.has(n):
+			_targets.append(n)
 
 
 ## Вызывается целью при её ударе по игроку.
