@@ -96,7 +96,10 @@ func _find_skeleton(node: Node) -> Skeleton3D:
 
 ## Вызывается каждый кадр из player.gd.
 ## speed_ratio — доля от скорости бега (0..1), action — "" | "attack" | "dodge".
-func update_anim(delta: float, speed_ratio: float, action: String, action_time: float) -> void:
+## side — какой рукой бьёт: "R" (правая) или "L" (левая). Пустая строка для
+## остальных действий. Сторона приходит из player.gd: ЛКМ — левая, ПКМ — правая.
+func update_anim(delta: float, speed_ratio: float, action: String,
+		action_time: float, side: String = "") -> void:
 	_clock += delta
 	if not _loaded:
 		return
@@ -105,23 +108,44 @@ func update_anim(delta: float, speed_ratio: float, action: String, action_time: 
 	var hip_offset := Vector3.ZERO
 	var w := clampf(speed_ratio, 0.0, 1.2)
 
-	# ───────────────────────────────────────── покой: живая стойка
-	# Руки чуть согнуты в локте и отведены от тела. Если поставить углы в ноль,
-	# модель встаёт «парализованной»: руки висят вдоль туловища как палки.
-	# Лёгкое покачивание в противофазе делает стойку живой.
+	# ───────────────────────────────────────── боевая стойка
 	_breathe(want, 1.0)
-	# Локоть 55, а не 26: при 26° руки висят почти вдоль тела и стойка
-	# читается как «парализованная». Проверено рендером: при 55 кисти
-	# оказываются на 0.20 м впереди бёдер, при 70 — уже как у боксёра,
-	# что для soulslike слишком агрессивно.
-	var idle_sway := sin(_clock * 1.15) * 2.2
-	want["upper_arm.L"] = Vector3(10.0 + idle_sway, 0.0, -9.0)
-	want["upper_arm.R"] = Vector3(10.0 - idle_sway, 0.0, 9.0)
-	want["forearm.L"] = Vector3(55.0, 0.0, 0.0)
-	want["forearm.R"] = Vector3(55.0, 0.0, 0.0)
-	# кисти чуть внутрь — чтобы руки не торчали в стороны
-	want["hand.L"] = Vector3(0.0, 0.0, 6.0)
-	want["hand.R"] = Vector3(0.0, 0.0, -6.0)
+	# Боевая стойка. Ключ к ней — ЛОКТИ ВНИЗ, а не «руки подняты»:
+	# если поднимать плечо, получаются вытянутые вперёд руки, будто персонаж
+	# зомби. Здесь плечо почти в покое (6-8°), а предплечье согнуто на 125°,
+	# поэтому локоть остаётся внизу у ребра (Y 1.08), а кулак поднимается
+	# к лицу (Y 1.21). Проверено рендером с четырёх ракурсов.
+	#
+	# Ноги в стойке не вместе: левая чуть впереди, колени подогнуты, вес
+	# пониже. Корпус вполоборота — правая рука (ударная) отведена назад,
+	# левая прикрывает.
+	# ВАЖНО про удары. Позы удара — АБСОЛЮТНЫЕ, а не добавка к стойке.
+	# Это была ошибка, которая ломала анимацию: _mix() прибавляет углы к
+	# тому, что уже лежит в want. Пока стойка была с локтем 55°, удар
+	# (65°) давал 120° — терпимо. Но со стойкой в 125° тот же удар дал бы
+	# 190°, то есть локоть складывался за спину. Поэтому при ударе стойка
+	# рук вообще не выставляется: иначе боевая стойка и боевой удар
+	# несовместимы по определению.
+	var stance_arms := action != "attack"
+	if stance_arms:
+		var idle_sway := sin(_clock * 1.4) * 1.6
+		want["upper_arm.L"] = Vector3(6.0 + idle_sway, 0.0, -14.0)
+		want["upper_arm.R"] = Vector3(8.0 - idle_sway, 0.0, 14.0)
+		want["forearm.L"] = Vector3(125.0, 0.0, 0.0)
+		want["forearm.R"] = Vector3(130.0, 0.0, 0.0)
+		want["hand.L"] = Vector3(0.0, 0.0, 8.0)
+		want["hand.R"] = Vector3(0.0, 0.0, -8.0)
+	# корпус вполоборота: правое плечо назад, левое вперёд
+	want["spine"] = Vector3(8.0, 0.0, 0.0)
+	want["chest"] = Vector3(2.0, 8.0, 0.0)
+	want["head"] = Vector3(-4.0, -8.0, 0.0)
+	# ноги: левая впереди, колени подогнуты, стойка пониже
+	want["thigh.L"] = Vector3(16.0, 0.0, 3.0)
+	want["thigh.R"] = Vector3(10.0, 0.0, -3.0)
+	want["shin.L"] = Vector3(-28.0, 0.0, 0.0)
+	want["shin.R"] = Vector3(-20.0, 0.0, 0.0)
+	want["foot.L"] = Vector3(10.0, 0.0, 0.0)
+	want["foot.R"] = Vector3(8.0, 0.0, 0.0)
 
 	# ───────────────────────────────────────── шаг и бег
 	_phase = fmod(_phase + delta * (2.6 + 6.0 * w), TAU)
@@ -130,7 +154,7 @@ func update_anim(delta: float, speed_ratio: float, action: String, action_time: 
 
 	# ───────────────────────────────────────── удар
 	if action == "attack":
-		_attack(want, action_time)
+		_attack(want, action_time, side)
 	# ───────────────────────────────────────── уворот
 	elif action == "dodge":
 		hip_offset = _dodge(want, action_time)
@@ -193,7 +217,16 @@ func _walk(want: Dictionary, w: float) -> void:
 ##      рукой — «кусок кожи поднимался».
 ## Поэтому плечо отведено в СТОРОНУ (ось Z) и держится снаружи корпуса,
 ## а удар идёт вперёд (ось X), не пересекая среднюю линию тела.
-func _attack(want: Dictionary, t: float) -> void:
+func _attack(want: Dictionary, t: float, side: String = "R") -> void:
+	# Сторона удара. Раньше била всегда правая — и было непонятно, почему
+	# персонаж бьёт то одной, то другой (это была не смена рук, а разные
+	# фазы одной и той же анимации). Теперь сторона приходит из ввода:
+	# ЛКМ — левая, ПКМ — правая, как в Dark Souls.
+	var arm := "R" if side == "R" else "L"
+	var other := "L" if arm == "R" else "R"
+	# Для правой руки отведение плеча в сторону — отрицательный Z, для левой
+	# положительный. Знак берём из стороны, чтобы не дублировать функцию.
+	var out := -1.0 if arm == "R" else 1.0
 	var windup := T.ATTACK_WINDUP
 	var active_end := windup + T.ATTACK_ACTIVE
 	var total := active_end + T.ATTACK_RECOVERY
@@ -210,37 +243,67 @@ func _attack(want: Dictionary, t: float) -> void:
 	#   рука вверх (0/-95)               0.66 %
 	#   замах старый (-62/102)           0.23 %
 	#   удар на уровне плеча (70/34)     0.38 %
-	#   ВЫБРАНО: подъём локтя 30/65      0.08 %
+	#   замах (16/-26, локоть 148)       0.063 %
+	#   удар (66/-10, локоть 26)         0.157 %
+	#   прежний удар (30/65)             0.027 %, но рука оставалась согнутой
+	#                                    и читался не удар, а «толчок»
 	#
-	# То есть удар идёт локтём вперёд, а плечо почти не поднимается —
-	# именно подъём плеча и рвёт подмышку.
+	# Компромисс сознательный: новая поза растягивает рёбра сильнее
+	# (0.157 % против 0.027 %), потому что рука полностью выпрямляется —
+	# а без выпрямления удара не видно. 0.157 % — это 95 рёбер из 51 000.
+	# Корпус скручивается В СТОРОНУ БЬЮЩЕЙ РУКИ, поэтому знак Y у chest и
+	# spine тоже зависит от стороны. Иначе левый удар выглядел бы как
+	# правый с перепутанной рукой — корпус уходил бы не туда.
+	var twist := -1.0 if arm == "R" else 1.0
 	var pose_back := {
-		"upper_arm.R": Vector3(-26.0, 0.0, -20.0),
-		"forearm.R": Vector3(92.0, 0.0, 0.0),
-		"hand.R": Vector3(0.0, 0.0, -6.0),
-		"chest": Vector3(4.0, -14.0, 0.0),
-		"spine": Vector3(2.0, -6.0, 0.0),
-		"head": Vector3(0.0, 10.0, 0.0),
+		# Замах: кулак отведён к уху, локоть не внизу, а в стороне — так
+		# виден запас хода. Проверено: кисть уходит на X ±0.26, Y 1.32.
+		"upper_arm." + arm: Vector3(16.0, 0.0, -26.0 * out),
+		"forearm." + arm: Vector3(148.0, 0.0, 0.0),
+		"hand." + arm: Vector3(0.0, 0.0, -6.0 * out),
+		"chest": Vector3(4.0, -16.0 * twist, 0.0),
+		"spine": Vector3(2.0, -7.0 * twist, 0.0),
+		"head": Vector3(0.0, 11.0 * twist, 0.0),
+		# вторая рука в замахе прикрывает лицо, а не висит
+		"upper_arm." + other: Vector3(10.0, 0.0, 16.0 * out),
+		"forearm." + other: Vector3(112.0, 0.0, 0.0),
 	}
 	var pose_hit := {
-		"upper_arm.R": Vector3(30.0, 0.0, 0.0),
-		"forearm.R": Vector3(65.0, 0.0, 0.0),
-		"hand.R": Vector3(0.0, 0.0, -4.0),
-		"chest": Vector3(6.0, 16.0, 0.0),
-		"spine": Vector3(4.0, 7.0, 0.0),
-		"head": Vector3(0.0, -9.0, 0.0),
-		"upper_arm.L": Vector3(14.0, 0.0, -12.0),
+		# Удар: плечо вперёд на 66°, локоть почти распрямлён (26°). Именно
+		# РАЗГИБ локтя и есть удар — при старом значении 65° рука оставалась
+		# согнутой, и «удара как будто нет». Кисть выходит на 0.56 м вперёд.
+		"upper_arm." + arm: Vector3(66.0, 0.0, -10.0 * out),
+		"forearm." + arm: Vector3(26.0, 0.0, 0.0),
+		"hand." + arm: Vector3(0.0, 0.0, -4.0 * out),
+		"chest": Vector3(6.0, 16.0 * twist, 0.0),
+		"spine": Vector3(4.0, 8.0 * twist, 0.0),
+		"head": Vector3(0.0, -9.0 * twist, 0.0),
+		"upper_arm." + other: Vector3(14.0, 0.0, -12.0 * out),
+		"forearm." + other: Vector3(108.0, 0.0, 0.0),
 	}
 
+	# Замах: плавно ОТ стойки К позе замаха. Удар: от замаха к удару.
+	# Возврат: от удара обратно к стойке (а не к нулю — иначе после удара
+	# руки падают вниз, и стойка «разваливается» на полсекунды).
+	var stance_pose := {
+		"upper_arm.L": Vector3(6.0, 0.0, -14.0),
+		"upper_arm.R": Vector3(8.0, 0.0, 14.0),
+		"forearm.L": Vector3(125.0, 0.0, 0.0),
+		"forearm.R": Vector3(130.0, 0.0, 0.0),
+		"hand.L": Vector3(0.0, 0.0, 8.0),
+		"hand.R": Vector3(0.0, 0.0, -8.0),
+		"chest": Vector3(2.0, 8.0, 0.0),
+		"spine": Vector3(8.0, 0.0, 0.0),
+		"head": Vector3(-4.0, -8.0, 0.0),
+	}
 	if t < windup:
-		_mix(want, pose_back, smoothstep(0.0, 1.0, t / windup))
+		_lerp_pose(want, stance_pose, pose_back, smoothstep(0.0, 1.0, t / windup))
 	elif t < active_end:
 		var u := smoothstep(0.0, 1.0, (t - windup) / T.ATTACK_ACTIVE)
-		_mix(want, pose_back, 1.0 - u)
-		_mix(want, pose_hit, u)
+		_lerp_pose(want, pose_back, pose_hit, u)
 	elif t <= total:
 		var u := smoothstep(0.0, 1.0, (t - active_end) / T.ATTACK_RECOVERY)
-		_mix(want, pose_hit, 1.0 - u)
+		_lerp_pose(want, pose_hit, stance_pose, u)
 
 
 ## Полёт: ноги подобраны, руки разведены для баланса.
@@ -292,6 +355,24 @@ func _mix(want: Dictionary, extra: Dictionary, u: float) -> void:
 	for bone in extra:
 		var add: Vector3 = extra[bone] * u
 		want[bone] = want.get(bone, Vector3.ZERO) + add
+
+
+## Ставит в want АБСОЛЮТНУЮ позу — линейную смесь между from и to.
+##
+## Отличие от _mix() принципиальное: _mix прибавляет (нужно, чтобы наложить
+## покачивание на позу), а здесь нужна именно замена. Для переходов между
+## позами (стойка -> замах -> удар -> стойка) сложение не годится: углы
+## накапливались бы, и рука уезжала за спину.
+func _lerp_pose(want: Dictionary, from: Dictionary, to: Dictionary, u: float) -> void:
+	var keys: Dictionary = {}
+	for k in from:
+		keys[k] = true
+	for k in to:
+		keys[k] = true
+	for k in keys:
+		var a: Vector3 = from.get(k, Vector3.ZERO)
+		var b: Vector3 = to.get(k, Vector3.ZERO)
+		want[k] = a.lerp(b, u)
 
 
 ## Переводит «изгиб в градусах» в позу кости и ставит её.

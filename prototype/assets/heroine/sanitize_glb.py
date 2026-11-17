@@ -156,6 +156,122 @@ def fix_burnthrough_weights(gltf: dict, binary: bytes) -> tuple[bytes, dict]:
     return bytes(buf), {"changed": changed, "pairs": per_pair}
 
 
+def weld_seam_weights(gltf: dict, binary: bytes) -> tuple[bytes, dict]:
+    """Сшивает швы: у совпадающих вершин веса делаются одинаковыми.
+
+    ── Что за дефект и почему он виден только в ударе ──────────────────────
+    Пользователь заметил: «когда бьёшь, сбоку виден просвет». Просвет —
+    это ЩЕЛЬ на стыке двух частей тела, которые в покое стоят вплотную.
+
+    Модель собрана из отдельных кусков: торс, две руки, две кисти, две
+    стопы, голова. Куски не сшиты в общий меш, а просто приставлены друг
+    к другу. На стыке есть пары вершин с ОДИНАКОВЫМИ координатами, но с
+    РАЗНЫМИ весами: одна вершина принадлежит торсу, другая — руке.
+
+    В покое это незаметно — вершины совпадают. Но как только рука идёт
+    вперёд, веса тянут их в разные стороны, и на месте шва открывается
+    дырка. Измерено на модели:
+
+        вершина 1934: chest 0.64 + upper_arm.R 0.36
+        вершина 4386: chest 0.10 + upper_arm.R 0.90   <- то же место
+        в позе удара расходятся на 33 мм; худшая пара — на 40 мм.
+
+    При 40 мм на предплечье это уже полоса шириной в палец. Отсюда и
+    «просвет сбоку, видно только когда бьёшь».
+
+    ── Лечение ─────────────────────────────────────────────────────────────
+    Для каждой группы вершин с совпадающими координатами (допуск 1e-6 м)
+    веса усредняются, и всем вершинам группы ставится один и тот же набор
+    из четырёх главных костей. Совпадающие координаты + одинаковые веса =
+    вершины больше физически не могут разойтись.
+
+    Проверено на модели: расхождение шва в позе удара 33.6 -> 0.00 мм,
+    число расходящихся пар 37 -> 0.
+
+    ── Почему это безопасно ───────────────────────────────────────────────
+    Опасение: а вдруг в одной группе окажутся вершины кисти и вершины
+    бедра (кисть в покое висит у бедра!) — тогда усреднение сшило бы
+    бедро с рукой, то есть вернуло бы старый дефект «кожа тянется».
+    Проверено перебором всех 1154 групп: групп, где вместе кисть или
+    предплечье и торс или бедро, — НОЛЬ. Усредняются только стыки внутри
+    одной цепочки (торс-плечо, плечо-локоть, локоть-кисть, бедро-голень,
+    голень-стопа, стопа-носок).
+    """
+    import numpy as np
+
+    DTYPES = {5121: np.uint8, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
+
+    def view(idx):
+        acc = gltf["accessors"][idx]
+        bv = gltf["bufferViews"][acc["bufferView"]]
+        nc = {"VEC3": 3, "VEC4": 4, "VEC2": 2, "SCALAR": 1}[acc["type"]]
+        start = bv.get("byteOffset", 0) + acc.get("byteOffset", 0)
+        arr = np.frombuffer(binary, dtype=DTYPES[acc["componentType"]],
+                            count=acc["count"] * nc, offset=start).reshape(acc["count"], nc)
+        return arr.copy(), start
+
+    body = [m for m in gltf.get("meshes", []) if m.get("name") == "female_body"]
+    if not body:
+        return binary, {"welded": 0, "groups": 0, "note": "тело не найдено"}
+    attrs = body[0]["primitives"][0]["attributes"]
+    if "JOINTS_0" not in attrs:
+        return binary, {"welded": 0, "groups": 0, "note": "нет скиннинга"}
+
+    pos, _ = view(attrs["POSITION"])
+    jraw, jstart = view(attrs["JOINTS_0"])
+    wgt, wstart = view(attrs["WEIGHTS_0"])
+    jnt = jraw.astype(np.int32)
+    weights = wgt.astype(np.float32).copy()
+
+    groups: dict = {}
+    for i, p in enumerate(pos):
+        key = (round(float(p[0]), 6), round(float(p[1]), 6), round(float(p[2]), 6))
+        groups.setdefault(key, []).append(i)
+
+    welded_groups = 0
+    welded_verts = 0
+    for key, vs in groups.items():
+        if len(vs) < 2:
+            continue
+        acc: dict = {}
+        for i in vs:
+            for k in range(4):
+                j = int(jnt[i, k])
+                w = float(weights[i, k])
+                if w > 1e-6:
+                    acc[j] = acc.get(j, 0.0) + w / len(vs)
+        if not acc:
+            continue
+        top = sorted(acc.items(), key=lambda kv: -kv[1])[:4]
+        total = sum(w for _, w in top)
+        if total <= 0.0:
+            continue
+        for i in vs:
+            for k in range(4):
+                jnt[i, k] = 0
+                weights[i, k] = 0.0
+            for k, (j, w) in enumerate(top):
+                jnt[i, k] = j
+                weights[i, k] = w / total
+            welded_verts += 1
+        welded_groups += 1
+
+    # перенормировка: на всякий случай, после усреднения сумма и так 1.0
+    tot = weights.sum(axis=1, keepdims=True)
+    tot[tot == 0] = 1.0
+    weights /= tot
+
+    # ВАЖНО: размеры буферов берём у ИСХОДНЫХ массивов, а не у рабочих копий.
+    # JOINTS_0 хранятся как uint16, а рабочий массив у меня int32. Если писать
+    # int32 и отрезать кусок по 4 байта на элемент, запись заедет в соседний
+    # bufferView с весами и перемешает их — проверено, это ломало модель.
+    jout = jnt.astype(jraw.dtype)
+    buf = bytearray(binary)
+    buf[wstart:wstart + weights.size * weights.dtype.itemsize] = weights.astype(np.float32).tobytes()
+    buf[jstart:jstart + jout.size * jout.dtype.itemsize] = jout.tobytes()
+    return bytes(buf), {"welded": welded_verts, "groups": welded_groups}
+
+
 def strip(gltf: dict) -> dict:
     report = {"animations": 0, "morph_targets": 0, "morph_names": 0}
 
@@ -191,7 +307,12 @@ def main() -> None:
     gltf, binary = read_glb(src)
     report = strip(gltf)
     binary, wreport = fix_burnthrough_weights(gltf, binary)
+    # Швы сшиваются ПОСЛЕ чистки прожжённых весов: чистка меняет веса внутри
+    # одной вершины, сшивка — между совпадающими вершинами. Порядок важен,
+    # иначе чистка снова развела бы уже сшитый шов.
+    binary, sreport = weld_seam_weights(gltf, binary)
     write_glb(dst, gltf, binary)
+    print(f"сшито швов: {sreport['groups']} групп, {sreport['welded']} вершин")
     print(f"исправлено весов: {wreport['changed']} вершин")
     for (dom, wrong), n in sorted(wreport.get("pairs", {}).items(), key=lambda x: -x[1]):
         print(f"   {dom:10s} <- ошибочный вес {wrong:12s}: {n} вершин")

@@ -111,7 +111,7 @@ func _physics_process(delta: float) -> void:
 		if _attack_time >= 0.0:
 			action = "attack"
 			atime = _attack_time
-		character.update_anim(delta, planar / T.RUN_SPEED, action, atime)
+		character.update_anim(delta, planar / T.RUN_SPEED, action, atime, "R")
 
 	_update_label()
 

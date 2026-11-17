@@ -52,6 +52,9 @@ var _action_time: float = 0.0
 const BUF_NEVER := 999.0
 var _buf_dodge: float = BUF_NEVER
 var _buf_attack: float = BUF_NEVER
+var _buf_secondary: float = BUF_NEVER   ## ПКМ: удар правой рукой
+## Какой рукой идёт текущий удар: "L" (ЛКМ) или "R" (ПКМ).
+var _attack_side: String = "L"
 var _buf_dir: Vector3 = Vector3.ZERO
 
 var _dodge_dir: Vector3 = Vector3.ZERO
@@ -94,8 +97,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_buf_attack = 0.0
+			_attack_side = "L"
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			_buf_secondary = 0.0
+			_attack_side = "R"
 	elif event.is_action_pressed("attack"):
 		_buf_attack = 0.0
+		_attack_side = "L"
+	elif event.is_action_pressed("attack_secondary"):
+		_buf_secondary = 0.0
+		_attack_side = "R"
 	elif event.is_action_pressed("dodge"):
 		_buf_dodge = 0.0
 		_buf_dir = _input_direction()
@@ -166,12 +177,14 @@ func _update_character_anim(delta: float) -> void:
 		var act := _action
 		if act == "" and not is_on_floor():
 			act = "air"
-		character.update_anim(delta, ratio, act, _action_time)
+		var side := _attack_side if act == "attack" else ""
+		character.update_anim(delta, ratio, act, _action_time, side)
 
 
 func _update_buffers(delta: float) -> void:
 	_buf_dodge += delta
 	_buf_attack += delta
+	_buf_secondary += delta
 	_jump_buffer += delta
 	if is_on_floor():
 		_coyote = T.COYOTE_TIME
@@ -223,9 +236,16 @@ func _try_start_actions() -> void:
 		_start_dodge()
 		_buf_dodge = BUF_NEVER
 		return
+	# ЛКМ — левая рука, ПКМ — правая. Если нажали ту, на которую не хватило
+	# стамины, второе нажатие не тратится зря: сначала левая, потом правая.
 	if _buf_attack <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
+		_attack_side = "L"
 		_start_attack()
 		_buf_attack = BUF_NEVER
+	elif _buf_secondary <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
+		_attack_side = "R"
+		_start_attack()
+		_buf_secondary = BUF_NEVER
 
 
 func _start_dodge() -> void:
@@ -261,8 +281,13 @@ func _process_dodge(delta: float) -> void:
 		_invulnerable = false
 		# если игрок жал атаку во время уворота — не теряем нажатие
 		if _buf_attack <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
+			_attack_side = "L"
 			_start_attack()
 			_buf_attack = BUF_NEVER
+		elif _buf_secondary <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
+			_attack_side = "R"
+			_start_attack()
+			_buf_secondary = BUF_NEVER
 
 
 func _start_attack() -> void:
@@ -344,7 +369,7 @@ func _update_debug(delta: float) -> void:
 		return
 	var state := "покой"
 	if _action == "attack":
-		state = "атака: " + _attack_phase()
+		state = "атака (%s): " % ("правая" if _attack_side == "R" else "левая") + _attack_phase()
 	elif _action == "dodge":
 		state = "уворот" + ("  [неуязвим]" if _invulnerable else "")
 	var buf_atk := "нет" if _buf_attack > T.INPUT_BUFFER else "%.2f" % _buf_attack

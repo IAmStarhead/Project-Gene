@@ -27,7 +27,7 @@ func _ready() -> void:
 	add_child(clone)
 
 	_hint = Label.new()
-	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар · Пробел — уворот · T — бой клона вкл/выкл · Esc — курсор"
+	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот · T — бой клона вкл/выкл · Esc — курсор"
 	_hint.position = Vector2(16, 12)
 	_hint.add_theme_color_override("font_color", Color(0.1, 0.12, 0.16))
 	add_child(_hint)
