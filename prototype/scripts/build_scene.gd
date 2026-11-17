@@ -127,7 +127,9 @@ func _make_materials() -> void:
 ## после спавна героини и клона: материалы уже импортированы, остаётся
 ## подменить их на шейдер.
 func apply_toon(root: Node) -> void:
-	if not T.TOON_ENABLED:
+	# Headless-тесты используют Dummy renderer: GPU-материал там не нужен
+	# и в Godot 4.7 вызывает ошибку при освобождении RID шейдера.
+	if not T.TOON_ENABLED or DisplayServer.get_name() == "headless":
 		return
 	var shader := Shader.new()
 	shader.code = TOON_SHADER

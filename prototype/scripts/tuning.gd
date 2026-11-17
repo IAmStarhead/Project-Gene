@@ -7,8 +7,8 @@ class_name Tuning
 
 
 # ─────────────────────────────────────────────── ДВИЖЕНИЕ
-const WALK_SPEED := 3.4          ## м/с, обычная ходьба
-const RUN_SPEED := 6.2           ## м/с, бег (на Shift)
+const WALK_SPEED := 1.65         ## м/с: именно шаг, не ускоренный бег на месте
+const RUN_SPEED := 4.6           ## м/с, бег на Shift; фаза следует дистанции
 const ACCELERATION := 16.0       ## как быстро набирается скорость
 const DECELERATION := 20.0       ## как быстро гасится скорость
 const TURN_SPEED := 14.0         ## скорость поворота тела к направлению движения
@@ -38,8 +38,8 @@ const DODGE_STAMINA := 22.0
 const ATTACK_WINDUP := 0.18      ## замах: ещё нет урона
 const ATTACK_ACTIVE := 0.12      ## активные кадры: урон наносится
 const ATTACK_RECOVERY := 0.26    ## восстановление: уязвим, но можно отменить уворотом
-const ATTACK_RANGE := 1.9
-const ATTACK_ANGLE := 70.0       ## половина угла конуса попадания, градусы
+const ATTACK_RANGE := 1.10      ## кулак ~0.75 м + радиус корпуса цели
+const ATTACK_ANGLE := 45.0       ## прямой удар, не невидимая атака вокруг себя
 const ATTACK_DAMAGE := 24.0
 const ATTACK_STAMINA := 18.0
 const ATTACK_CANCEL_WINDOW := 0.12  ## за сколько до конца можно отменить уворотом
@@ -59,11 +59,11 @@ const DUMMY_KNOCKBACK := 0.35
 
 # ─────────────────────────────────────────────── КЛОН-ПРОТИВНИК
 const CLONE_HEALTH := 120.0
-const CLONE_WALK := 2.6          ## м/с, спокойный шаг
-const CLONE_RUN := 4.6           ## м/с, сближение
+const CLONE_WALK := 1.65         ## м/с, отход лицом к игроку
+const CLONE_RUN := 3.4           ## м/с, сближение
 const CLONE_ACCEL := 12.0
-const CLONE_KEEP_DISTANCE := 1.6 ## ближе не подходит, пока не бьёт
-const CLONE_RANGE := 2.0         ## радиус удара
+const CLONE_KEEP_DISTANCE := 0.95 ## дистанция настоящего контакта кулака
+const CLONE_RANGE := 1.10        ## тот же физический масштаб, что у игрока
 const CLONE_DAMAGE := 14.0
 const CLONE_WINDUP := 0.34       ## замах заметно длиннее, чем у игрока
 const CLONE_ACTIVE := 0.12

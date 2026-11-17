@@ -1,222 +1,282 @@
-## ВИТРИНА: отдельная сцена, чтобы отрабатывать анимации до добавления в игру.
-##
-## Зачем она нужна. В игре на позу смотришь с одной камеры, за спиной
-## персонажа, в бою, где всё мелькает. Оценить, правильно ли движется локоть
-## или как выглядит удар в профиль, там невозможно — и мы раз за разом
-## спорили о позах по одному кадру из-за спины.
-##
-## Здесь: одна героиня, нейтральный серый фон (не белая стена — на белом
-## не видно силуэта), камера вращается мышью, и главное — СПИСОК ПОЗ,
-## которые можно листать клавишами и смотреть с любого ракурса.
-##
-## Управление:
-##   мышь          — вращать камеру
-##   колесо        — приблизить / отдалить
-##   1 … 9, 0      — выбрать позу (список ниже)
-##   ← →           — листать позы
-##   Пробел        — проиграть анимацию удара целиком (замах → удар → возврат)
-##   L             — листать скорость проигрывания (0.25x / 0.5x / 1x)
-##   G             — селлшейдинг вкл/выкл
-##   R             — сбросить камеру
+## Витрина ВСЕХ настоящих клипов, а не отдельный список похожих поз.
+## Игра, клон и эта сцена читают одну AnimationLibrary.
+## Пробел — пауза, ←/→ — кадр, ↑/↓ — клип, L — скорость, Esc/H — игра.
 extends Node3D
 
 const T := preload("res://scripts/tuning.gd")
 const CharacterScript := preload("res://scripts/character_anim.gd")
 const BuildScene := preload("res://scripts/build_scene.gd")
-
-## Позы витрины. Значения — те же углы, что в character_anim.gd: это одна и
-## та же система координат, поэтому подобранное здесь переносится в игру
-## один в один, без пересчёта.
-var poses: Array = [
-	{"name": "покой (стойка)", "spec": {}},
-	{"name": "замах правой", "spec": {
-		"upper_arm.R": Vector3(14.0, 20.0, -18.0), "forearm.R": Vector3(150.0, 0.0, 0.0),
-		"hand.R": Vector3(0.0, 0.0, -6.0), "chest": Vector3(4.0, -16.0, 0.0),
-		"spine": Vector3(2.0, -7.0, 0.0), "head": Vector3(0.0, 11.0, 0.0),
-		"upper_arm.L": Vector3(10.0, 0.0, 16.0), "forearm.L": Vector3(112.0, 0.0, 0.0)}},
-	{"name": "удар правой", "spec": {
-		"upper_arm.R": Vector3(72.0, 20.0, -12.0), "forearm.R": Vector3(20.0, 0.0, 0.0),
-		"hand.R": Vector3(0.0, 0.0, -4.0), "chest": Vector3(6.0, 16.0, 0.0),
-		"spine": Vector3(4.0, 8.0, 0.0), "head": Vector3(0.0, -9.0, 0.0),
-		"upper_arm.L": Vector3(14.0, 0.0, -12.0), "forearm.L": Vector3(108.0, 0.0, 0.0)}},
-	{"name": "удар левой", "spec": {
-		"upper_arm.L": Vector3(72.0, 20.0, 12.0), "forearm.L": Vector3(20.0, 0.0, 0.0),
-		"hand.L": Vector3(0.0, 0.0, 4.0), "chest": Vector3(6.0, -16.0, 0.0),
-		"spine": Vector3(4.0, -8.0, 0.0), "head": Vector3(0.0, 9.0, 0.0),
-		"upper_arm.R": Vector3(14.0, 0.0, 12.0), "forearm.R": Vector3(108.0, 0.0, 0.0)}},
-	{"name": "шаг (фаза 1)", "spec": {
-		"thigh.L": Vector3(24.0, 0.0, 0.0), "thigh.R": Vector3(-18.0, 0.0, 0.0),
-		"shin.L": Vector3(-10.0, 0.0, 0.0), "shin.R": Vector3(-34.0, 0.0, 0.0),
-		"upper_arm.L": Vector3(-14.0, 0.0, -5.0), "upper_arm.R": Vector3(14.0, 0.0, 5.0)}},
-	{"name": "бег (наклон)", "spec": {
-		"spine": Vector3(9.0, 0.0, 0.0), "chest": Vector3(6.0, 0.0, 0.0),
-		"thigh.L": Vector3(30.0, 0.0, 0.0), "thigh.R": Vector3(-22.0, 0.0, 0.0),
-		"shin.L": Vector3(-12.0, 0.0, 0.0), "shin.R": Vector3(-42.0, 0.0, 0.0),
-		"upper_arm.L": Vector3(-20.0, 0.0, -5.0), "upper_arm.R": Vector3(20.0, 0.0, 5.0)}},
-	{"name": "уворот (присед)", "spec": {
-		"thigh.L": Vector3(50.0, 0.0, 3.0), "thigh.R": Vector3(44.0, 0.0, -3.0),
-		"shin.L": Vector3(-70.0, 0.0, 0.0), "shin.R": Vector3(-64.0, 0.0, 0.0),
-		"foot.L": Vector3(20.0, 0.0, 0.0), "foot.R": Vector3(18.0, 0.0, 0.0),
-		"spine": Vector3(26.0, 0.0, 0.0), "chest": Vector3(8.0, 0.0, 0.0),
-		"head": Vector3(-20.0, 0.0, 0.0),
-		"upper_arm.L": Vector3(26.0, 0.0, -10.0), "upper_arm.R": Vector3(26.0, 0.0, 10.0),
-		"forearm.L": Vector3(60.0, 0.0, 0.0), "forearm.R": Vector3(60.0, 0.0, 0.0)}},
-	{"name": "полёт (прыжок)", "spec": {
-		"thigh.L": Vector3(26.0, 0.0, 2.0), "thigh.R": Vector3(-14.0, 0.0, -2.0),
-		"shin.L": Vector3(-42.0, 0.0, 0.0), "shin.R": Vector3(-18.0, 0.0, 0.0),
-		"foot.L": Vector3(16.0, 0.0, 0.0), "foot.R": Vector3(10.0, 0.0, 0.0),
-		"upper_arm.L": Vector3(20.0, 0.0, 20.0), "upper_arm.R": Vector3(20.0, 0.0, -20.0),
-		"forearm.L": Vector3(110.0, 0.0, 0.0), "forearm.R": Vector3(110.0, 0.0, 0.0),
-		"hand.L": Vector3(0.0, 0.0, 8.0), "hand.R": Vector3(0.0, 0.0, -8.0),
-		"spine": Vector3(8.0, 0.0, 0.0), "head": Vector3(-4.0, 0.0, 0.0)}},
-	{"name": "руки вверх (проверка)", "spec": {
-		"upper_arm.L": Vector3(0.0, 0.0, -95.0), "upper_arm.R": Vector3(0.0, 0.0, 95.0),
-		"forearm.L": Vector3(20.0, 0.0, 0.0), "forearm.R": Vector3(20.0, 0.0, 0.0)}},
-	{"name": "поворот корпуса (проверка)", "spec": {
-		"chest": Vector3(0.0, 40.0, 0.0), "spine": Vector3(0.0, 20.0, 0.0),
-		"head": Vector3(0.0, 25.0, 0.0)}},
+const CLIPS := [
+	["guard", "Боевая стойка"], ["walk", "Ходьба"], ["run", "Бег"],
+	["attack_left", "Джеб — левая"], ["attack_right", "Кросс — правая"],
+	["dodge", "Уклонение"], ["jump_start", "Отрыв от земли"],
+	["jump_up", "Подъём в прыжке"], ["jump_down", "Падение"],
+	["land", "Приземление"], ["hit", "Реакция на удар"],
 ]
+const SPEEDS := [0.25, 0.5, 1.0]
 
 var character: Node3D
 var cam: Camera3D
-var _yaw := 25.0
-var _pitch := -8.0
-var _dist := 3.1
-var _focus := Vector3(0.0, 1.0, 0.0)
-var _pose_index := 0
-var _playing := false
-var _play_time := 0.0
-var _speed_index := 2
-const SPEEDS := [0.25, 0.5, 1.0]
-var _hud: Label
 var _world: Node3D
+var _yaw := 0.0
+var _pitch := -8.0
+var _distance := 3.8
+var _selected := 0
+var _playing := true
+var _time := 0.0
+var _speed_index := 2
+var _repeat := true
+var _title: Label
+var _phase: Label
+var _time_label: Label
+var _timeline: HSlider
+var _play_button: Button
+var _speed_picker: OptionButton
+var _clip_buttons: Array[Button] = []
 
 
 func _ready() -> void:
-	var room := Node3D.new()
-	room.set_script(BuildScene)
-	add_child(room)          # комната строит свет и пол
-	_world = room
-	# На витрине свет должен показывать ФОРМУ, а не стерильность лаборатории:
-	# белая стена съедает силуэт. Поэтому фон темнее, а контраст выше.
-	if room.has_method("showcase_lighting"):
-		room.showcase_lighting()
-
-	# Героиня стоит в центре сцены, без физики: на витрине двигать её незачем.
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_world = Node3D.new()
+	_world.set_script(BuildScene)
+	add_child(_world)
+	_world.showcase_lighting()
 	character = Node3D.new()
 	character.set_script(CharacterScript)
 	add_child(character)
-
 	cam = Camera3D.new()
-	cam.fov = 42.0
+	cam.fov = 36.0
+	cam.current = true
 	add_child(cam)
-	_make_hud()
-	if T.TOON_ENABLED and _world != null and _world.has_method("apply_toon"):
+	_make_ui()
+	if T.TOON_ENABLED:
 		_world.apply_toon(character)
-	_apply_pose(0)
+	_select_clip(0)
 
 
-func _make_hud() -> void:
+func _panel() -> PanelContainer:
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(.065, .09, .12, .94)
+	style.border_color = Color(.25, .34, .39)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(7)
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 13
+	style.content_margin_bottom = 13
+	panel.add_theme_stylebox_override("panel", style)
+	return panel
+
+
+func _button(caption: String, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = caption
+	button.focus_mode = Control.FOCUS_NONE
+	button.pressed.connect(callback)
+	return button
+
+
+func _make_ui() -> void:
 	var layer := CanvasLayer.new()
-	layer.layer = 20
 	add_child(layer)
-	_hud = Label.new()
-	_hud.position = Vector2(18, 14)
-	_hud.add_theme_color_override("font_color", Color(0.12, 0.14, 0.18))
-	_hud.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.85))
-	_hud.add_theme_constant_override("outline_size", 6)
-	_hud.add_theme_font_size_override("font_size", 16)
-	_hud.add_theme_color_override("font_outline_color", Color(1, 1, 1, 0.9))
-	_hud.add_theme_constant_override("outline_size", 5)
-	layer.add_child(_hud)
+	var root := Control.new()
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_theme_color_override("font_color", Color(.86, .92, .95))
+	root.add_theme_font_size_override("font_size", 15)
+	layer.add_child(root)
+
+	var library := _panel()
+	library.position = Vector2(16, 16)
+	library.custom_minimum_size = Vector2(228, 0)
+	root.add_child(library)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 5)
+	library.add_child(list)
+	var heading := Label.new()
+	heading.text = "GEN / АНИМАЦИИ"
+	heading.add_theme_font_size_override("font_size", 19)
+	list.add_child(heading)
+	var note := Label.new()
+	note.text = "21 кость · единая библиотека"
+	note.add_theme_font_size_override("font_size", 12)
+	list.add_child(note)
+	list.add_child(HSeparator.new())
+	for i in CLIPS.size():
+		var button := _button("%02d  %s" % [i + 1, CLIPS[i][1]], _select_clip.bind(i))
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.toggle_mode = true
+		list.add_child(button)
+		_clip_buttons.append(button)
+	list.add_child(HSeparator.new())
+	list.add_child(_button("← Вернуться в игру  [Esc]", _exit_showcase))
+
+	var camera_bar := HBoxContainer.new()
+	camera_bar.position = Vector2(264, 16)
+	camera_bar.add_theme_constant_override("separation", 6)
+	root.add_child(camera_bar)
+	for pair in [["Спереди", 0.0], ["Сбоку", 90.0], ["Сзади", 180.0], ["¾", 35.0]]:
+		camera_bar.add_child(_button(pair[0], _set_camera.bind(pair[1])))
+
+	_title = Label.new()
+	_title.position = Vector2(266, 64)
+	_title.add_theme_font_size_override("font_size", 21)
+	root.add_child(_title)
+	_phase = Label.new()
+	_phase.position = Vector2(266, 96)
+	_phase.add_theme_font_size_override("font_size", 14)
+	root.add_child(_phase)
+
+	var transport := _panel()
+	root.add_child(transport)
+	transport.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	transport.offset_left = 16
+	transport.offset_right = -16
+	transport.offset_top = -126
+	transport.offset_bottom = -16
+	var stack := VBoxContainer.new()
+	stack.add_theme_constant_override("separation", 8)
+	transport.add_child(stack)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	stack.add_child(row)
+	row.add_child(_button("|< Кадр", _step_frame.bind(-1)))
+	_play_button = _button("Пауза", _toggle_play)
+	_play_button.custom_minimum_size.x = 118
+	row.add_child(_play_button)
+	row.add_child(_button("Кадр >|", _step_frame.bind(1)))
+	_speed_picker = OptionButton.new()
+	for speed in SPEEDS:
+		_speed_picker.add_item("%.2f×" % speed)
+	_speed_picker.select(_speed_index)
+	_speed_picker.item_selected.connect(func(index: int) -> void: _speed_index = index)
+	row.add_child(_speed_picker)
+	var repeat_button := CheckButton.new()
+	repeat_button.text = "Повторять"
+	repeat_button.button_pressed = true
+	repeat_button.focus_mode = Control.FOCUS_NONE
+	repeat_button.toggled.connect(func(value: bool) -> void: _repeat = value)
+	row.add_child(repeat_button)
+	_time_label = Label.new()
+	row.add_child(_time_label)
+	_timeline = HSlider.new()
+	_timeline.step = .001
+	_timeline.custom_minimum_size.y = 18
+	_timeline.value_changed.connect(_seek)
+	stack.add_child(_timeline)
+	var help := Label.new()
+	help.text = "Пробел — пауза · ← → кадр · ↑ ↓ клип · L скорость · G стиль · B свет · ЛКМ + мышь — орбита · колесо — масштаб"
+	help.add_theme_font_size_override("font_size", 12)
+	stack.add_child(help)
 
 
-func _apply_pose(index: int) -> void:
-	_pose_index = posmod(index, poses.size())
+func _select_clip(index: int) -> void:
+	_selected = posmod(index, CLIPS.size())
+	_time = 0.0
+	_playing = true
+	_timeline.max_value = character.clip_duration(CLIPS[_selected][0])
+	for i in _clip_buttons.size():
+		_clip_buttons[i].set_pressed_no_signal(i == _selected)
+	character.seek_clip(CLIPS[_selected][0], _time)
+	_update_ui()
+
+
+func _seek(value: float) -> void:
+	_time = value
 	_playing = false
-	_play_time = 0.0
-	var spec: Dictionary = poses[_pose_index]["spec"]
-	# Поза ставится напрямую, без сглаживания: на витрине нужен точный кадр.
-	if character.has_method("set_pose_direct"):
-		character.set_pose_direct(spec)
+	character.seek_clip(CLIPS[_selected][0], _time)
+	_update_ui()
+
+
+func _step_frame(direction: int) -> void:
+	_seek(clampf(_time + float(direction) / 60.0, 0.0, _timeline.max_value))
+
+
+func _toggle_play() -> void:
+	if _time >= _timeline.max_value:
+		_time = 0.0
+	_playing = not _playing
+	_update_ui()
+
+
+func _set_camera(yaw: float) -> void:
+	_yaw = yaw
+	_pitch = -8.0
+	_distance = 3.8
 
 
 func _process(delta: float) -> void:
-	if _playing:
-		_play_time += delta * SPEEDS[_speed_index]
-		var total: float = T.ATTACK_WINDUP + T.ATTACK_ACTIVE + T.ATTACK_RECOVERY
-		if _play_time >= total:
-			_playing = false
-			_play_time = 0.0
-			# Возврат в выбранную позу. Не update_anim(): та сглаживает позу
-			# и застыла бы на середине перехода, потому что покадрового
-			# вызова после этого нет.
-			_apply_pose(_pose_index)
-		else:
-			character.update_anim(delta, 0.0, "attack", _play_time, "R")
-	elif _pose_index == 0:
-		# на позе «стойка» покачивание живое, на остальных стоит точный кадр
-		character.update_anim(delta, 0.0, "", 0.0)
-
-	# Орбита вокруг точки _focus: рыскание вокруг вертикали, наклон подъёмом.
-	var b := Basis(Vector3.UP, deg_to_rad(_yaw)) * Basis(Vector3.RIGHT, deg_to_rad(_pitch))
-	cam.global_position = _focus + b * Vector3(0.0, 0.0, _dist)
-	cam.look_at(_focus, Vector3.UP)
-	_update_hud()
+	var duration: float = character.clip_duration(CLIPS[_selected][0])
+	if _playing and duration > 0:
+		_time += delta * SPEEDS[_speed_index]
+		if _time > duration:
+			if _repeat:
+				_time = fposmod(_time, duration)
+			else:
+				_time = duration
+				_playing = false
+	character.seek_clip(CLIPS[_selected][0], _time)
+	var orbit := Basis(Vector3.UP, deg_to_rad(_yaw)) * Basis(Vector3.RIGHT, deg_to_rad(_pitch))
+	var focus := Vector3(0, .85, 0)
+	cam.global_position = focus + orbit * Vector3(0, 0, _distance)
+	cam.look_at(focus, Vector3.UP)
+	_update_ui()
 
 
-func _update_hud() -> void:
-	var lines := [
-		"ВИТРИНА — отработка анимаций",
-		"поза %d/%d: %s" % [_pose_index + 1, poses.size(), poses[_pose_index]["name"]],
-		"скорость: %.2fx   селлшейдинг: %s   свет: %s" % [SPEEDS[_speed_index], "вкл" if T.TOON_ENABLED else "выкл", T.BRIGHTNESS_NAMES[clampi(T.BRIGHTNESS, 0, 2)]],
-		"",
-		"1…0 поза · ← → листать · Пробел — проиграть удар",
-		"L скорость · G селлшейдинг · B яркость · R камера · Esc/H — в игру",
-		"мышь — вращать",
-	]
-	_hud.text = "\n".join(lines)
+func _update_ui() -> void:
+	_title.text = "%02d / %02d   %s" % [_selected + 1, CLIPS.size(), CLIPS[_selected][1]]
+	_play_button.text = "Пауза  [Space]" if _playing else "Играть  [Space]"
+	_time_label.text = "   %.3f / %.2f с   ·   кадр %d" % [_time, _timeline.max_value, roundi(_time * 60)]
+	_timeline.set_value_no_signal(_time)
+	var clip: Animation = CharacterScript.MOTIONS.get_animation(CLIPS[_selected][0])
+	if clip.has_meta("impact"):
+		var windup: float = clip.get_meta("windup")
+		var active_end: float = clip.get_meta("active_end")
+		_phase.text = "Подготовка → разгон" if _time < windup else "КОНТАКТ / активная фаза" if _time <= active_end else "Возврат в защиту"
+		_phase.modulate = Color(.55, 1, .77) if _time >= windup and _time <= active_end else Color.WHITE
+	else:
+		_phase.text = "Та же AnimationLibrary, что в игре. Пауза и ползунок показывают точный кадр."
+		_phase.modulate = Color.WHITE
+
+
+func _exit_showcase() -> void:
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		_yaw -= event.relative.x * 0.4
-		_pitch = clampf(_pitch - event.relative.y * 0.3, -70.0, 40.0)
+		_yaw -= event.relative.x * .35
+		_pitch = clampf(_pitch - event.relative.y * .25, -65, 35)
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_dist = maxf(1.2, _dist - 0.2)
+			_distance = maxf(1.8, _distance - .2)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_dist = minf(6.0, _dist + 0.2)
+			_distance = minf(6.0, _distance + .2)
 	elif event is InputEventKey and event.pressed and not event.echo:
-		var k: int = event.keycode
-		if k >= KEY_1 and k <= KEY_9:
-			_apply_pose(k - KEY_1)
-		elif k == KEY_0:
-			_apply_pose(9)
-		elif k == KEY_LEFT:
-			_apply_pose(_pose_index - 1)
-		elif k == KEY_RIGHT:
-			_apply_pose(_pose_index + 1)
-		elif k == KEY_SPACE:
-			_playing = true
-			_play_time = 0.0
-		elif k == KEY_L:
-			_speed_index = (_speed_index + 1) % SPEEDS.size()
-		elif k == KEY_ESCAPE or k == KEY_H:
-			get_tree().change_scene_to_file("res://scenes/main.tscn")
-		elif k == KEY_R:
-			_yaw = 25.0
-			_pitch = -8.0
-			_dist = 3.1
-		elif k == KEY_B:
-			T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
-			if _world != null and _world.has_method("rebuild_lighting"):
+		match event.keycode:
+			KEY_SPACE: _toggle_play()
+			KEY_LEFT: _step_frame(-1)
+			KEY_RIGHT: _step_frame(1)
+			KEY_UP: _select_clip(_selected - 1)
+			KEY_DOWN: _select_clip(_selected + 1)
+			KEY_ESCAPE, KEY_H: _exit_showcase()
+			KEY_R: _set_camera(0)
+			KEY_L:
+				_speed_index = (_speed_index + 1) % SPEEDS.size()
+				_speed_picker.select(_speed_index)
+			KEY_B:
+				T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
 				_world.rebuild_lighting(T.TOON_ENABLED)
-		elif k == KEY_G:
-			T.TOON_ENABLED = not T.TOON_ENABLED
-			if _world.has_method("rebuild_lighting"):
+			KEY_G:
+				T.TOON_ENABLED = not T.TOON_ENABLED
 				_world.rebuild_lighting(T.TOON_ENABLED)
-			if T.TOON_ENABLED and _world != null and _world.has_method("apply_toon"):
-				_world.apply_toon(character)
-			elif _world.has_method("clear_toon"):
-				_world.clear_toon(character)
+				if T.TOON_ENABLED:
+					_world.apply_toon(character)
+				else:
+					_world.clear_toon(character)
+			_:
+				if event.keycode >= KEY_1 and event.keycode <= KEY_9:
+					_select_clip(event.keycode - KEY_1)
+				elif event.keycode == KEY_0:
+					_select_clip(9)

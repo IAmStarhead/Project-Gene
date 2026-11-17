@@ -1,0 +1,17 @@
+{
+  "name": "gen-motion-lab",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "check": "node --check server.mjs && node --check main.js && node --check test.mjs",
+    "test": "node test.mjs"
+  },
+  "dependencies": {
+    "three": "0.183.1"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.58.2"
+  }
+}

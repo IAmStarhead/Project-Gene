@@ -7,3 +7,10 @@ __pycache__/
 export.cfg
 export_presets.cfg
 *.translation
+
+# Local tools, dependencies and generated animation reviews
+.local/
+.venv/
+node_modules/
+prototype/animation_preview/dist/
+prototype/tests/output/

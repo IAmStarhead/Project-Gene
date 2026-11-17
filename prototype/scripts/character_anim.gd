@@ -1,92 +1,99 @@
-## Процедурная анимация героини.
+## Единый проигрыватель анимаций для героини, клона и витрины.
 ##
-## В файле female_A_rigged_safe.glb есть скелет из 21 кости, но НЕТ клипов
-## ходьбы, бега, удара и уворота — их никто не делал, а взять негде. Поэтому
-## поза считается кодом: углы задаются формулами от скорости, фазы шага и
-## текущего действия.
+## Ключи запечены на НАШ скелет в assets/heroine/animations/motion_set.tres.
+## Источник: tools/animation/build_motion_set.py. Blender не нужен.
+## В AnimationLibrary — обычные rotation_3d / position_3d треки, не углы,
+## подобранные отдельно для игры и отдельно для витрины.
 ##
-## ── Главное правило, на котором всё держится ──────────────────────────────
-## В Godot поза кости — это ПОЛНЫЙ поворот кости относительно родителя, а не
-## добавка к позе покоя. Документация Skeleton3D: «Bone rest defines the
-## initial transform of the bone pose».
-##
-## Поэтому «повернуть кость на 30° вокруг её оси X» в терминах Godot значит
-## не «поставить поворот 30°», а «взять поворот покоя и домножить на 30°»:
-##
-##     pose = rest * bend          (bend — изгиб в осях покоя кости)
-##     поставить(pose)
-##
-## Если поставить просто bend, кость потеряет наклон покоя и скелет
-## складывается сам в себя. Именно это и произошло в первой версии.
-##
-## ── Оси и знаки ───────────────────────────────────────────────────────────
-## Проверено расчётом по матрицам покоя модели:
-##   бедро, голень, стопа, предплечье: поворот вокруг локальной X качает
-##     конечность вперёд-назад. Для ГОЛЕНИ плюс — это переразгибание,
-##     поэтому колено всегда сгибается отрицательным углом.
-##   плечо: вокруг X — мах вперёд-назад, вокруг Z — отведение в сторону
-##     (у правой руки знак Z противоположен левой).
-##   предплечье: плюс вокруг X — локоть сгибается вперёд, кисть идёт вперёд.
-
+## Почему не сглаживаем каждую кость каждый кадр: такой low-pass опаздывал
+## за ударом. Теперь SLERP только между ключами и при СМЕНЕ состояния;
+## к активному кадру атаки переход уже закончен. Фаза шага идёт от реально
+## пройденного расстояния ПОСЛЕ move_and_slide(), не от настенных часов.
 extends Node3D
 
 const T := preload("res://scripts/tuning.gd")
-
-## Версия модели без blend shapes и без анимаций: на исходной редактор Godot
-## падал при импорте. Геометрия, скелет и веса в ней те же.
 const MODEL_PATH := "res://assets/heroine/female_A_rigged_safe.glb"
+const MOTIONS: AnimationLibrary = preload("res://assets/heroine/animations/motion_set.tres")
 
 var skeleton: Skeleton3D
-
-var _idx: Dictionary = {}       ## имя кости -> индекс в скелете
-var _rest_rot: Dictionary = {}  ## имя кости -> поворот покоя
-var _rest_pos: Dictionary = {}  ## имя кости -> положение покоя
-var _bend: Dictionary = {}      ## имя кости -> сглаженный изгиб, градусы
-
-var _fallback: Node3D
+var animation_player: AnimationPlayer
+var _model: Node
 var _loaded := false
+var _bone_names: PackedStringArray = []
+var _rotation_tracks: Dictionary = {}
+var _position_tracks: Dictionary = {}
+var _upper_body: Array[int] = []
+var _hips_index := -1
 var _clock := 0.0
 var _phase := 0.0
+var _gait_blend := 0.0
+var _move_weight := 0.0
+var _air_time := 0.0
+var _land_time := 100.0
+var _hit_time := 100.0
+var _was_grounded := true
+var _state := ""
+var _last_pose: Dictionary = {}
+var _transition_from: Dictionary = {}
+var _transition_elapsed := 1.0
+var _transition_length := 0.10
 
 
 func _ready() -> void:
-	_fallback = get_node_or_null("Fallback")
 	if not load_character(MODEL_PATH):
-		push_warning("Модель героини не загрузилась — остаётся заглушка-капсула")
+		push_warning("Не удалось загрузить модель/анимации — оставлена капсула")
 
 
-## Загружает .glb и находит скелет. Возвращает false, если не вышло.
 func load_character(path: String) -> bool:
 	if not ResourceLoader.exists(path):
 		return false
-	var packed: Resource = load(path)
-	if packed == null or not (packed is PackedScene):
+	var packed := load(path) as PackedScene
+	if packed == null:
 		return false
-	var inst: Node = (packed as PackedScene).instantiate()
-	add_child(inst)
-
-	skeleton = _find_skeleton(inst)
-	if skeleton == null:
-		inst.queue_free()
+	var instance := packed.instantiate()
+	var found := _find_skeleton(instance)
+	if found == null:
+		instance.free()
 		return false
-
+	if is_instance_valid(_model):
+		_model.free()
+	if is_instance_valid(animation_player):
+		animation_player.free()
+	_model = instance
+	add_child(instance)
+	skeleton = found
+	_bone_names.clear()
+	_upper_body.clear()
 	for i in skeleton.get_bone_count():
-		var name := skeleton.get_bone_name(i)
-		var rest: Transform3D = skeleton.get_bone_rest(i)
-		_idx[name] = i
-		_rest_rot[name] = rest.basis.get_rotation_quaternion()
-		_rest_pos[name] = rest.origin
-		_bend[name] = Vector3.ZERO
+		var bone := skeleton.get_bone_name(i)
+		_bone_names.append(bone)
+		if not bone.begins_with("thigh.") and not bone.begins_with("shin.") \
+				and not bone.begins_with("foot.") and not bone.begins_with("toe.") and bone != "hips":
+			_upper_body.append(i)
+	_hips_index = skeleton.find_bone("hips")
+	if _hips_index < 0 or not _bind_tracks():
+		return false
 
-	if _fallback:
-		_fallback.visible = false
+	# Библиотеку видно у AnimationPlayer в удалённом инспекторе Godot.
+	# Сам player не пишет позу: ниже мы сэмплируем его нативные треки и
+	# смешиваем их явно (дистанционная фаза и разные тайминги клона).
+	animation_player = AnimationPlayer.new()
+	animation_player.name = "MotionLibrary"
+	add_child(animation_player)
+	animation_player.root_node = animation_player.get_path_to(skeleton)
+	animation_player.add_animation_library("motion", MOTIONS)
+	animation_player.active = false
+	var fallback := get_node_or_null("Fallback") as Node3D
+	if fallback != null:
+		fallback.visible = false
 	_loaded = true
+	seek_clip("guard", 0.0)
 	return true
 
 
 func _find_skeleton(node: Node) -> Skeleton3D:
 	if node is Skeleton3D:
-		return node
+		return node as Skeleton3D
 	for child in node.get_children():
 		var found := _find_skeleton(child)
 		if found != null:
@@ -94,381 +101,202 @@ func _find_skeleton(node: Node) -> Skeleton3D:
 	return null
 
 
-## Вызывается каждый кадр из player.gd.
-## speed_ratio — доля от скорости бега (0..1), action — "" | "attack" | "dodge".
-## side — какой рукой бьёт: "R" (правая) или "L" (левая). Пустая строка для
-## остальных действий. Сторона приходит из player.gd: ЛКМ — левая, ПКМ — правая.
-func update_anim(delta: float, speed_ratio: float, action: String,
-		action_time: float, side: String = "") -> void:
+func _bind_tracks() -> bool:
+	_rotation_tracks.clear()
+	_position_tracks.clear()
+	for clip_name in MOTIONS.get_animation_list():
+		var clip := MOTIONS.get_animation(clip_name)
+		var rotations: Array[int] = []
+		for bone in _bone_names:
+			var track := clip.find_track(NodePath(".:" + bone), Animation.TYPE_ROTATION_3D)
+			if track < 0:
+				push_error("В %s нет кости %s" % [clip_name, bone])
+				return false
+			rotations.append(track)
+		_rotation_tracks[clip_name] = rotations
+		var hip_track := clip.find_track(NodePath(".:hips"), Animation.TYPE_POSITION_3D)
+		if hip_track < 0:
+			return false
+		_position_tracks[clip_name] = hip_track
+	return true
+
+
+func clip_duration(clip_name: StringName) -> float:
+	return MOTIONS.get_animation(clip_name).length if MOTIONS.has_animation(clip_name) else 0.0
+
+
+func sample_clip(clip_name: StringName, time: float) -> Dictionary:
+	if not _loaded or not MOTIONS.has_animation(clip_name):
+		return {}
+	var clip := MOTIONS.get_animation(clip_name)
+	var at := clampf(time, 0.0, clip.length)
+	var rotations: Array[Quaternion] = []
+	for track in _rotation_tracks[clip_name]:
+		rotations.append(clip.rotation_track_interpolate(track, at).normalized())
+	return {"rotations": rotations,
+		"hips": clip.position_track_interpolate(_position_tracks[clip_name], at)}
+
+
+## Витрина и автотесты получают ТОЧНЫЙ кадр тех же треков, без low-pass.
+func seek_clip(clip_name: StringName, time: float) -> void:
+	var pose := sample_clip(clip_name, time)
+	if not pose.is_empty():
+		_last_pose = pose
+		_apply_pose(pose)
+
+
+## Перевод игрового времени в клип: подготовка / активная фаза / возврат.
+## У клона другая длительность подготовки, но контакт совпадает с уроном.
+func attack_clip_time(time: float, timing: Vector3, side: String = "R") -> float:
+	var clip := MOTIONS.get_animation("attack_right" if side == "R" else "attack_left")
+	var windup: float = clip.get_meta("windup")
+	var active_end: float = clip.get_meta("active_end")
+	if time <= timing.x:
+		return clampf(time / maxf(timing.x, 0.001), 0.0, 1.0) * windup
+	if time <= timing.x + timing.y:
+		return windup + (time - timing.x) / maxf(timing.y, 0.001) * (active_end - windup)
+	return active_end + clampf((time - timing.x - timing.y) / maxf(timing.z, 0.001), 0.0, 1.0) \
+		* (clip.length - active_end)
+
+
+## Вызывать ПОСЛЕ физического перемещения.
+## local_velocity — в осях модели (+Z вперёд), context.distance — реально
+## пройденные метры; grounded, vertical_speed, attack_timing — от физики.
+func update_motion(delta: float, local_velocity: Vector3, action: String,
+		action_time: float, side: String = "R", context: Dictionary = {}) -> void:
+	if not _loaded:
+		return
 	_clock += delta
-	if not _loaded:
-		return
+	_hit_time += delta
+	_land_time += delta
+	var grounded: bool = context.get("grounded", true)
+	if grounded and not _was_grounded:
+		_land_time = 0.0
+	if not grounded:
+		_air_time = 0.0 if _was_grounded else _air_time + delta
+	_was_grounded = grounded
 
-	var want: Dictionary = {}      # имя кости -> изгиб в градусах
-	var hip_offset := Vector3.ZERO
-	var w := clampf(speed_ratio, 0.0, 1.2)
+	var planar := Vector2(local_velocity.x, local_velocity.z).length()
+	var walk := MOTIONS.get_animation("walk")
+	var run := MOTIONS.get_animation("run")
+	var walk_speed: float = walk.get_meta("stride") / walk.length
+	var run_speed: float = run.get_meta("stride") / run.length
+	var want_gait := smoothstep(walk_speed + 0.3, run_speed, planar)
+	_gait_blend = move_toward(_gait_blend, want_gait, delta * 4.0)
+	_move_weight = move_toward(_move_weight, smoothstep(0.03, 0.6, planar), delta * 7.5)
+	if grounded and action != "attack" and action != "dodge":
+		var distance: float = context.get("distance", planar * delta)
+		var stride := lerpf(float(walk.get_meta("stride")), float(run.get_meta("stride")), _gait_blend)
+		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
+		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
-	# ───────────────────────────────────────── боевая стойка
-	_breathe(want, 1.0)
-	# Ноги в стойке не вместе: левая чуть впереди, колени подогнуты, вес
-	# пониже. Корпус вполоборота — правая рука (ударная) отведена назад,
-	# левая прикрывает.
-	# ВАЖНО про удары. Позы удара — АБСОЛЮТНЫЕ, а не добавка к стойке.
-	# Это была ошибка, которая ломала анимацию: _mix() прибавляет углы к
-	# тому, что уже лежит в want. Пока стойка была с локтем 55°, удар
-	# (65°) давал 120° — терпимо. Но со стойкой в 125° тот же удар дал бы
-	# 190°, то есть локоть складывался за спину. Поэтому при ударе стойка
-	# рук вообще не выставляется: иначе боевая стойка и боевой удар
-	# несовместимы по определению.
-	var stance_arms := action != "attack"
-	if stance_arms:
-		var idle_sway := sin(_clock * 1.4) * 1.6
-		# ── ЧТО БЫЛО НЕ ТАК (пользователь: «руки в стороны смотрят»)
-		#
-		# Мерил не глазами, а координатами локтя и кисти в позе:
-		#   было:  локоть X -0.15, кисть X -0.20  -> кисть ШИРЕ локтя
-		#   стало: локоть X -0.09, кисть X -0.12
-		# Ключевое — локоть должен быть УЖЕ кисти, иначе предплечье уходит
-		# наружу и рука читается как «разведена в сторону».
-		#
-		# Знак скрутки (Y) у обеих рук ОДИНАКОВЫЙ (-30), а отведение (Z)
-		# зеркальное (20 / -20). Это не описка: кость правой руки в позе
-		# покоя развёрнута на 180° от левой, поэтому зеркалить надо только Z.
-		# Проверено перебором 5000 сочетаний с метрикой симметрии.
-		#
-		# Симметрия выходит не идеальной (кисти 0.12 и 0.10 по X) — это
-		# свойство модели, а не ошибка: у неё своя асимметрия плеч.
-		# Скрутка (Y) разворачивает кулаки тыльной стороной наружу.
-		want["upper_arm.L"] = Vector3(20.0 + idle_sway, -30.0, 20.0)
-		want["upper_arm.R"] = Vector3(20.0 - idle_sway, -30.0, -20.0)
-		want["forearm.L"] = Vector3(160.0, 0.0, 0.0)
-		want["forearm.R"] = Vector3(160.0, 0.0, 0.0)
-		want["hand.L"] = Vector3(0.0, 0.0, 8.0)
-		want["hand.R"] = Vector3(0.0, 0.0, -8.0)
-	# корпус вполоборота: правое плечо назад, левое вперёд
-	want["spine"] = Vector3(8.0, 0.0, 0.0)
-	want["chest"] = Vector3(2.0, 8.0, 0.0)
-	want["head"] = Vector3(-4.0, -8.0, 0.0)
-	# ноги: левая впереди, колени подогнуты, стойка пониже
-	want["thigh.L"] = Vector3(16.0, 0.0, 3.0)
-	want["thigh.R"] = Vector3(10.0, 0.0, -3.0)
-	want["shin.L"] = Vector3(-28.0, 0.0, 0.0)
-	want["shin.R"] = Vector3(-20.0, 0.0, 0.0)
-	want["foot.L"] = Vector3(10.0, 0.0, 0.0)
-	want["foot.R"] = Vector3(8.0, 0.0, 0.0)
-
-	# ───────────────────────────────────────── шаг и бег
-	_phase = fmod(_phase + delta * (2.6 + 6.0 * w), TAU)
-	if w > 0.02:
-		_walk(want, w)
-
-	# ───────────────────────────────────────── удар
+	var pose := _locomotion_pose()
+	var state := "ground"
 	if action == "attack":
-		_attack(want, action_time, side)
-	# ───────────────────────────────────────── уворот
+		state = "attack_" + side
+		var timing: Vector3 = context.get("attack_timing", Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY))
+		var attack_pose := sample_clip("attack_right" if side == "R" else "attack_left",
+			attack_clip_time(action_time, timing, side))
+		pose = attack_pose if grounded else _replace_upper(_air_pose(context), attack_pose)
 	elif action == "dodge":
-		hip_offset = _dodge(want, action_time)
-	# ───────────────────────────────────────── полёт (прыжок)
-	elif action == "air":
-		_air(want)
+		state = "dodge"
+		pose = sample_clip("dodge", action_time / T.DODGE_DURATION * clip_duration("dodge"))
+	elif not grounded:
+		state = "air"
+		pose = _air_pose(context)
+	elif _land_time < clip_duration("land"):
+		state = "land"
+		var landing := sample_clip("land", _land_time)
+		# На бегу амортизируем в основном корпусом, не перебиваем шаг целиком.
+		pose = _blend_pose(landing, pose, _move_weight * .7)
 
-	_apply(want, hip_offset, delta)
+	if state != _state:
+		_transition_from = _last_pose
+		_transition_elapsed = 0.0
+		_transition_length = .055 if state == "land" else .075 if state.begins_with("attack") else .12
+		_state = state
+	_transition_elapsed += delta
+	if not _transition_from.is_empty() and _transition_elapsed < _transition_length:
+		pose = _blend_pose(_transition_from, pose, smoothstep(0.0, _transition_length, _transition_elapsed))
 
-
-## Дыхание: еле заметное покачивание корпуса, чтобы модель не была статуей.
-func _breathe(want: Dictionary, weight: float) -> void:
-	var b := sin(_clock * 1.6) * 1.1 * weight
-	want["chest"] = Vector3(b, 0.0, 0.0)
-	want["head"] = Vector3(-b * 0.5, 0.0, 0.0)
-	want["spine"] = Vector3(2.0, 0.0, 0.0)
-
-
-## Шаг и бег. w — доля скорости: 0 стоит, 1 бежит на полную.
-func _walk(want: Dictionary, w: float) -> void:
-	var s := sin(_phase)
-	var hip_swing := 15.0 * w        # бедро: вперёд-назад
-	var knee := 8.0 + 26.0 * w       # колено гнётся ТОЛЬКО назад, поэтому минус
-
-	# ноги
-	want["thigh.L"] = Vector3(hip_swing * s, 0.0, 0.0)
-	want["thigh.R"] = Vector3(-hip_swing * s, 0.0, 0.0)
-
-	# Колено подгибается, когда нога идёт назад-вверх (перенос).
-	var bend_l := maxf(0.0, -s)
-	var bend_r := maxf(0.0, s)
-	want["shin.L"] = Vector3(-knee * bend_l, 0.0, 0.0)
-	want["shin.R"] = Vector3(-knee * bend_r, 0.0, 0.0)
-
-	# Стопа добирает часть подъёма, чтобы не «шаркать» носком.
-	want["foot.L"] = Vector3(knee * bend_l * 0.30, 0.0, 0.0)
-	want["foot.R"] = Vector3(knee * bend_r * 0.30, 0.0, 0.0)
-
-	# ── РУКИ В ШАГЕ. Здесь была главная ошибка, и пользователь видел её
-	# каждый раз, когда шёл: «руки опять опущены».
-	#
-	# _walk() ПЕРЕЗАПИСЫВАЕТ всё, что стойка поставила, причём углами для
-	# ОПУЩЕННЫХ рук: плечо не больше 14°, локоть 45-59°. То есть пока персонаж
-	# стоит — руки в стойке у подбородка, а как только он пошёл, они падают
-	# вдоль тела. Стойка и шаг были написаны двумя разными людьми, и в кадре
-	# побеждал шаг.
-	#
-	# Теперь шаг качает руку ОТ стойки, а не заменяет её: берём стойку
-	# (плечо 30/130) и добавляем небольшое противофазное качание. Локти
-	# остаются поднятыми, как в бою.
-	var swing := 10.0 * w          # амплитуда качания плеча в шаге
-	want["upper_arm.L"] = Vector3(20.0 + swing * s, -30.0, 20.0)
-	want["upper_arm.R"] = Vector3(20.0 - swing * s, -30.0, -20.0)
-	# Локоть в шаге чуть РАСКРЫВАЕТСЯ (130 -> 118) на замахе руки назад и
-	# чуть сжимается вперёд: так качание читается, а кулак не улетает.
-	want["forearm.L"] = Vector3(160.0 - 12.0 * w * s, 0.0, 0.0)
-	want["forearm.R"] = Vector3(160.0 + 12.0 * w * s, 0.0, 0.0)
-	want["hand.L"] = Vector3(0.0, 0.0, 8.0)
-	want["hand.R"] = Vector3(0.0, 0.0, -8.0)
-
-	# корпус: наклон вперёд на бегу, легкое покачивание плеч
-	want["spine"] = Vector3(6.0 + 7.0 * w, 0.0, 0.0)
-	want["chest"] = Vector3(2.0 + 3.0 * w, 8.0 - 4.0 * w * s, 0.0)
-	want["hips"] = Vector3(0.0, 4.0 * w * s, 0.0)
-	want["head"] = Vector3(-4.0 - 3.0 * w, -8.0 + 2.0 * w * s, 0.0)
+	if _hit_time < clip_duration("hit"):
+		pose = _add_hit(pose, .35 if action == "attack" else 1.0)
+	_last_pose = pose
+	_apply_pose(pose)
 
 
-## Удар правой рукой: замах, удар, возврат.
-##
-## Почему углы именно такие. В первой версии рука уходила махом через грудь
-## на левую сторону. На модели это давало два видимых дефекта, которые
-## пользователь и заметил:
-##   1) кисть проходила СКВОЗЬ торс;
-##   2) вершины груди, часть веса которых принадлежит плечу, тянулись за
-##      рукой — «кусок кожи поднимался».
-## Поэтому плечо отведено в СТОРОНУ (ось Z) и держится снаружи корпуса,
-## а удар идёт вперёд (ось X), не пересекая среднюю линию тела.
-func _attack(want: Dictionary, t: float, side: String = "R") -> void:
-	# Сторона удара. Раньше била всегда правая — и было непонятно, почему
-	# персонаж бьёт то одной, то другой (это была не смена рук, а разные
-	# фазы одной и той же анимации). Теперь сторона приходит из ввода:
-	# ЛКМ — левая, ПКМ — правая, как в Dark Souls.
-	var arm := "R" if side == "R" else "L"
-	var other := "L" if arm == "R" else "R"
-	# Для правой руки отведение плеча в сторону — отрицательный Z, для левой
-	# положительный. Знак берём из стороны, чтобы не дублировать функцию.
-	var out := -1.0 if arm == "R" else 1.0
-	var windup := T.ATTACK_WINDUP
-	var active_end := windup + T.ATTACK_ACTIVE
-	var total := active_end + T.ATTACK_RECOVERY
-
-	# Плечо R: отведение в сторону = ОТРИЦАТЕЛЬНЫЙ Z (проверено расчётом:
-	# при z=-35 кисть уходит на X≈-0.45, то есть наружу от корпуса).
-	#
-	# Числа подобраны не на глаз, а по мере «перепонки»: скрипт
-	# assets/heroine/tools/pose_viewer.py считает, во сколько раз
-	# растягивается каждое ребро меша. Чем меньше перепонка, тем меньше
-	# процент рёбер, растянутых больше чем вдвое.
-	#
-	#   поза                          рёбер >2x
-	#   рука вверх (0/-95)               0.66 %
-	#   замах старый (-62/102)           0.23 %
-	#   удар на уровне плеча (70/34)     0.38 %
-	#   замах (16/-26, локоть 148)       0.063 %
-	#   удар (66/-10, локоть 26)         0.157 %
-	#   прежний удар (30/65)             0.027 %, но рука оставалась согнутой
-	#                                    и читался не удар, а «толчок»
-	#
-	# Компромисс сознательный: новая поза растягивает рёбра сильнее
-	# (0.157 % против 0.027 %), потому что рука полностью выпрямляется —
-	# а без выпрямления удара не видно. 0.157 % — это 95 рёбер из 51 000.
-	# Корпус скручивается В СТОРОНУ БЬЮЩЕЙ РУКИ, поэтому знак Y у chest и
-	# spine тоже зависит от стороны. Иначе левый удар выглядел бы как
-	# правый с перепутанной рукой — корпус уходил бы не туда.
-	var twist := -1.0 if arm == "R" else 1.0
-	var pose_back := {
-		# Замах: кулак отведён к уху, локоть не внизу, а в стороне — так
-		# виден запас хода. Проверено: кисть уходит на X ±0.26, Y 1.32.
-		"upper_arm." + arm: Vector3(14.0, 20.0, -18.0 * out),
-		"forearm." + arm: Vector3(150.0, 0.0, 0.0),
-		"hand." + arm: Vector3(0.0, 0.0, -6.0 * out),
-		"chest": Vector3(4.0, -16.0 * twist, 0.0),
-		"spine": Vector3(2.0, -7.0 * twist, 0.0),
-		"head": Vector3(0.0, 11.0 * twist, 0.0),
-		# вторая рука в замахе прикрывает лицо, а не висит
-		"upper_arm." + other: Vector3(10.0, 0.0, 16.0 * out),
-		"forearm." + other: Vector3(112.0, 0.0, 0.0),
-	}
-	var pose_hit := {
-		# ── ПОЧЕМУ КУЛАК ШЁЛ ВБОК (жалоба «удары идут вбок куда-то»)
-		#
-		# Две причины, обе найдены замером, а не на глаз:
-		#
-		# 1) Скрутка плеча и предплечья (Y, ось вдоль кости) на 40/60 градусов
-		#    уводила кулак в сторону от линии удара. Она была добавлена, чтобы
-		#    развернуть ладонь вниз — и ладонь развернула, но ценой направления.
-		#    Убрана: кулак у нас и так сжат морфом, а ладонь при ударе видна
-		#    сбоку и её ориентация не так важна, как направление.
-		#
-		# 2) Мало скрутки КОРПУСА. Замер зависимости положения кулака от
-		#    скрутки груди (плечо вперёд 72):
-		#       twist  0 -> кулак X -0.26, Z 0.51
-		#       twist 20 -> кулак X  0.00, Z 0.58   <- точно по центру
-		#       twist 30 -> кулак X  0.18, Z 0.54   <- уже перелетает влево
-		#    То есть корпус должен доворачивать ровно на 20 градусов: тогда
-		#    кулак идёт по средней линии, а не в сторону.
-		# Без неё удар выходил «тыльной стороной ладони»: пользователь описал
-		# это как удар в сторону, не похожий на джеб. Расчёт по осям покоя
-		# показал: ладонь смотрит наружу-вверх, пальцы вперёд — то есть
-		# наружу шла именно тыльная сторона кисти.
-		# Перебором 3000 комбинаций найдено, что ладонь разворачивается вниз
-		# скруткой плеча на 40° и предплечья на 60° (отклонение нормали от
-		# «вниз» 4° вместо 97°). При этом кулак идёт вперёд.
-		# Удар: плечо вперёд на 66°, локоть почти распрямлён (26°). Именно
-		# РАЗГИБ локтя и есть удар — при старом значении 65° рука оставалась
-		# согнутой, и «удара как будто нет». Кисть выходит на 0.56 м вперёд.
-		"upper_arm." + arm: Vector3(72.0, 20.0, -12.0 * out),
-		"forearm." + arm: Vector3(20.0, 0.0, 0.0),
-		"hand." + arm: Vector3(0.0, 0.0, -4.0 * out),
-		"chest": Vector3(6.0, 20.0 * twist, 0.0),
-		"spine": Vector3(4.0, 11.0 * twist, 0.0),
-		"head": Vector3(0.0, -7.0 * twist, 0.0),
-		"upper_arm." + other: Vector3(14.0, 0.0, -12.0 * out),
-		"forearm." + other: Vector3(108.0, 0.0, 0.0),
-	}
-
-	# Замах: плавно ОТ стойки К позе замаха. Удар: от замаха к удару.
-	# Возврат: от удара обратно к стойке (а не к нулю — иначе после удара
-	# руки падают вниз, и стойка «разваливается» на полсекунды).
-	var stance_pose := {
-		"upper_arm.L": Vector3(20.0, -30.0, 20.0),
-		"upper_arm.R": Vector3(20.0, -30.0, -20.0),
-		"forearm.L": Vector3(160.0, 0.0, 0.0),
-		"forearm.R": Vector3(160.0, 0.0, 0.0),
-		"hand.L": Vector3(0.0, 0.0, 8.0),
-		"hand.R": Vector3(0.0, 0.0, -8.0),
-		"chest": Vector3(2.0, 8.0, 0.0),
-		"spine": Vector3(8.0, 0.0, 0.0),
-		"head": Vector3(-4.0, -8.0, 0.0),
-	}
-	if t < windup:
-		_lerp_pose(want, stance_pose, pose_back, smoothstep(0.0, 1.0, t / windup))
-	elif t < active_end:
-		var u := smoothstep(0.0, 1.0, (t - windup) / T.ATTACK_ACTIVE)
-		_lerp_pose(want, pose_back, pose_hit, u)
-	elif t <= total:
-		var u := smoothstep(0.0, 1.0, (t - active_end) / T.ATTACK_RECOVERY)
-		_lerp_pose(want, pose_hit, stance_pose, u)
+func _locomotion_pose() -> Dictionary:
+	var idle := sample_clip("guard", fposmod(_clock, clip_duration("guard")))
+	var gait := _blend_pose(sample_clip("walk", _phase * clip_duration("walk")),
+		sample_clip("run", _phase * clip_duration("run")), _gait_blend)
+	return _blend_pose(idle, gait, _move_weight)
 
 
-## Полёт: ноги подобраны, руки разведены для баланса.
-## Отдельная поза нужна потому, что при прыжке ноги не должны «шагать»:
-## процедурный шаг в воздухе читается как бег по воздуху.
-func _air(want: Dictionary) -> void:
-	want["thigh.L"] = Vector3(26.0, 0.0, 2.0)
-	want["thigh.R"] = Vector3(-14.0, 0.0, -2.0)
-	want["shin.L"] = Vector3(-42.0, 0.0, 0.0)
-	want["shin.R"] = Vector3(-18.0, 0.0, 0.0)
-	want["foot.L"] = Vector3(16.0, 0.0, 0.0)
-	want["foot.R"] = Vector3(10.0, 0.0, 0.0)
-	# ── РУКИ В ПРЫЖКЕ. Было -18 по плечу и локоть 38: руки уходили НАЗАД
-	# и вниз, кисти оказывались на Y 0.90 за спиной (замер), то есть буквально
-	# у ягодиц — ровно как описал пользователь.
-	# Теперь руки держатся впереди и чуть в стороны для баланса, а кулаки
-	# остаются на уровне груди: замер даёт кисти Y 1.22, Z 0.30 впереди.
-	want["upper_arm.L"] = Vector3(20.0, 0.0, 20.0)
-	want["upper_arm.R"] = Vector3(20.0, 0.0, -20.0)
-	want["forearm.L"] = Vector3(110.0, 0.0, 0.0)
-	want["forearm.R"] = Vector3(110.0, 0.0, 0.0)
-	want["hand.L"] = Vector3(0.0, 0.0, 8.0)
-	want["hand.R"] = Vector3(0.0, 0.0, -8.0)
-	want["spine"] = Vector3(8.0, 0.0, 0.0)
-	want["head"] = Vector3(-4.0, 0.0, 0.0)
+func _air_pose(context: Dictionary) -> Dictionary:
+	if _air_time < clip_duration("jump_start"):
+		return sample_clip("jump_start", _air_time)
+	var vertical: float = context.get("vertical_speed", 0.0)
+	return _blend_pose(sample_clip("jump_up", 0.0), sample_clip("jump_down", 0.0),
+		1.0 - smoothstep(-2.0, 1.0, vertical))
 
 
-## Уворот: присед, подбор ног, наклон корпуса. Возвращает смещение таза.
-func _dodge(want: Dictionary, t: float) -> Vector3:
-	var u := clampf(t / T.DODGE_DURATION, 0.0, 1.0)
-	var k := sin(u * PI)   # плавно нарастает и гаснет
-
-	_mix(want, {
-		"thigh.L": Vector3(50.0, 0.0, 3.0),
-		"thigh.R": Vector3(44.0, 0.0, -3.0),
-		"shin.L": Vector3(-70.0, 0.0, 0.0),
-		"shin.R": Vector3(-64.0, 0.0, 0.0),
-		"foot.L": Vector3(20.0, 0.0, 0.0),
-		"foot.R": Vector3(18.0, 0.0, 0.0),
-		"spine": Vector3(26.0, 0.0, 0.0),
-		"chest": Vector3(8.0, 0.0, 0.0),
-		"head": Vector3(-20.0, 0.0, 0.0),
-		"upper_arm.L": Vector3(26.0, 0.0, -10.0),
-		"upper_arm.R": Vector3(26.0, 0.0, 10.0),
-		"forearm.L": Vector3(60.0, 0.0, 0.0),
-		"forearm.R": Vector3(60.0, 0.0, 0.0),
-	}, k)
-
-	return Vector3(0.0, -0.22 * k, 0.0)
+## Телепорт/новый тест: не переносим фазу шага и отдачу из прошлой жизни.
+func reset_motion() -> void:
+	_phase = 0.0
+	_clock = 0.0
+	_gait_blend = 0.0
+	_move_weight = 0.0
+	_air_time = 0.0
+	_land_time = 100.0
+	_hit_time = 100.0
+	_was_grounded = true
+	_state = ""
+	_transition_from = {}
+	_transition_elapsed = 1.0
+	seek_clip("guard", 0.0)
 
 
-## Смешивает набор углов в цель: u=0 — ничего, u=1 — полностью.
-func _mix(want: Dictionary, extra: Dictionary, u: float) -> void:
-	if u <= 0.0:
-		return
-	for bone in extra:
-		var add: Vector3 = extra[bone] * u
-		want[bone] = want.get(bone, Vector3.ZERO) + add
+## Визуальная реакция без введения нового игрового оглушения.
+func play_hit() -> void:
+	_hit_time = 0.0
 
 
-## Ставит в want АБСОЛЮТНУЮ позу — линейную смесь между from и to.
-##
-## Отличие от _mix() принципиальное: _mix прибавляет (нужно, чтобы наложить
-## покачивание на позу), а здесь нужна именно замена. Для переходов между
-## позами (стойка -> замах -> удар -> стойка) сложение не годится: углы
-## накапливались бы, и рука уезжала за спину.
-func _lerp_pose(want: Dictionary, from: Dictionary, to: Dictionary, u: float) -> void:
-	var keys: Dictionary = {}
-	for k in from:
-		keys[k] = true
-	for k in to:
-		keys[k] = true
-	for k in keys:
-		var a: Vector3 = from.get(k, Vector3.ZERO)
-		var b: Vector3 = to.get(k, Vector3.ZERO)
-		want[k] = a.lerp(b, u)
+func _add_hit(pose: Dictionary, weight: float) -> Dictionary:
+	var reaction := sample_clip("hit", _hit_time)
+	var reference := sample_clip("guard", 0.0)
+	var result := _blend_pose(pose, pose, 0.0)
+	for i in _upper_body:
+		var rest: Quaternion = reference["rotations"][i]
+		var value: Quaternion = reaction["rotations"][i]
+		var difference := rest.inverse() * value
+		result["rotations"][i] = (pose["rotations"][i] * Quaternion.IDENTITY.slerp(difference, weight)).normalized()
+	return result
 
 
-## Ставит позу БЕЗ сглаживания — для витрины, где нужен точный кадр.
-## В игре так делать нельзя: поза переключилась бы рывком за один кадр.
-func set_pose_direct(spec: Dictionary) -> void:
-	if not _loaded:
-		return
-	for name in _idx:
-		var target: Vector3 = spec.get(name, Vector3.ZERO)
-		_bend[name] = target
-		var bend := Quaternion(Vector3.RIGHT, deg_to_rad(target.x)) \
-			* Quaternion(Vector3.BACK, deg_to_rad(target.z)) \
-			* Quaternion(Vector3.UP, deg_to_rad(target.y))
-		skeleton.set_bone_pose_rotation(_idx[name], _rest_rot[name] * bend)
-	if _idx.has("hips"):
-		skeleton.set_bone_pose_position(_idx["hips"], _rest_pos["hips"])
+func _replace_upper(base: Dictionary, overlay: Dictionary) -> Dictionary:
+	var result := _blend_pose(base, base, 0.0)
+	for i in _upper_body:
+		result["rotations"][i] = overlay["rotations"][i]
+	return result
 
 
-## Переводит «изгиб в градусах» в позу кости и ставит её.
-func _apply(want: Dictionary, hip_offset: Vector3, delta: float) -> void:
-	# Сглаживание: без него поза переключается рывком за один кадр.
-	var rate := 1.0 - exp(-22.0 * delta)
+func _blend_pose(a: Dictionary, b: Dictionary, weight: float) -> Dictionary:
+	var rotations: Array[Quaternion] = []
+	for i in _bone_names.size():
+		var from: Quaternion = a["rotations"][i]
+		rotations.append(from.slerp(b["rotations"][i], weight).normalized())
+	var hip: Vector3 = a["hips"]
+	return {"rotations": rotations, "hips": hip.lerp(b["hips"], weight)}
 
-	for name in _idx:
-		var target: Vector3 = want.get(name, Vector3.ZERO)
-		var cur: Vector3 = _bend[name]
-		cur = cur.lerp(target, rate)
-		_bend[name] = cur
 
-		# Изгиб вокруг осей кости: сначала X (вперёд-назад), затем Z (в стороны),
-		# затем Y (скрутка).
-		var bend := Quaternion(Vector3.RIGHT, deg_to_rad(cur.x)) \
-			* Quaternion(Vector3.BACK, deg_to_rad(cur.z)) \
-			* Quaternion(Vector3.UP, deg_to_rad(cur.y))
+func _apply_pose(pose: Dictionary) -> void:
+	for i in _bone_names.size():
+		skeleton.set_bone_pose_rotation(i, pose["rotations"][i])
+	skeleton.set_bone_pose_position(_hips_index, pose["hips"])
 
-		# ГЛАВНОЕ: поза = поворот покоя * изгиб. Без поворота покоя скелет
-		# складывается, и руки уезжают за голову.
-		skeleton.set_bone_pose_rotation(_idx[name], _rest_rot[name] * bend)
 
-	# Таз: положение позы тоже абсолютное, поэтому смещение прибавляется
-	# к положению покоя.
-	if _idx.has("hips"):
-		skeleton.set_bone_pose_position(_idx["hips"], _rest_pos["hips"] + hip_offset)
+## Совместимость со старыми вызовами; новый код передаёт update_motion().
+func update_anim(delta: float, speed_ratio: float, action: String,
+		action_time: float, side: String = "R") -> void:
+	update_motion(delta, Vector3(0, 0, speed_ratio * T.RUN_SPEED), action, action_time,
+		side, {"grounded": action != "air"})
