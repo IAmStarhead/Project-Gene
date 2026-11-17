@@ -29,8 +29,12 @@ func _ready() -> void:
 	# Селлшейдинг применяется ПОСЛЕ спавна: до этого у мешей ещё нет
 	# материалов, и подменять нечего.
 	if room != null and room.has_method("apply_toon"):
-		room.apply_toon(player.get_node("Character"))
-		room.apply_toon(clone.get_node("Character"))
+		var pc: Node = player.get_node_or_null("Character")
+		var cc: Node = clone.get_node_or_null("Character")
+		if pc != null:
+			room.apply_toon(pc)
+		if cc != null:
+			room.apply_toon(cc)
 
 	_hint = Label.new()
 	_hint.text = "WASD — идти · Shift — бег · F — прыжок · ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот · T — бой клона · H — витрина · G — селлшейдинг · Esc — курсор"

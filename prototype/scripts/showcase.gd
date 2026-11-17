@@ -27,7 +27,7 @@ const BuildScene := preload("res://scripts/build_scene.gd")
 ## Позы витрины. Значения — те же углы, что в character_anim.gd: это одна и
 ## та же система координат, поэтому подобранное здесь переносится в игру
 ## один в один, без пересчёта.
-const POSES := [
+var poses: Array = [
 	{"name": "покой (стойка)", "spec": {}},
 	{"name": "замах правой", "spec": {
 		"upper_arm.R": Vector3(16.0, 40.0, -26.0), "forearm.R": Vector3(148.0, 60.0, 0.0),
@@ -110,7 +110,7 @@ func _ready() -> void:
 	cam.fov = 42.0
 	add_child(cam)
 	_make_hud()
-	if T.TOON_ENABLED and _world.has_method("apply_toon"):
+	if T.TOON_ENABLED and _world != null and _world.has_method("apply_toon"):
 		_world.apply_toon(character)
 	_apply_pose(0)
 
@@ -128,10 +128,10 @@ func _make_hud() -> void:
 
 
 func _apply_pose(index: int) -> void:
-	_pose_index = posmod(index, POSES.size())
+	_pose_index = posmod(index, poses.size())
 	_playing = false
 	_play_time = 0.0
-	var spec: Dictionary = POSES[_pose_index]["spec"]
+	var spec: Dictionary = poses[_pose_index]["spec"]
 	# Поза ставится напрямую, без сглаживания: на витрине нужен точный кадр.
 	if character.has_method("set_pose_direct"):
 		character.set_pose_direct(spec)
@@ -144,7 +144,10 @@ func _process(delta: float) -> void:
 		if _play_time >= total:
 			_playing = false
 			_play_time = 0.0
-			character.update_anim(0.0, 0.0, "", 0.0)
+			# Возврат в выбранную позу. Не update_anim(): та сглаживает позу
+			# и застыла бы на середине перехода, потому что покадрового
+			# вызова после этого нет.
+			_apply_pose(_pose_index)
 		else:
 			character.update_anim(delta, 0.0, "attack", _play_time, "R")
 	elif _pose_index == 0:
@@ -161,7 +164,7 @@ func _process(delta: float) -> void:
 func _update_hud() -> void:
 	var lines := [
 		"ВИТРИНА — отработка анимаций",
-		"поза %d/%d: %s" % [_pose_index + 1, POSES.size(), POSES[_pose_index]["name"]],
+		"поза %d/%d: %s" % [_pose_index + 1, poses.size(), poses[_pose_index]["name"]],
 		"скорость: %.2fx   селлшейдинг: %s" % [SPEEDS[_speed_index], "вкл" if T.TOON_ENABLED else "выкл"],
 		"",
 		"1…0 поза · ← → листать · Пробел — проиграть удар",
@@ -205,7 +208,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			T.TOON_ENABLED = not T.TOON_ENABLED
 			if _world.has_method("rebuild_lighting"):
 				_world.rebuild_lighting(T.TOON_ENABLED)
-			if T.TOON_ENABLED and _world.has_method("apply_toon"):
+			if T.TOON_ENABLED and _world != null and _world.has_method("apply_toon"):
 				_world.apply_toon(character)
 			elif _world.has_method("clear_toon"):
 				_world.clear_toon(character)
