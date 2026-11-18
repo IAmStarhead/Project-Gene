@@ -50,11 +50,13 @@ func _ready() -> void:
 	add_child(character)
 	cam = Camera3D.new()
 	cam.fov = 36.0
+	cam.near = 0.08
+	cam.far = 64.0
 	cam.current = true
 	add_child(cam)
 	_make_ui()
-	if T.TOON_ENABLED:
-		_world.apply_toon(character)
+	if _world.has_method("style_character"):
+		_world.style_character(character, T.TOON_ENABLED)
 	_select_clip(0)
 
 
@@ -133,10 +135,16 @@ func _make_ui() -> void:
 	_title = Label.new()
 	_title.position = Vector2(266, 64)
 	_title.add_theme_font_size_override("font_size", 21)
+	_title.add_theme_color_override("font_color", Color(0.95, 0.98, 1.0))
+	_title.add_theme_color_override("font_outline_color", Color(0.05, 0.07, 0.12, 0.92))
+	_title.add_theme_constant_override("outline_size", 5)
 	root.add_child(_title)
 	_phase = Label.new()
 	_phase.position = Vector2(266, 96)
 	_phase.add_theme_font_size_override("font_size", 14)
+	_phase.add_theme_color_override("font_color", Color(0.90, 0.94, 0.99))
+	_phase.add_theme_color_override("font_outline_color", Color(0.05, 0.07, 0.12, 0.90))
+	_phase.add_theme_constant_override("outline_size", 4)
 	root.add_child(_phase)
 
 	var transport := _panel()
@@ -177,7 +185,7 @@ func _make_ui() -> void:
 	_timeline.value_changed.connect(_seek)
 	stack.add_child(_timeline)
 	var help := Label.new()
-	help.text = "Пробел — пауза · ← → кадр · ↑ ↓ клип · L скорость · G стиль · B свет · ЛКМ + мышь — орбита · колесо — масштаб"
+	help.text = "Пробел — пауза · ← → кадр · ↑ ↓ клип · L скорость · B свет · F4 графика · G стиль · ЛКМ — орбита · колесо — зум"
 	help.add_theme_font_size_override("font_size", 12)
 	stack.add_child(help)
 
@@ -266,7 +274,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_distance = minf(6.0, _distance + .2)
 	elif event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
+		var key: Key = event.physical_keycode if event.physical_keycode != KEY_NONE else event.keycode
+		match key:
 			KEY_SPACE: _toggle_play()
 			KEY_LEFT: _step_frame(-1)
 			KEY_RIGHT: _step_frame(1)
@@ -277,18 +286,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_L:
 				_speed_index = (_speed_index + 1) % SPEEDS.size()
 				_speed_picker.select(_speed_index)
+			KEY_F4:
+				T.QUALITY = (T.QUALITY + 1) % T.QUALITY_NAMES.size()
+				_world.showcase_lighting()
 			KEY_B:
-				T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
-				_world.rebuild_lighting(T.TOON_ENABLED)
+				T.BRIGHTNESS = (T.BRIGHTNESS + 1) % T.BRIGHTNESS_NAMES.size()
+				_world.showcase_lighting()
 			KEY_G:
 				T.TOON_ENABLED = not T.TOON_ENABLED
-				_world.rebuild_lighting(T.TOON_ENABLED)
-				if T.TOON_ENABLED:
-					_world.apply_toon(character)
-				else:
-					_world.clear_toon(character)
+				_world.showcase_lighting()
+				if _world.has_method("style_character"):
+					_world.style_character(character, T.TOON_ENABLED)
 			_:
-				if event.keycode >= KEY_1 and event.keycode <= KEY_9:
-					_select_clip(event.keycode - KEY_1)
-				elif event.keycode == KEY_0:
+				if key >= KEY_1 and key <= KEY_9:
+					_select_clip(key - KEY_1)
+				elif key == KEY_0:
 					_select_clip(9)

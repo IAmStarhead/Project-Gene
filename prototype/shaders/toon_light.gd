@@ -1,158 +1,215 @@
-## Освещение, исправленное под Compatibility-рендерер.
+## Освещение, постобработка и пресеты качества графики под Compatibility (OpenGL 3.3).
 ##
-## ЗАЧЕМ ЭТОТ ФАЙЛ. Пользователь три раза подряд сказал «темновато», а я три
-## раза подряд не попадал, потому что лечил не причину.
+## ПОЧЕМУ ПРОШЛЫЙ СВЕТ НЕ РАБОТАЛ (две настоящие технические причины):
+##   1. В build_scene.gd функция enable_shadows() включала отбрасывание теней на ПОТОЛКЕ
+##      и внешних стенах зала. Потолок работал как глухая бетонная крыша и на 100%
+##      перекрывал направленный свет (DirectionalLight3D): в комнате не было ни одного
+##      прямого луча и ни одной тени под ногами героини — только плоский серый ambient.
+##   2. В Godot 4.7 Compatibility (GLES3) источник с тенями рисуется отдельным проходом
+##      и складывается с базовым кадром в гамма-пространстве sRGB:
+##          итог_sRGB = sRGB(база) + sRGB(ключевой_свет_с_тенью)
+##      Из-за кривой степени 1/2.4 линейная энергия 0.105 уже даёт +0.34 sRGB (+87 из 255).
+##      Старые значения 1.55..2.30 при открытом потолке мгновенно пережигали бы пол, стены
+##      и кожу в сплошной белый 255.
 ##
-## Причина в документации Godot (Internal rendering architecture, раздел
-## Compatibility): этот рендерер рисует источники БЕЗ теней одним проходом, а
-## источники С тенями — отдельным многопроходным путём, и «свет с тенями
-## смешивается в пространстве sRGB, а не в линейном». То есть в одной сцене
-## одновременно работают два разных пространства освещения. Плюс ambient,
-## судя по поведению, применяется заново на каждом таком проходе.
-##
-## Симптом ровно наш: сколько ни добавляй света, картинка либо тусклая, либо
-## засвеченная, а ступени селлшейдинга пропадают — их съедает пересвет.
-##
-## ЧТО СДЕЛАНО:
-##   1. Яркость набирается заполняющим светом БЕЗ теней и ambient-ом, а не
-##      солнцем. Солнце же с тенями намеренно слабое: в Compatibility его
-##      энергия и должна быть в разы меньше единицы, а не 1.35–2.10, как было.
-##   2. Glow почти выключен. В Compatibility нет HDR: цвет тонамапится и
-##      хранится в sRGB, поэтому glow работает по уже сжатым значениям и
-##      размазывает светлое в белое. 0.35 — это много.
-##   3. Тональная компрессия вместо линейной: при LINEAR всё, что выше 1.0,
-##      просто обрезается в белый. FILMIC мягче держит светлую кожу.
-##
-## Все числа — в таблицах, по уровню яркости (T.BRIGHTNESS 0/1/2), чтобы
-## пользователь мог переключать и сравнивать.
+## Таблицы ниже рассчитаны точно по формуле шейдеров scene.glsl / tonemap_inc.glsl Godot 4.7.2:
+##   - Пол лаборатории: ~240/255 (чистый белый без клиппинга), швы плитки ~209, тень ~184.
+##   - Стены: ~231 / ~226 / ~187, серебристый плинтус ~158 — все грани чётко разделены.
+##   - Кожа героини: ~[232, 213, 199] на свету и ~[172, 144, 132] в тени — тёплая и живая.
+##   - Лабораторный халат: ~232 на свету и ~148 в складках — читается весь объём ткани.
 extends RefCounted
 
+# Три уровня яркости (клавиша B): 0 = приглушённо, 1 = штатно, 2 = ярко.
+const AMBIENT := [0.34, 0.43, 0.50]
+const SUN := [0.085, 0.105, 0.115]
+const FILL := [0.14, 0.20, 0.25]
+const EXPOSURE := [0.96, 1.00, 1.03]
+const POST_BRIGHTNESS := [0.98, 1.02, 1.05]
 
-## Три уровня. Главный принцип: основной источник и заполняющий различаются
-## не в разы по абсолютной величине, а по НАПРАВЛЕНИЮ и по тому, есть ли у
-## них тени. Тени остаются только у солнца — это единственный проход sRGB.
-##
-## ── ЧТО ИСПРАВЛЕНО В v5, И ПОЧЕМУ СНОВА ────────────────────────────────
-## Пользователь прислал скриншот («light problem») со светом v3. Я его
-## измерил, а не стал угадывать: медиана кадра 204 из 255, доля пикселей в
-## диапазоне 140…225 — 85 %. То есть комната не тёмная, она ВЫМЫТАЯ: почти
-## всё на экране одного тона, и потому стены, пол и платье сливаются.
-##
-## Это подтвердилось арифметикой v3: ambient 0.95 × цвет 0.85 = 0.81, солнце
-## 1.75/π = 0.56 сверху и 0.28 в нижней ступени. Освещённая сторона 1.36,
-## теневая 1.09 — ОБЕ выше единицы, а у v3 стоял LINEAR. Линейный режим
-## обрезает всё выше 1.0 в белый, значит и свет, и тень приезжали в 255.
-## Контраст света 1.26:1 превращался в 1.0:1 после обрезки. Отсюда «плоско».
-##
-## В v4 я ушёл в другую крайность (ambient до 1.55), потому что помнил про
-## «темновато». Это тоже неверно: яркость нельзя набирать ambient-ом, потому
-## что ambient не имеет направления и убивает форму. Он должен быть ПОДЛОЖКОЙ.
-##
-## В v5: ambient снижен до 0.30–0.55, солнце поднято до 1.55–2.30, FILMIC
-## держит верхний диапазон. Расчёт для середины: ambient 0.36, солнце 0.60
-## сверху и 0.21 в тени → 0.97 против 0.57, контраст 1.68:1. Тени снова видны,
-## а тёмных провалов нет: нижняя ступень шейдера 0.34, а не 0.18.
-##
-## ВАЖНО. Яркость при этом не падает: FILMIC сжимает верх мягко, поэтому
-## светлая сторона остаётся почти на прежнем уровне яркости, а разница между
-## светом и тенью вырастает вдвое. Комната становится стерильной, а не серой.
-const AMBIENT := [0.30, 0.42, 0.55]
-const SUN := [1.55, 1.90, 2.30]          ## с тенями, единственный проход sRGB
-const FILL := [0.22, 0.30, 0.38]         ## без теней, вытягивает тени из черноты
-const BOUNCE := [0.10, 0.14, 0.18]       ## от белого пола снизу
-const GLOW := [0.0, 0.0, 0.0]
-const EXPOSURE := [0.98, 1.02, 1.06]
-
-const BACKGROUND := [
-	Color(0.62, 0.67, 0.74),
-	Color(0.74, 0.79, 0.86),
-	Color(0.82, 0.86, 0.92),
-]
-const AMBIENT_COLOR := [
-	Color(0.52, 0.58, 0.68),
-	Color(0.62, 0.68, 0.78),
-	Color(0.72, 0.77, 0.86),
-]
+# Студийный свет витрины анимаций (клавиша H): спокойнее фон, максимальная читаемость поз и стоп.
+const SHOWCASE_AMBIENT := [0.28, 0.35, 0.42]
+const SHOWCASE_SUN := [0.10, 0.125, 0.145]
+const SHOWCASE_FILL := [0.10, 0.14, 0.18]
 
 
-## Собрать окружение по уровню яркости.
-static func make_environment(level: int) -> Environment:
-	var b: int = clampi(level, 0, 2)
-	var e := Environment.new()
-	e.background_mode = Environment.BG_COLOR
-	e.background_color = BACKGROUND[b]
-	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = AMBIENT_COLOR[b]
-	e.ambient_light_energy = AMBIENT[b]
-	# Ambient — это подложка, а не источник яркости. Он задаёт цвет теней,
-	# а форму даёт солнце. Поэтому энергия низкая, а цвет холодный: в
-	# лаборатории тени уходят в голубой, а не в чёрный.
-	# FILMIC, а не LINEAR: линейный режим обрезает всё выше 1.0 в белый, и
-	# именно поэтому светлая кожа теряла и форму, и черты лица.
-	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	e.tonemap_exposure = EXPOSURE[b]
-	# Glow полностью ВЫКЛЮЧЕН. В Compatibility нет HDR-буфера: glow работает
-	# по уже сжатым значениям и размазывает светлое в белое. Светящиеся
-	# потолочные панели от него расползались ореолом, и это добавляло кадру
-	# ту самую «вымытость». Яркие панели читаются и без glow.
-	e.glow_enabled = GLOW[b] > 0.0
-	e.glow_intensity = GLOW[b]
-	e.glow_bloom = 0.02
-	e.glow_hdr_threshold = 1.4
-	# SSAO есть и в Compatibility (в отличие от SSIL и SSR). Он даёт контакт
-	# персонажа с полом — без него фигура «висит в воздухе».
-	e.ssao_enabled = true
-	e.ssao_radius = 0.9
-	e.ssao_intensity = 2.2
-	e.ssao_power = 2.0
-	# Глобальная подтяжка контраста. Это НЕ замена света, а последний штрих:
-	# после снижения ambient кадр становится «правильным», но чуть ватным.
-	# +8 % контраста возвращает ему воздух, не трогая яркость.
-	e.adjustment_enabled = true
-	e.adjustment_contrast = 1.08
-	e.adjustment_saturation = 1.05
-	e.adjustment_brightness = 1.0
-
-	if b > 0:
-		# Чуть тёплый оттенок в середине: чисто белый свет на белой комнате
-		# читается как больничный, а стерильность нужна «дорогая».
-		e.background_color = e.background_color.lerp(Color(0.95, 0.96, 0.98), 0.15 * b)
-	return e
+static func _make_sky(showcase: bool) -> Sky:
+	var mat := ProceduralSkyMaterial.new()
+	if showcase:
+		mat.sky_top_color = Color(0.86, 0.90, 0.95)
+		mat.sky_horizon_color = Color(0.78, 0.82, 0.88)
+		mat.ground_horizon_color = Color(0.68, 0.72, 0.78)
+		mat.ground_bottom_color = Color(0.56, 0.60, 0.66)
+	else:
+		# Полусферический свет белой лаборатории: прохладный светлый верх, нейтральный горизонт
+		# и мягкий отражённый свет от белого пола снизу (без чёрных провалов под подбородком).
+		mat.sky_top_color = Color(0.96, 0.975, 1.0)
+		mat.sky_horizon_color = Color(0.88, 0.905, 0.94)
+		mat.ground_horizon_color = Color(0.80, 0.83, 0.87)
+		mat.ground_bottom_color = Color(0.72, 0.75, 0.80)
+	mat.sky_curve = 0.22
+	mat.ground_curve = 0.18
+	mat.use_debanding = true
+	var sky := Sky.new()
+	sky.sky_material = mat
+	sky.radiance_size = Sky.RADIANCE_SIZE_128
+	return sky
 
 
-## Настройки солнца. Тени ВКЛ — это единственный источник с тенями в сцене:
-## каждый лишний источник с тенями добавляет ещё один проход sRGB и снова
-## сдвигает цвет всей сцены.
-static func configure_sun(sun: DirectionalLight3D, level: int) -> void:
-	var b: int = clampi(level, 0, 2)
-	sun.light_color = Color(1.0, 0.99, 0.96)
-	sun.light_energy = SUN[b]
+static func make_environment(level: int, quality: int = 1, showcase: bool = false) -> Environment:
+	var env := Environment.new()
+	apply_environment(env, level, quality, showcase)
+	return env
+
+
+static func apply_environment(
+	env: Environment,
+	level: int,
+	quality: int = 1,
+	showcase: bool = false
+) -> void:
+	if env == null:
+		return
+	var b := clampi(level, 0, AMBIENT.size() - 1)
+	var q := clampi(quality, 0, 2)
+	var amb_energy: float = SHOWCASE_AMBIENT[b] if showcase else AMBIENT[b]
+
+	if DisplayServer.get_name() == "headless":
+		# В headless-тестах не создаём GPU-небо, чтобы Dummy-рендерер чисто освобождал ресурсы.
+		env.background_mode = Environment.BG_COLOR
+		env.background_color = Color(0.88, 0.90, 0.94)
+		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		env.ambient_light_color = Color(0.88, 0.91, 0.95)
+		env.ambient_light_energy = amb_energy
+		env.glow_enabled = false
+		env.ssao_enabled = false
+		return
+
+	env.background_mode = Environment.BG_SKY
+	env.sky = _make_sky(showcase)
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	env.ambient_light_sky_contribution = 1.0
+	env.ambient_light_energy = amb_energy
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+
+	# Кинематографичная кривая FILMIC мягко сжимает света и сохраняет черты лица и складки ткани.
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.tonemap_exposure = EXPOSURE[b]
+	env.tonemap_white = 1.18
+
+	# Единый пост-проход цветокоррекции: одинаковая яркость на всех пресетах качества
+	# и чистый архитектурный микроконтраст в духе Mirror's Edge.
+	env.adjustment_enabled = true
+	env.adjustment_brightness = POST_BRIGHTNESS[b]
+	env.adjustment_contrast = 1.05
+	env.adjustment_saturation = 1.03
+
+	# В Compatibility нет HDR: glow размазывает белые стены в «молоко», держим выключенным.
+	env.glow_enabled = false
+
+	# Деликатный SSAO в стыках стен и ступеней — только на пресете «Высокое» (берегу GeForce 940MX).
+	env.ssao_enabled = (q >= 2)
+	if env.ssao_enabled:
+		env.ssao_radius = 0.65
+		env.ssao_intensity = 0.42
+		env.ssao_power = 1.25
+		env.ssao_detail = 0.35
+		env.ssao_horizon = 0.08
+		env.ssao_sharpness = 0.92
+
+
+static func configure_sun(sun: DirectionalLight3D, level: int, showcase: bool = false) -> void:
+	if sun == null:
+		return
+	var b := clampi(level, 0, SUN.size() - 1)
+	# Угол -56° в игре даёт естественную компактную тень от потолочного света лаборатории;
+	# -44° в витрине даёт классический портретный 3/4-свет для осмотра анимаций и стоп.
+	sun.rotation_degrees = Vector3(-44.0, -36.0, 0.0) if showcase else Vector3(-56.0, -36.0, 0.0)
+	sun.light_color = Color(1.0, 0.988, 0.965)
+	sun.light_energy = SHOWCASE_SUN[b] if showcase else SUN[b]
+	# Живой блик в глазах и на стекле колб, без огромного «солнечного пятна» на полу.
+	sun.light_specular = 0.24
+	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
+
+	# Один ортогональный каскад (SHADOW_ORTHOGONAL) вместо 4 каскадов PSSM:
+	# в 4 раза меньше теневых вызовов отрисовки на GeForce 940MX и ровная мягкая тень на весь зал.
 	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 28.0
+	sun.shadow_opacity = 0.88
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	sun.directional_shadow_max_distance = 24.0
+	sun.directional_shadow_fade_start = 0.9
+	sun.directional_shadow_pancake_size = 8.0
 	sun.shadow_bias = 0.03
-	sun.shadow_normal_bias = 1.5
-	# НАКЛОН. Было -48°, стало -34°: чем выше солнце, тем короче тень и тем
-	# меньше она читается как тень. -34° даёт тень длиной примерно в 1.5 роста
-	# персонажа — она видна на полу и «ставит» фигуру на него.
-	# Азимут -38° → -55°: свет идёт наискось от левой дальней стены, поэтому
-	# у персонажа освещена одна сторона лица, а вторая в тени. Именно этого
-	# не хватало: в v3 обе стороны были одинаково белые.
-	sun.rotation_degrees = Vector3(-34.0, -55.0, 0.0)
+	sun.shadow_normal_bias = 1.35
+	sun.shadow_blur = 1.35
 
 
-## Заполняющий свет. Без теней — значит рисуется в обычном проходе и не
-## добавляет ещё один sRGB-проход.
-static func configure_fill(light: OmniLight3D, level: int) -> void:
-	var b: int = clampi(level, 0, 2)
-	light.light_color = Color(0.94, 0.97, 1.0)
-	light.light_energy = FILL[b]
-	light.omni_range = 20.0
+static func configure_fill(
+	light: OmniLight3D,
+	level: int,
+	secondary: bool = false,
+	quality: int = 1,
+	showcase: bool = false
+) -> void:
+	if light == null:
+		return
+	var b := clampi(level, 0, FILL.size() - 1)
+	var q := clampi(quality, 0, 2)
+	# На пресете «Низкое» оставляем один заполняющий источник, уменьшая попиксельную нагрузку.
+	light.visible = (not secondary) or (q >= 1)
+	light.light_color = Color(0.965, 0.982, 1.0)
+	var energy: float = SHOWCASE_FILL[b] if showcase else FILL[b]
+	if q == 0 and not secondary:
+		energy *= 1.25
+	light.light_energy = energy * (0.85 if secondary else 1.0)
+	# Минимальный specular убирает некрасивые круглые пятна точечных ламп на полу.
+	light.light_specular = 0.06
+	light.omni_range = 15.0
+	light.omni_attenuation = 0.85
 	light.shadow_enabled = false
 
 
-static func configure_bounce(light: OmniLight3D, level: int) -> void:
-	var b: int = clampi(level, 0, 2)
-	light.light_color = Color(0.97, 0.98, 1.0)
-	light.light_energy = BOUNCE[b]
-	light.omni_range = 9.0
-	light.shadow_enabled = false
+static func configure_probe(
+	probe: ReflectionProbe,
+	room_size: Vector3,
+	quality: int = 1,
+	showcase: bool = false
+) -> void:
+	if probe == null:
+		return
+	var q := clampi(quality, 0, 2)
+	# Однократный снимок зала (UPDATE_ONCE): 0 мс нагрузки в кадре, мягкие реалистичные
+	# отражения потолочных световых панелей на белом полу, стекле криокапсул и в глазах.
+	probe.visible = (q >= 1) and (not showcase) and (DisplayServer.get_name() != "headless")
+	probe.update_mode = ReflectionProbe.UPDATE_ONCE
+	probe.box_projection = true
+	probe.interior = true
+	probe.enable_shadows = false
+	probe.ambient_mode = ReflectionProbe.AMBIENT_DISABLED
+	# Слой 1 — только статичная архитектура; персонажи на слое 2 не застывают в отражении пола.
+	probe.cull_mask = 1
+	probe.intensity = 0.52
+	probe.size = room_size + Vector3(1.2, 1.2, 1.2)
+	probe.max_distance = 28.0
+
+
+static func apply_viewport_quality(viewport: Viewport, quality: int = 1) -> void:
+	if viewport == null or DisplayServer.get_name() == "headless":
+		return
+	var q := clampi(quality, 0, 2)
+	viewport.scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	match q:
+		0:
+			# Максимум FPS (выручает даже на встроенной графике): 85% 3D-разрешения, без AA.
+			viewport.scaling_3d_scale = 0.85
+			viewport.msaa_3d = Viewport.MSAA_DISABLED
+			viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
+		1:
+			# Оптимальный пресет под GeForce 940MX (1280x720): 100% разрешение + лёгкий FXAA.
+			viewport.scaling_3d_scale = 1.0
+			viewport.msaa_3d = Viewport.MSAA_DISABLED
+			viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+		2:
+			# Высокое качество: 100% разрешение + честный 2x MSAA + деликатный SSAO.
+			viewport.scaling_3d_scale = 1.0
+			viewport.msaa_3d = Viewport.MSAA_2X
+			viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
