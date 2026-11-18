@@ -47,7 +47,7 @@ try {
       // fixed y=.90/.92 plane which pinned the old hands in front of the belt.
       const runningRelaxed = ['run_relaxed', 'sprint_relaxed'].includes(name);
       const minHandHeight = runningRelaxed ? joints.find((joint) => joint.name === 'hips').position[1] + .02
-        : ['run', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
+        : name.startsWith('dodge') ? 1.0 : ['run', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
       assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > (relaxed ? -.1 : .1)), `Hand/hip carriage in ${name}`);
       if (relaxed) {
         assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < (['run_relaxed', 'sprint_relaxed'].includes(name) ? 1.30 : .95)), 'Ordinary arms must not return to face-level guard');
@@ -66,7 +66,7 @@ try {
       const appearance = await page.evaluate(() => window.motionLab.appearance);
       assert.equal(appearance.handOpen, relaxed ? 1 : 0, `Actual hand morph in ${name}`);
       assert(appearance.handVertices >= 3400, 'Existing fingers must actually open, not just move their wrists');
-      assert(appearance.gownVertices > 800 && appearance.gownIndexCount > 5000 && appearance.cloth.length === 112, 'Shared garment is loaded');
+      assert(appearance.gownVertices > 800 && appearance.gownIndexCount > 5000 && appearance.cloth.length === 320, 'Shared garment is loaded');
       assert(appearance.cloth.every((p) => p.every(Number.isFinite)), 'Finite cloth positions');
       frames++;
     }

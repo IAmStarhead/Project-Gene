@@ -13,14 +13,12 @@ import json
 from pathlib import Path
 
 import numpy as np
-from scipy.spatial import cKDTree
 
 from rig_math import Rig, accessor, read_glb
 from build_motion_set import ROOT, MODEL, definitions
+from garment import bodice, FABRIC, BINDING
 
 OUTPUT = MODEL.parent / 'appearance' / 'lab_uniform.json'
-FABRIC = [.82, .835, .85]
-BINDING = [.22, .25, .28]
 
 
 def hand_shape(rig):
@@ -103,193 +101,41 @@ def floor_probes(rig):
 
 def build():
     rig = Rig(MODEL)
-    body = rig.mesh_data()
-    p, j, w = body['POSITION'], body['JOINTS_0'], body['WEIGHTS_0']
-    dominant = j[np.arange(len(j)), w.argmax(axis=1)]
-    axial_names = ['hips', 'spine', 'chest', 'neck', 'head', 'shoulder.L', 'shoulder.R']
-    axial = [rig.index[name] for name in axial_names]
-    selected = np.isin(dominant, axial)
-    tree = cKDTree(p[selected])
-    dense = np.zeros((len(p), len(rig.names)))
-    for k in range(4):
-        dense[np.arange(len(p)), j[:, k]] += w[:, k]
-    dense[:, [i for i in range(len(rig.names)) if i not in axial]] = 0
-    dense /= np.maximum(dense.sum(axis=1, keepdims=True), 1e-10)
-
-    vertices, weights, joints, colors, uv, indices = [], [], [], [], [], []
-
-    def add(point, color=FABRIC, tex=(0, 0), bone=None):
-        if bone is None:
-            distance, nearby = tree.query(point, k=12)
-            blend = 1/np.maximum(distance, .006)**2
-            values = np.average(dense[selected][nearby], axis=0, weights=blend)
-            top = np.argsort(-values, kind='stable')[:4]
-            values = values[top]; values /= values.sum()
-        elif isinstance(bone, dict):
-            top = [rig.index[name] for name in bone]
-            values = list(bone.values())
-            top += [0]*(4-len(top)); values += [0]*(4-len(values))
-        else:
-            top, values = [rig.index[bone], 0, 0, 0], [1, 0, 0, 0]
-        vertices.append(point); colors.append(color); uv.append(tex)
-        joints.append(top); weights.append(values)
-        return len(vertices)-1
-
-    # A very small skirt solver: 16 x 7 particles, two constraint iterations,
-    # fixed substeps, and analytic body capsules. The waist ring is pinned.
-    levels = [.95, .87, .79, .71, .63, .555, .543]
-    segments = 16
+    # The visual grid is deliberately finer than the former 16-sided skirt.
+    # Scalar radial springs replace 2 passes of edge constraints that were
+    # discarded immediately by the fixed-height/angular projection anyway.
+    levels = [1.02, .96, .90, .84, .78, .72, .66, .60, .555, .543]
+    segments = 32
     cloth = []
     for y in levels:
-        u = (.95-y)/(.95-.543)
+        u = (1.02-y)/(1.02-.543)
         for k in range(segments):
             theta = k/segments*2*np.pi
-            pleat = .003*np.cos(theta*8)*(u+.1)
-            rx = .201+.059*u+pleat
-            z = (.157+.075*u if np.cos(theta) >= 0 else .106+.075*u)+pleat
-            cloth.append([rx*np.sin(theta), y, .008+z*np.cos(theta)])
+            pleat = .0008*np.cos(theta*8)*u
+            rx, front, back = [np.interp(y, [.543, .90, 1.02], values)
+                               for values in [[.228, .186, .155], [.210, .164, .160], [-.150, -.100, -.060]]]
+            z = (front if np.cos(theta) >= 0 else -back)+pleat
+            cloth.append([(rx+pleat)*np.sin(theta), y, z*np.cos(theta)])
     cloth = np.asarray(cloth)
-
-    # Closed-front AND closed-back patient gown. Broad shoulder panels and
-    # real arm holes, with separate loose cap sleeves. No painted-on clothing.
-    profile = [(.950, .201, .165, -.098), (.980, .187, .164, -.095),
-               (1.010, .177, .166, -.083), (1.017, .176, .167, -.082),
-               (1.029, .174, .168, -.080), (1.036, .173, .169, -.078), (1.08, .158, .173, -.065),
-               (1.15, .167, .181, -.073), (1.22, .179, .194, -.084),
-               (1.27, .187, .175, -.094), (1.305, .198, .147, -.096),
-               (1.345, .208, .125, -.096), (1.378, .202, .102, -.087),
-               (1.399, .170, .074, -.065), (1.415, .120, .060, -.051),
-               (1.430, .064, .052, -.049), (1.438, .063, .050, -.048)]
-    count = segments*3
-    # Rectangular holes in the torso chart, sewn to sleeves with SHARED
-    # boundary vertices. The former independent cap tubes left real gaps.
-    hole_bottom, hole_top, half_hole = 8, 13, 4
-    armhole_edges = []
-    for row, (y, rx, front, back) in enumerate(profile):
-        for k in range(count):
-            theta = k/count*2*np.pi
-            sn, cs = np.sin(theta), np.cos(theta)
-            x = rx*np.sign(sn)*abs(sn)**.85
-            z = (front if cs >= 0 else -back)*np.sign(cs)*abs(cs)**.85
-            color = BINDING if row >= len(profile)-2 or 1.017 <= y <= 1.029 else FABRIC
-            point = [x, y, z]
-            if row == 0:
-                # A genuine shared seam, not two overlapping surfaces that
-                # z-fight into a jagged line. Interpolate the pinned cloth rim
-                # and give it EXACTLY the same hips-only bind weights.
-                at = k/count*segments
-                lo = int(at)
-                point = cloth[lo]*(1-(at-lo))+cloth[(lo+1)%segments]*(at-lo)
-            add(point, color, (k/count, (y-.54)/.9), 'hips' if row == 0 else None)
-    for row in range(len(profile)-1):
-        y = (profile[row][0]+profile[row+1][0])/2
-        for k in range(count):
-            if hole_bottom <= row < hole_top and any(
-                    center-half_hole <= k < center+half_hole for center in [count//4, 3*count//4]):
-                continue
-            a, b = row*count+k, row*count+(k+1)%count
-            c, d = a+count, b+count
-            indices += [a, c, b, b, c, d]
-
-    # A sewn, continuous gusset joins each real armhole to its sleeve.
-    # The terminal cuff remains open as clothing should; the armpit does not.
-    for side, sign, center in [('L', 1, count//4), ('R', -1, 3*count//4)]:
-        lo, hi = center-half_hole, center+half_hole
-        boundary = ([hole_bottom*count+k for k in range(lo, hi)]
-                    + [row*count+hi for row in range(hole_bottom, hole_top)]
-                    + [hole_top*count+k for k in range(hi, lo, -1)]
-                    + [row*count+lo for row in range(hole_top, hole_bottom, -1)])
-        n = len(boundary)
-        # Lower edges stay with the rib cage; nearest BODY skin weights
-        # rotated the cloth inside the real axilla when the arm was raised.
-        for index in boundary:
-            amount = np.clip((vertices[index][1]-1.28)/.12, 0, 1)
-            joints[index] = [rig.index['chest'], rig.index['shoulder.'+side], rig.index['upper_arm.'+side], 0]
-            weights[index] = [1-.45*amount, .35*amount, .10*amount, 0]
-        armhole_edges += [[boundary[k], boundary[(k+1)%n]] for k in range(n)]
-        original = np.asarray([vertices[i] for i in boundary])
-        cy = (profile[hole_bottom][0]+profile[hole_top][0])/2
-        angles = np.unwrap(np.arctan2((original[:, 2]-.010)/.095,
-                                      (original[:, 1]-cy)/((profile[hole_top][0]-profile[hole_bottom][0])/2)))
-        root = rig.rest_world[rig.index['upper_arm.'+side]]
-        axis = root[:3, 1]
-        lateral = np.array([1., 0., 0.]); lateral -= axis*np.dot(lateral, axis)
-        lateral /= np.linalg.norm(lateral)
-        forward = np.cross(axis, lateral)
-        previous = boundary
-        rows = [(.020, .092, .48), (.055, .087, 1), (.110, .081, 1),
-                (.150, .076, 1), (.160, .076, 1)]
-        for row, (along, radius, blend) in enumerate(rows):
-            ring = []
-            for k, angle in enumerate(angles):
-                circle = root[:3, 3]+axis*along+radius*(sign*np.cos(angle)*lateral+np.sin(angle)*forward*.93)
-                point = original[k]*(1-blend)+circle*blend
-                skin_weights = ({'chest': .55, 'shoulder.'+side: .15, 'upper_arm.'+side: .30} if row == 0 else
-                           {'shoulder.'+side: .15, 'upper_arm.'+side: .85} if row == 1 else 'upper_arm.'+side)
-                ring.append(add(point, BINDING if row == len(rows)-1 else FABRIC,
-                                (k/n, row/len(rows)), skin_weights))
-            for k in range(n):
-                a, b, c, d = previous[k], previous[(k+1)%n], ring[k], ring[(k+1)%n]
-                indices += [a, c, b, b, c, d]
-            previous = ring
-
-    # Geometric identification patch sits ON the fabric rather than floating
-    # over the chest. No new image/texture/import dependency is required.
-    def patch_z(x, y):
-        rx, front = [np.interp(y, [r[0] for r in profile], [r[k] for r in profile]) for k in [1, 2]]
-        sn = (abs(x)/rx)**(1/.85)
-        return front*np.sqrt(max(0, 1-sn*sn))**.85+.006
-
-    for x0, x1, y0, y1, color in [(.055, .110, 1.225, 1.263, BINDING),
-                                   (.062, .103, 1.247, 1.254, [.48, .83, .78]),
-                                   (.062, .086, 1.235, 1.240, FABRIC)]:
-        for x, y in [(x0, y0), (x1, y0), (x0, y1), (x1, y1)]:
-            add([x, y, patch_z(x, y)+(.001 if color != BINDING else 0)], color)
-        a = len(vertices)-4; indices += [a, a+2, a+1, a+1, a+2, a+3]
-
-    verts = np.asarray(vertices)
-    normals = np.zeros_like(verts)
-    tri = np.asarray(indices).reshape(-1, 3)[:, [0, 2, 1]]
-    indices = tri.ravel().tolist()
-    face = np.cross(verts[tri[:, 1]]-verts[tri[:, 0]], verts[tri[:, 2]]-verts[tri[:, 0]])
-    for k in range(3):
-        np.add.at(normals, tri[:, k], face)
-    normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-10)
-    used, inverse = np.unique(tri, return_inverse=True)
-    remap = np.full(len(verts), -1, dtype=int)
-    remap[used] = np.arange(len(used))
-    armhole_edges = remap[np.asarray(armhole_edges)].tolist()
-    verts, normals = verts[used], normals[used]
-    weights, joints, colors, uv = [np.asarray(values)[used].tolist() for values in [weights, joints, colors, uv]]
-    indices = inverse.ravel().tolist()
-
-    edges = []
-    for row in range(len(levels)):
-        for k in range(segments):
-            a, b = row*segments+k, row*segments+(k+1)%segments
-            edges.append([a, b, float(np.linalg.norm(cloth[a]-cloth[b])), .65])
-            if row:
-                edges.append([a, a-segments, float(np.linalg.norm(cloth[a]-cloth[a-segments])), .92])
-            if row > 1:
-                edges.append([a, a-2*segments, float(np.linalg.norm(cloth[a]-cloth[a-2*segments])), .18])
+    gown = bodice(rig, cloth[:segments], cloth[segments:2*segments])
     hips_bind = rig.inverse_bind[rig.index['hips']]
-    return {'version': 1, 'hips_inverse_bind': np.vstack([hips_bind[:3, :3], hips_bind[:3, 3]]).tolist(),
+    return {'version': 2, 'hips_inverse_bind': np.vstack([hips_bind[:3, :3], hips_bind[:3, 3]]).tolist(),
             'model_sha256': hashlib.sha256(MODEL.read_bytes()).hexdigest(),
             'hands': hand_shape(rig), 'floor_probes': floor_probes(rig),
-            'coverage': {'sleeves': [
-                {'origin': rig.rest_world[rig.index['upper_arm.'+side], :3, 3].tolist(),
-                 'axis': rig.rest_world[rig.index['upper_arm.'+side], :3, 1].tolist(),
-                 'start': -.06, 'end': .14, 'radius': .12}
-                for side in ['L', 'R']]},
-            'gown': {'waist_vertices': count, 'armhole_edges': armhole_edges, 'positions': np.round(verts, 7).tolist(), 'normals': np.round(normals, 7).tolist(),
-                     'joints': np.asarray(joints).tolist(), 'weights': np.round(weights, 7).tolist(),
-                     'uv': np.round(uv, 6).tolist(), 'colors': colors, 'indices': indices},
+            'coverage': {'preserve_limbs': True, 'arm_weight_threshold': .15, 'sleeves': [],
+                         'underarm_cores': [
+                             {'origin': rig.rest_world[rig.index['upper_arm.'+side], :3, 3].tolist(),
+                              'axis': rig.rest_world[rig.index['upper_arm.'+side], :3, 1].tolist(),
+                              'start': -.045, 'end': .105, 'radius': .080, 'cuff': .158}
+                             for side in ['L', 'R']]},
+            'gown': gown,
             'cloth': {'positions': np.round(cloth, 7).tolist(), 'segments': segments,
-                      'rings': len(levels), 'edges': edges, 'iterations': 2, 'step': 1/60,
-                      'thickness': .018, 'surface_margin': .018, 'max_secondary_offset': .045,
+                      'rings': len(levels), 'edges': [], 'iterations': 0, 'step': 1/60,
+                      'solver': 'bounded_radial_surface_v2', 'surface_samples': True,
+                      'thickness': .004, 'surface_margin': .014, 'max_secondary_offset': .025,
                       'fabric': FABRIC, 'binding': BINDING, 'capsules': [
-                          ['thigh.L', 'shin.L', .122], ['thigh.R', 'shin.R', .122],
-                          ['shin.L', 'foot.L', .076], ['shin.R', 'foot.R', .076]]}}
+                          ['thigh.L', 'shin.L', .110, .20], ['thigh.R', 'shin.R', .110, .20],
+                          ['shin.L', 'foot.L', .070, 0.0], ['shin.R', 'foot.R', .070, 0.0]]}}
 
 
 def main():

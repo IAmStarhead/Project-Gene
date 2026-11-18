@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
-    "check": "node --check server.mjs && node --check main.js && node --check test.mjs",
-    "test": "node test.mjs"
+    "check": "node --check server.mjs && node --check main.js && node --check appearance.js && node --check test.mjs && node --check test_garment.mjs",
+    "test": "node test.mjs",
+    "test:garment": "node test_garment.mjs"
   },
   "dependencies": {
     "three": "0.183.1"
