@@ -38,6 +38,8 @@ func _ready() -> void:
 	add_to_group("clone")
 	_player = get_tree().get_first_node_in_group("player")
 	_make_label()
+	if character != null and character.has_method("reset_motion"):
+		character.reset_motion(false)
 
 
 func _make_label() -> void:
@@ -105,7 +107,7 @@ func _physics_process(delta: float) -> void:
 		var action := "attack" if _attack_time >= 0.0 else ""
 		character.update_motion(delta, local_velocity, action, maxf(_attack_time, 0.0), "R", {
 			"distance": planar.length(), "grounded": is_on_floor(),
-			"vertical_speed": velocity.y,
+			"vertical_speed": velocity.y, "combat": mode == Mode.ON,
 			"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
 		})
 
@@ -222,7 +224,7 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		_recover = 0.0
 		velocity = Vector3.ZERO
 		if character != null and character.has_method("reset_motion"):
-			character.reset_motion()
+			character.reset_motion(false)
 
 
 func _update_label() -> void:

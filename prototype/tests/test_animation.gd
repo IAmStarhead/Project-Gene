@@ -52,6 +52,9 @@ func _run() -> void:
 	_test_distance_and_air(character)
 	_test_locomotion_posture(character)
 	_test_air_progress(character)
+	_test_stance_blending(character)
+	_test_relaxed_jump(character)
+	_test_player_modes()
 	_test_combat()
 	_test_showcase()
 	character.free()
@@ -64,7 +67,7 @@ func _run() -> void:
 func _test_native_tracks(character: Node3D) -> void:
 	var mirror: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
 		"res://assets/heroine/animations/motion_set.json"))
-	check(Character.MOTIONS.get_animation_list().size() == 11, "all 11 native clips loaded")
+	check(Character.MOTIONS.get_animation_list().size() == 14, "all 14 native clips loaded")
 	check(character.skeleton.get_bone_count() == 21, "the original 21-bone rig is retained")
 	var max_rotation_error := 0.0
 	var max_position_error := 0.0
@@ -215,6 +218,141 @@ func _test_air_progress(character: Node3D) -> void:
 	check(joint(character, "foot.L").y < .10, "nearby raised floor prepares feet before early contact")
 	character.reset_motion()
 	check(not character._air_launched, "reset clears jump flight history")
+
+
+func _test_stance_blending(character: Node3D) -> void:
+	character.reset_motion(false)
+	check(joint(character, "hand.L").y < .95 and joint(character, "hips").y > .89,
+		"ordinary idle starts upright with lowered arms")
+	var stride := float(Character.MOTIONS.get_animation("walk_relaxed").get_meta("stride"))
+	for i in 100:
+		character.update_motion(.01, Vector3(0, 0, T.WALK_SPEED), "", 0, "R",
+			{"grounded": true, "combat": false, "distance": stride/100})
+	check(absf(wrapf(character._phase + .5, 0, 1) - .5) < .00001,
+		"ordinary walking also advances one cycle per real stride")
+	for fps in [30, 60, 120]:
+		character.reset_motion(false)
+		var dt: float = 1.0/fps
+		for i in fps:
+			character.update_motion(dt, Vector3(0, 0, T.WALK_SPEED), "", 0, "R",
+				{"grounded": true, "combat": false, "distance": T.WALK_SPEED*dt})
+		var phase: float = character._phase
+		character.update_motion(0, Vector3.ZERO, "", 0, "R",
+			{"grounded": true, "combat": true, "distance": 0.0})
+		check(character._phase == phase, "switching stance does not reset foot phase at %d FPS" % fps)
+		var previous := joint(character, "hand.L")
+		var max_step := 0.0
+		for i in fps/2:
+			character.update_motion(dt, Vector3(0, 0, T.WALK_SPEED), "", 0, "R",
+				{"grounded": true, "combat": true, "distance": T.WALK_SPEED*dt})
+			max_step = maxf(max_step, previous.distance_to(joint(character, "hand.L")))
+			previous = joint(character, "hand.L")
+		check(max_step < .15, "no arm teleport while entering guard at %d FPS" % fps)
+		check(character._combat_blend == 1.0 and joint(character, "hand.L").y > 1.1,
+			"combat walking retains its guard at %d FPS" % fps)
+		for i in fps/2:
+			character.update_motion(dt, Vector3(0, 0, T.WALK_SPEED), "", 0, "R",
+				{"grounded": true, "combat": false, "distance": T.WALK_SPEED*dt})
+		check(character._combat_blend == 0.0 and joint(character, "hand.L").y < .95,
+			"leaving combat restores a real ordinary walk at %d FPS" % fps)
+		check(joint(character, "hips").y > .85, "ordinary runtime walking is upright")
+		phase = character._phase
+		for i in 20:
+			character.update_motion(dt, Vector3.ZERO, "", 0, "R",
+				{"grounded": true, "combat": false, "distance": 0.0})
+		check(character._phase == phase, "ordinary gait also stops at a wall")
+
+
+func _test_relaxed_jump(character: Node3D) -> void:
+	character.reset_motion(false)
+	var wrist := joint(character, "hand.L")
+	var launch := sqrt(2.0*T.GRAVITY*T.JUMP_HEIGHT)
+	character.update_motion(0, Vector3.ZERO, "", 0, "R",
+		{"grounded": false, "combat": false, "vertical_speed": launch, "jump_started": true})
+	check(joint(character, "hand.L").distance_to(wrist) < .00001,
+		"ordinary take-off does not insert a combat-guard frame")
+	character.update_motion(.10, Vector3.ZERO, "", 0, "R",
+		{"grounded": false, "combat": false, "vertical_speed": launch - T.GRAVITY*.10})
+	check(knee_bend(character, "L") < 30, "ordinary jump joins the accepted extension phase")
+	character.update_motion(.25, Vector3.ZERO, "", 0, "R",
+		{"grounded": false, "combat": false, "vertical_speed": -5.0})
+	character.update_motion(.016, Vector3.ZERO, "", 0, "R", {"grounded": true, "combat": false})
+	character.update_motion(.075, Vector3.ZERO, "", 0, "R", {"grounded": true, "combat": false})
+	check(joint(character, "hips").y < .80, "ordinary landing still absorbs the impact")
+	for i in 24:
+		character.update_motion(1.0/60, Vector3.ZERO, "", 0, "R", {"grounded": true, "combat": false})
+	check(character._state == "ground" and joint(character, "hand.L").y < .95,
+		"ordinary landing recovers to relaxed idle, not guard")
+	character.reset_motion(false)
+	check(character._takeoff_pose.is_empty() and not character._air_from_relaxed,
+		"reset clears the captured launch pose too")
+
+
+func _test_player_modes() -> void:
+	var player := PlayerScene.instantiate()
+	player.set_physics_process(false)
+	world.add_child(player)
+	var clone := CloneScene.instantiate()
+	clone.set_physics_process(false)
+	world.add_child(clone)
+	check(not player.combat_mode and joint(player.character, "hand.L").y < .95,
+		"a fresh player actually starts in ordinary mode")
+	check(InputMap.action_get_events("toggle_stance")[0].physical_keycode == KEY_R,
+		"R is a physical-key binding for player stance")
+	check(InputMap.action_get_events("toggle_clone")[0].physical_keycode == KEY_T,
+		"T remains the separate clone-combat binding")
+	var toggle := InputEventAction.new()
+	toggle.action = "toggle_stance"
+	toggle.pressed = true
+	player.velocity = Vector3(1.0, 2.0, 3.0)
+	player.character._phase = .37
+	var stamina: float = player.stamina
+	player._unhandled_input(toggle)
+	check(player.combat_mode and clone.mode == clone.Mode.OFF, "R changes the player, not the clone")
+	check(player.velocity == Vector3(1.0, 2.0, 3.0) and player.stamina == stamina
+		and player.character._phase == .37, "stance changes do not alter physics/stamina/foot phase")
+	player._unhandled_input(toggle)
+	check(not player.combat_mode, "R can also leave combat")
+	player._start_attack()
+	check(player.combat_mode and player._action == "attack" and player._action_time == 0.0,
+		"a punch enters combat immediately, without a new input delay")
+	player._action_time = .13
+	player._unhandled_input(toggle)
+	check(not player.combat_mode and player._action == "attack" and player._action_time == .13,
+		"R cannot cancel an ongoing punch or change its clock")
+	player._action = ""
+	player.take_damage(1, Vector3.FORWARD)
+	check(player.combat_mode, "a received hit enters combat")
+	player.combat_mode = false
+	player._invulnerable = true
+	player.take_damage(1, Vector3.FORWARD)
+	check(not player.combat_mode, "an evaded hit does not force a stance change")
+	player._invulnerable = false
+	player.take_damage(T.MAX_HEALTH + 1, Vector3.FORWARD)
+	check(not player.combat_mode and player.character._combat_blend == 0.0,
+		"respawn clears combat stance and its visual blend")
+
+	# Exercise the real pause-menu -> main handler -> player/clone wiring.
+	var main := Node3D.new()
+	main.set_script(load("res://scripts/main.gd"))
+	main.player = player
+	main.clone = clone
+	var menu := (load("res://scenes/pause_menu.tscn") as PackedScene).instantiate()
+	world.add_child(menu)
+	menu.action.connect(main._on_menu_action)
+	check(menu._items["stance"]["button"].text.contains("обычный"), "menu reads the current player stance")
+	menu._activate("stance")
+	check(player.combat_mode and menu._items["stance"]["button"].text.contains("боевой"),
+		"pause menu changes stance and refreshes its live label")
+	menu._activate("clone")
+	check(clone.mode == clone.Mode.ON and player.combat_mode,
+		"clone toggle does not overwrite the player's chosen stance")
+	menu._activate("stance")
+	check(not player.combat_mode and clone.mode == clone.Mode.ON, "player can relax independently of clone mode")
+	menu.free()
+	main.free()
+	clone.free()
+	player.free()
 
 
 func _test_combat() -> void:

@@ -28,22 +28,28 @@ func frame(player: CharacterBody3D) -> Dictionary:
 	return {"rotations": rotations,
 		"hips": vector(skeleton.get_bone_pose_position(skeleton.find_bone("hips"))),
 		"position": vector(character.global_position), "orientation": [q.x, q.y, q.z, q.w],
-		"vertical_speed": player.velocity.y, "grounded": player.is_on_floor(), "state": character._state}
+		"vertical_speed": player.velocity.y, "grounded": player.is_on_floor(), "state": character._state,
+		"combat": player.combat_mode, "phase": character._phase, "gait_blend": character._gait_blend}
 
 
-func take(moving: bool, jump_at: int, count: int) -> Array:
+func take(moving: bool, jump_at: int, count: int, combat: bool = true,
+		sprint: bool = true, toggles: Array = []) -> Array:
 	var player := PlayerScene.instantiate() as CharacterBody3D
 	player.position = Vector3(0, .1, 0)
+	player.combat_mode = combat
 	world.add_child(player)
 	for i in 25:
 		await physics_frame
 	if moving:
 		Input.action_press("move_forward")
-		Input.action_press("run")
+		if sprint:
+			Input.action_press("run")
 		for i in 45:
 			await physics_frame
 	var result: Array = []
 	for i in count:
+		if i in toggles:
+			player.toggle_combat_mode()
 		if i == jump_at:
 			player._jump_buffer = 0.0
 		await physics_frame
@@ -67,8 +73,16 @@ func _record() -> void:
 	floor_body.add_child(collision)
 	world.add_child(floor_body)
 	var result := {"fps": FPS, "source": "Godot CharacterBody3D + character_anim.gd, actual physics frames",
-		"takes": {"run": await take(true, -1, 120),
-			"jump": await take(false, 18, 108), "run_jump": await take(true, 18, 108)}}
+		"takes": {"run": await take(true, -1, 180),
+			"jump": await take(false, 18, 108), "run_jump": await take(true, 18, 108),
+			"walk": await take(true, -1, 180, true, false),
+			"idle_relaxed": await take(false, -1, 96, false),
+			"walk_relaxed": await take(true, -1, 180, false, false),
+			"run_relaxed": await take(true, -1, 180, false),
+			"jump_relaxed": await take(false, 18, 108, false),
+			"run_jump_relaxed": await take(true, 18, 108, false),
+			"walk_switch": await take(true, -1, 216, false, false, [60, 132]),
+			"run_switch": await take(true, -1, 216, false, true, [60, 132])}}
 	var path := OS.get_environment("GEN_TRACE_OUTPUT")
 	if path.is_empty():
 		path = "user://motion-trace.json"
@@ -80,5 +94,8 @@ func _record() -> void:
 	output.store_string(JSON.stringify(result))
 	output.close()
 	world.free()
-	print("GEN recorded 336 actual physics poses: " + ProjectSettings.globalize_path(path))
+	var count := 0
+	for frames in result["takes"].values():
+		count += frames.size()
+	print("GEN recorded %d actual physics poses: %s" % [count, ProjectSettings.globalize_path(path)])
 	quit()

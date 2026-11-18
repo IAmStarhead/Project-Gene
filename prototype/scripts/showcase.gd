@@ -7,7 +7,9 @@ const T := preload("res://scripts/tuning.gd")
 const CharacterScript := preload("res://scripts/character_anim.gd")
 const BuildScene := preload("res://scripts/build_scene.gd")
 const CLIPS := [
-	["guard", "Боевая стойка"], ["walk", "Ходьба"], ["run", "Бег"],
+	["idle_relaxed", "Спокойная стойка"], ["walk_relaxed", "Обычная ходьба"],
+	["run_relaxed", "Обычный бег"],
+	["guard", "Боевая стойка"], ["walk", "Ходьба — бой"], ["run", "Бег — бой"],
 	["attack_left", "Джеб — левая"], ["attack_right", "Кросс — правая"],
 	["dodge", "Уклонение"], ["jump_start", "Отрыв от земли"],
 	["jump_up", "Подъём в прыжке"], ["jump_down", "Падение"],
@@ -33,6 +35,7 @@ var _timeline: HSlider
 var _play_button: Button
 var _speed_picker: OptionButton
 var _clip_buttons: Array[Button] = []
+var _clip_scroll: ScrollContainer
 
 
 func _ready() -> void:
@@ -88,12 +91,19 @@ func _make_ui() -> void:
 	layer.add_child(root)
 
 	var library := _panel()
-	library.position = Vector2(16, 16)
-	library.custom_minimum_size = Vector2(228, 0)
 	root.add_child(library)
+	library.anchor_bottom = 1.0
+	library.offset_left = 16
+	library.offset_right = 244
+	library.offset_top = 16
+	library.offset_bottom = -142
+	_clip_scroll = ScrollContainer.new()
+	_clip_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	library.add_child(_clip_scroll)
 	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	list.add_theme_constant_override("separation", 5)
-	library.add_child(list)
+	_clip_scroll.add_child(list)
 	var heading := Label.new()
 	heading.text = "GEN / АНИМАЦИИ"
 	heading.add_theme_font_size_override("font_size", 19)
@@ -178,6 +188,7 @@ func _select_clip(index: int) -> void:
 	_timeline.max_value = character.clip_duration(CLIPS[_selected][0])
 	for i in _clip_buttons.size():
 		_clip_buttons[i].set_pressed_no_signal(i == _selected)
+	_clip_scroll.ensure_control_visible(_clip_buttons[_selected])
 	character.seek_clip(CLIPS[_selected][0], _time)
 	_update_ui()
 

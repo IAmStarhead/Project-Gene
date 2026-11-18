@@ -78,6 +78,7 @@ func _ready() -> void:
 	_add_item(col, "showcase", "Витрина анимаций", "H")
 	_add_item(col, "brightness", "Освещение", "")
 	_add_item(col, "toon", "Селлшейдинг", "G")
+	_add_item(col, "stance", "Режим игрока", "R")
 	_add_item(col, "clone", "Бой клона", "T")
 	_add_item(col, "quit", "Выйти из игры", "")
 
@@ -116,6 +117,8 @@ func refresh() -> void:
 	_items["brightness"]["button"].text = _row_text("brightness", T.BRIGHTNESS_NAMES[T.BRIGHTNESS])
 	_items["toon"]["button"].text = _row_text("toon", "вкл" if T.TOON_ENABLED else "выкл")
 	_items["clone"]["button"].text = _row_text("clone", _clone_label())
+	var player := get_tree().get_first_node_in_group("player")
+	_items["stance"]["button"].text = _row_text("stance", player.stance_name() if player != null else "—")
 	_items["resume"]["button"].text = _row_text("resume", "")
 	_items["showcase"]["button"].text = _row_text("showcase", "")
 	_items["quit"]["button"].text = _row_text("quit", "")

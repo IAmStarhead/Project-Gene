@@ -9,12 +9,13 @@
   2) анимации, двигающие веса морфов (path="weights");
   3) анимации на узлах, которые не являются костями.
 
-Для прототипа ни то, ни другое не нужно: позы считаются кодом
-(prototype/scripts/character_anim.gd), а морфы «кулак» не используются.
-Поэтому скрипт вырезает морфы и анимации, не трогая геометрию, скелет и веса.
+Скрипт также впечатывает существующий морф кулака, исправляет ошибочные веса
+кисть/бедро и грудь/плечо и сохраняет совпадение швов. Скелет, топология,
+материалы и исходный GLB не меняются. Правка подмышки — по связности сетки,
+а не отсечением руки координатной плоскостью; см. repair_shoulders.py.
 
-Использование:
-    python tools/sanitize_glb.py вход.glb выход.glb
+Использование из корня репозитория (нужен numpy):
+    python prototype/assets/heroine/sanitize_glb.py вход.glb выход.glb
 
 Оригинал не изменяется. Проверка результата — валидатором Khronos.
 """
@@ -22,6 +23,8 @@ import json
 import struct
 import sys
 from pathlib import Path
+
+from repair_shoulders import repair_axilla_weights
 
 JSON_CHUNK = 0x4E4F534A
 BIN_CHUNK = 0x004E4942
@@ -229,6 +232,10 @@ def bake_fists_into_geometry(gltf: dict, binary: bytes) -> tuple[bytes, dict]:
             out = out / ln
         buf[start:start + out.size * 4] = out.tobytes()
         if attr == "POSITION":
+            # The baked fist extends ~0.025 mm beyond the old X bounds.
+            # Keep accessor metadata in sync; do not alter the baked vertices.
+            acc["min"] = out.min(axis=0).tolist()
+            acc["max"] = out.max(axis=0).tolist()
             report["max_shift_mm"] = mag * 1000.0
             report["moved"] = int((np.linalg.norm(delta, axis=1) > 1e-5).sum())
         report["baked"] += 1
@@ -396,12 +403,17 @@ def main() -> None:
     # одной вершины, сшивка — между совпадающими вершинами. Порядок важен,
     # иначе чистка снова развела бы уже сшитый шов.
     binary, sreport = weld_seam_weights(gltf, binary)
+    # Решение на сваренном графе поверхности одинаково для копий шва.
+    # Оно освобождает верх руки от груди, не режет живую руку по X.
+    binary, areport = repair_axilla_weights(gltf, binary)
     write_glb(dst, gltf, binary)
     print(f"кулак впечатан: сдвинуто вершин {freport.get('moved', 0)}, "
           f"максимум {freport.get('max_shift_mm', 0.0):.1f} мм, "
           f"убрано морфов {freport.get('removed_targets', 0)}")
     print(f"сшито швов: {sreport['groups']} групп, {sreport['welded']} вершин")
-    print(f"исправлено весов: {wreport['changed']} вершин")
+    print(f"подмышки: исправлено {areport['changed']} вершин, "
+          f"плавный переход на {areport['harmonic_vertices']} вершинах плеча")
+    print(f"исправлено весов кисть/бедро: {wreport['changed']} вершин")
     for (dom, wrong), n in sorted(wreport.get("pairs", {}).items(), key=lambda x: -x[1]):
         print(f"   {dom:10s} <- ошибочный вес {wrong:12s}: {n} вершин")
     print(f"убрано: анимаций {report['animations']}, "

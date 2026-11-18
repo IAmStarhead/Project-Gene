@@ -100,9 +100,9 @@ def swing_targets(p, side, shoulder_angle, elbow_bend, spread=.055):
     return elbow + lower_length * lower, elbow
 
 
-def swing_arm(p, side, shoulder_angle, elbow_bend, spread=.055):
+def swing_arm(p, side, shoulder_angle, elbow_bend, spread=.055, roll=5):
     wrist, elbow = swing_targets(p, side, shoulder_angle, elbow_bend, spread)
-    p.arm(side, wrist, pole=elbow, roll=5 if side == 'L' else -5)
+    p.arm(side, wrist, pole=elbow, roll=roll if side == 'L' else -roll)
 
 
 def run_foot_path(phase, gait):
@@ -185,6 +185,77 @@ def gait_pose(rig, t, name):
         y, z, pitch = foot_path(fp, gait)
         p.foot(side, [sign * (.115 if name == 'walk' else .10), y, z], pitch=pitch,
                yaw=sign * (4 if name == 'walk' else 1))
+    return p
+
+
+RELAXED_WALK = {'duration': .76, 'stride': 1.24, 'duty': .60, 'clearance': .12}
+
+
+def relaxed_idle(rig, t):
+    breath = np.sin(t / 3.2 * np.pi * 2)
+    p = body(rig, hip=(.003 * breath, .894 + .001 * breath, .012),
+             yaw=(0, 0, 0), lean=(.8, .4), roll=.25 * breath, breath=.35 * breath)
+    for side, sign in [('L', 1), ('R', -1)]:
+        swing_arm(p, side, 2 + .4 * breath, 14 + .5 * breath, spread=.14, roll=-65)
+        p.foot(side, [sign * .105, .08, .025 if side == 'L' else -.020], yaw=sign * 5)
+    return p
+
+
+def relaxed_walk_path(phase):
+    # Human heel -> ankle -> forefoot rocker. Contact is closer to the hip
+    # than the old symmetric combat step; heel rise lets the trailing leg
+    # extend WITHOUT dropping the pelvis into a crouch. References: Perry,
+    # Muybridge plate 16 and CMU 16_31 (see ANIMATIONS.md).
+    gait = RELAXED_WALK
+    stride, duty, touchdown = gait['stride'], gait['duty'], .27
+    if phase <= duty:
+        pitch = curve(phase / duty, [(0, -6), (.12, 0), (.50, 0),
+                                    (.70, 18), (.88, 43), (1, 58)])
+        return .08, touchdown - stride * phase, pitch
+    v = (phase - duty) / (1 - duty)
+    start, end = touchdown - stride*duty, touchdown
+    m = -stride * (1 - duty)
+    z = (2*v**3 - 3*v**2 + 1)*start + (v**3 - 2*v**2 + v)*m \
+        + (-2*v**3 + 3*v**2)*end + (v**3 - v**2)*m
+    y = curve(v, [(0, .08), (.10, .17), (.24, .08 + gait['clearance']),
+                  (.44, .145), (.64, .12), (.86, .10), (1, .08)])
+    pitch = curve(v, [(0, 58), (.18, 25), (.45, 5), (.75, -6), (1, -6)])
+    return y, z, pitch
+
+
+def relaxed_walk(rig, t):
+    phase = (t / RELAXED_WALK['duration']) % 1
+    drive, sway = np.cos(phase * np.pi * 2), np.sin(phase * np.pi * 2)
+    height = curve(phase % .5, [(0, .853), (.10, .874), (.20, .890),
+                               (.30, .886), (.40, .875), (.50, .853)])
+    p = body(rig, hip=(.012 * sway, height, .02), yaw=(3*sway, -sway, -4*sway),
+             lean=(1.2, .6), roll=1.2 * sway)
+    # Palms face inward, not flat into the thigh. A natural forearm roll keeps
+    # the existing fists clear of the hip without forcing the arms out wide.
+    # Low, relaxed arms; elbow ROM is NOT an absolute 30-degree prescription.
+    # Opposite arm/leg motion, with a little more flexion on the forward swing.
+    for side, sign, offset in [('L', 1, 0), ('R', -1, .5)]:
+        swing_arm(p, side, 3 - sign*17*drive, 24 - sign*10*drive, spread=.14, roll=-65)
+        y, z, pitch = relaxed_walk_path((phase + offset) % 1)
+        # Pose.foot supplies the Y/Z toe pivot. With a turned-out walking foot,
+        # compensate its lateral arc too, keeping the planted forefoot fixed.
+        angle = np.deg2rad(max(pitch, 0))
+        pivot_x = np.sin(np.deg2rad(sign*4)) * (.12 + .06*np.sin(angle) - .12*np.cos(angle))
+        p.foot(side, [sign * .105 + pivot_x, y, z], pitch=pitch, yaw=sign * 4)
+    return p
+
+
+def relaxed_run(rig, t):
+    # Reuse the accepted run's pelvis, leg contacts and toe-off, not a new
+    # unreviewed lower-body cycle. Only the upper body loses combat tension.
+    p = gait_pose(rig, t, 'run')
+    phase = (t / GAITS['run']['duration']) % 1
+    drive, sway = np.cos(phase * np.pi * 2), np.sin(phase * np.pi * 2)
+    p.bend('spine', x=1.8, y=-2*sway, z=-.45*sway)
+    p.bend('chest', x=1.2, y=-4*sway, z=-.35*sway)
+    p.bend('head', x=-1.95, y=2.55*sway)
+    swing_arm(p, 'L', 3 - 24*drive, 83 + 5*drive, spread=.08, roll=-45)
+    swing_arm(p, 'R', 3 + 24*drive, 83 - 5*drive, spread=.08, roll=-45)
     return p
 
 
@@ -307,6 +378,13 @@ def hit(rig, t):
 def definitions():
     return [
         ('guard', 2.8, True, idle, {}),
+        ('idle_relaxed', 3.2, True, relaxed_idle, {}),
+        ('walk_relaxed', RELAXED_WALK['duration'], True, relaxed_walk,
+         {'stride': RELAXED_WALK['stride'],
+          'speed': RELAXED_WALK['stride'] / RELAXED_WALK['duration'], 'duty': RELAXED_WALK['duty']}),
+        ('run_relaxed', GAITS['run']['duration'], True, relaxed_run,
+         {'stride': GAITS['run']['stride'], 'speed': GAITS['run']['stride'] / GAITS['run']['duration'],
+          'duty': GAITS['run']['duty']}),
         *[(name, g['duration'], True, lambda r, t, n=name: gait_pose(r, t, n),
            {'stride': g['stride'], 'speed': g['stride'] / g['duration'], 'duty': g['duty']})
           for name, g in GAITS.items()],
@@ -331,9 +409,12 @@ def bake():
     for name, duration, loop, author, meta in definitions():
         # Include BOTH endpoints and authored timing/contact events exactly.
         events = [v for k, v in meta.items() if k in ('impact', 'active_end')]
-        if name == 'run':
+        if name in ('run', 'run_relaxed'):
             events += [duration * (offset + u * meta['duty'])
                        for offset in (0, .5) for u in (.12, .52, .8, 1)]
+        elif name == 'walk_relaxed':
+            events += [duration * ((offset + u * meta['duty']) % 1)
+                       for offset in (0, .5) for u in (.12, .50, .70, .88, 1)]
         times = np.unique(np.round(np.r_[np.arange(0, duration, 1 / FPS), duration, events], 9))
         quats, hips = [], []
         before = len(rig.unreachable)

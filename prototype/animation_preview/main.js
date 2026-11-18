@@ -6,9 +6,12 @@ const MODEL_URL = new URL('../assets/heroine/female_A_rigged_safe.glb', import.m
 const MOTION_URL = new URL('../assets/heroine/animations/motion_set.json', import.meta.url).href;
 const $ = (id) => document.getElementById(id);
 const CATALOG = [
+  ['idle_relaxed', 'Спокойная стойка', 'Ровный корпус, мягкое дыхание, руки опущены.', 'locomotion', '○'],
+  ['walk_relaxed', 'Обычная ходьба', 'Перекат с пятки на носок, свободный встречный мах рук.', 'locomotion', '↗'],
+  ['run_relaxed', 'Обычный бег', 'Привычная опора и толчок, без напряжённой защиты руками.', 'locomotion', '»'],
   ['guard', 'Боевая стойка', 'Дыхание, мягкие колени и компактная защита.', 'locomotion', '◇'],
-  ['walk', 'Ходьба', 'Перенос ноги, опора и встречное движение корпуса.', 'locomotion', '↗'],
-  ['run', 'Бег', 'Опора под тазом, отталкивание и встречный мах от плеча.', 'locomotion', '»'],
+  ['walk', 'Ходьба · бой', 'Перенос ноги, опора и встречное движение корпуса.', 'locomotion', '↗'],
+  ['run', 'Бег · бой', 'Опора под тазом, отталкивание и встречный мах от плеча.', 'locomotion', '»'],
   ['attack_left', 'Джеб · левая', 'Короткая подготовка → прямой удар → возврат в защиту.', 'combat', '↗'],
   ['attack_right', 'Кросс · правая', 'Поворот таза и плеча. Свободная рука прикрывает лицо.', 'combat', '↗'],
   ['dodge', 'Уклонение', 'Низкий уход рывком — не кувырок через голову.', 'combat', '⤳'],
@@ -87,7 +90,7 @@ impactDot.visible = false;
 scene.add(impactDot);
 
 let data, model, bones, helper;
-let selected = 'guard', time = 0, playing = true, speed = 1;
+let selected = 'idle_relaxed', time = 0, playing = true, speed = 1;
 let last = performance.now();
 const q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion(), vector = new THREE.Vector3();
 
@@ -149,7 +152,7 @@ function selectClip(name) {
   $('clip-title').textContent = title;
   $('clip-description').textContent = description;
   $('clip-code').textContent = name.toUpperCase().replaceAll('_', ' ');
-  $('clip-number').textContent = `${String(CATALOG.findIndex((item) => item[0] === name) + 1).padStart(2, '0')} / 11`;
+  $('clip-number').textContent = `${String(CATALOG.findIndex((item) => item[0] === name) + 1).padStart(2, '0')} / ${CATALOG.length}`;
   const c = data.clips[name];
   $('duration').textContent = `${c.duration.toFixed(2)} с`;
   $('end-time').textContent = `${c.duration.toFixed(2)} с`;
@@ -276,7 +279,8 @@ async function load() {
     button.addEventListener('click', () => selectClip(name));
     $(section).appendChild(button);
   });
-  selectClip('guard');
+  $('clip-count').textContent = `${CATALOG.length} КЛИПОВ`;
+  selectClip('idle_relaxed');
   $('load-state').classList.add('hidden');
   window.motionLab = {
     select: selectClip, seek, setView,

@@ -76,7 +76,7 @@ func _ready() -> void:
 	bar.add_theme_constant_override("separation", 8)
 	bar.position = Vector2(12, 96)
 	layer.add_child(bar)
-	for pair in [["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
+	for pair in [["R", "стойка игрока"], ["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
 		bar.add_child(_key_badge(pair[0], pair[1]))
 
 	# ── МЕНЮ ПАУЗЫ (Esc). Пользователь просил: из игры перейти в витрину,
@@ -142,6 +142,9 @@ func _unhandled_input(event: InputEvent) -> void:
 ## понятными подписями и без необходимости помнить раскладку.
 func _on_menu_action(id: String) -> void:
 	match id:
+		"stance":
+			if is_instance_valid(player):
+				player.toggle_combat_mode()
 		"showcase":
 			get_tree().change_scene_to_file("res://scenes/showcase.tscn")
 		"brightness":

@@ -28,6 +28,10 @@ var _clock := 0.0
 var _phase := 0.0
 var _gait_blend := 0.0
 var _move_weight := 0.0
+var _combat_mode := true
+var _combat_blend := 1.0
+var _takeoff_pose: Dictionary = {}
+var _air_from_relaxed := false
 var _air_time := 0.0
 var _air_launched := false
 var _air_launch_speed := 0.0
@@ -172,6 +176,8 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	_hit_time += delta
 	_land_time += delta
 	var grounded: bool = context.get("grounded", true)
+	_combat_mode = context.get("combat", true)
+	_combat_blend = move_toward(_combat_blend, 1.0 if _combat_mode else 0.0, delta * 4.0)
 	if grounded and not _was_grounded:
 		_land_time = 0.0
 	if not grounded:
@@ -179,6 +185,8 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		# когда персонаж уже кадр-два не касается пола. Сход с края НЕ прыжок.
 		if _was_grounded or context.get("jump_started", false):
 			_air_time = 0.0
+			_takeoff_pose = _last_pose
+			_air_from_relaxed = not _combat_mode
 			_air_launch_speed = float(context.get("vertical_speed", 0.0))
 			_air_launched = _air_launch_speed > 1.0
 		else:
@@ -188,14 +196,17 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	var planar := Vector2(local_velocity.x, local_velocity.z).length()
 	var walk := MOTIONS.get_animation("walk")
 	var run := MOTIONS.get_animation("run")
-	var walk_speed: float = walk.get_meta("stride") / walk.length
+	var relaxed_walk := MOTIONS.get_animation("walk_relaxed")
+	var stance := smoothstep(0.0, 1.0, _combat_blend)
+	var walk_stride := lerpf(float(relaxed_walk.get_meta("stride")), float(walk.get_meta("stride")), stance)
+	var walk_speed := lerpf(float(relaxed_walk.get_meta("speed")), float(walk.get_meta("speed")), stance)
 	var run_speed: float = run.get_meta("stride") / run.length
 	var want_gait := smoothstep(walk_speed + 0.3, run_speed, planar)
 	_gait_blend = move_toward(_gait_blend, want_gait, delta * 4.0)
 	_move_weight = move_toward(_move_weight, smoothstep(0.03, 0.6, planar), delta * 7.5)
 	if grounded and action != "attack" and action != "dodge":
 		var distance: float = context.get("distance", planar * delta)
-		var stride := lerpf(float(walk.get_meta("stride")), float(run.get_meta("stride")), _gait_blend)
+		var stride := lerpf(walk_stride, float(run.get_meta("stride")), _gait_blend)
 		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
 		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
@@ -217,7 +228,12 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		state = "land"
 		var landing := sample_clip("land", _land_time)
 		# На бегу амортизируем в основном корпусом, не перебиваем шаг целиком.
-		pose = _blend_pose(landing, pose, _move_weight * .7)
+		var recover := _move_weight * .7
+		if not _combat_mode:
+			# После амортизации возвращаемся в обычную стойку, не поднимаем
+			# кулаки к лицу на последних кадрах посадки. Боевой клип не меняем.
+			recover = maxf(recover, smoothstep(.10, clip_duration("land"), _land_time))
+		pose = _blend_pose(landing, pose, recover)
 
 	if state != _state or (state == "air" and context.get("jump_started", false)):
 		_transition_from = _last_pose
@@ -235,9 +251,23 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 
 
 func _locomotion_pose() -> Dictionary:
-	var idle := sample_clip("guard", fposmod(_clock, clip_duration("guard")))
-	var gait := _blend_pose(sample_clip("walk", _phase * clip_duration("walk")),
-		sample_clip("run", _phase * clip_duration("run")), _gait_blend)
+	if _combat_blend <= 0.0:
+		return _locomotion_set(false)
+	if _combat_blend >= 1.0:
+		return _locomotion_set(true)
+	# Одна и та же фаза контакта ног. R не перезапускает шаг и не
+	# телепортирует руки; полный переход занимает четверть секунды.
+	return _blend_pose(_locomotion_set(false), _locomotion_set(true),
+		smoothstep(0.0, 1.0, _combat_blend))
+
+
+func _locomotion_set(combat: bool) -> Dictionary:
+	var idle_name := "guard" if combat else "idle_relaxed"
+	var walk_name := "walk" if combat else "walk_relaxed"
+	var run_name := "run" if combat else "run_relaxed"
+	var idle := sample_clip(idle_name, fposmod(_clock, clip_duration(idle_name)))
+	var gait := _blend_pose(sample_clip(walk_name, _phase * clip_duration(walk_name)),
+		sample_clip(run_name, _phase * clip_duration(run_name)), _gait_blend)
 	return _blend_pose(idle, gait, _move_weight)
 
 
@@ -245,6 +275,11 @@ func _air_pose(context: Dictionary) -> Dictionary:
 	var vertical: float = context.get("vertical_speed", 0.0)
 	var takeoff := clip_duration("jump_start")
 	if _air_launched and _air_time < takeoff and vertical > 0.0:
+		if _air_from_relaxed and not _takeoff_pose.is_empty():
+			# Из обычного шага/бега идём сразу к разгибанию прыжка,
+			# а не делаем промежуточный рывок в боевую защиту.
+			return _blend_pose(_takeoff_pose, sample_clip("jump_start", takeoff),
+				smoothstep(0.0, takeoff, _air_time))
 		return sample_clip("jump_start", _air_time)
 	if _air_launched and vertical > 0.0:
 		# Прогресс после разгибания до вершины траектории; не зацикливаем
@@ -267,7 +302,11 @@ func _air_pose(context: Dictionary) -> Dictionary:
 
 
 ## Телепорт/новый тест: не переносим фазу шага и отдачу из прошлой жизни.
-func reset_motion() -> void:
+func reset_motion(combat: bool = true) -> void:
+	_combat_mode = combat
+	_combat_blend = 1.0 if combat else 0.0
+	_takeoff_pose = {}
+	_air_from_relaxed = false
 	_phase = 0.0
 	_clock = 0.0
 	_gait_blend = 0.0
@@ -281,7 +320,7 @@ func reset_motion() -> void:
 	_state = ""
 	_transition_from = {}
 	_transition_elapsed = 1.0
-	seek_clip("guard", 0.0)
+	seek_clip("guard" if combat else "idle_relaxed", 0.0)
 
 
 ## Визуальная реакция без введения нового игрового оглушения.

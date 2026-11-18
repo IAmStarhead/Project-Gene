@@ -39,6 +39,10 @@ var pitch: float = -14.0                   ## наклон камеры, гра�
 var health: float = T.MAX_HEALTH
 var stamina: float = T.MAX_STAMINA
 
+## Стойка игрока, НЕ переключатель тренировочного клона (он по T).
+## Начинаем с обычного передвижения; удар или полученный урон включают бой.
+var combat_mode := false
+
 var _stamina_cooldown: float = 0.0
 
 # Состояние действия: "" | "attack" | "dodge"
@@ -80,6 +84,8 @@ func _ready() -> void:
 	get_tree().current_scene.add_child(rig)
 
 	_refresh_targets()
+	if character != null and character.has_method("reset_motion"):
+		character.reset_motion(combat_mode)
 
 
 func _exit_tree() -> void:
@@ -111,9 +117,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		_buf_dir = _input_direction()
 	elif event.is_action_pressed("jump"):
 		_jump_buffer = 0.0
+	elif event.is_action_pressed("toggle_stance"):
+		toggle_combat_mode()
 	elif event.is_action_pressed("toggle_debug_details"):
 		show_details = not show_details
 
+
+func toggle_combat_mode() -> void:
+	# Меняем только выбор локомоции. Не отменяем удар/уворот, не сбрасываем
+	# фазу шага, скорость, стамину или траекторию прыжка.
+	combat_mode = not combat_mode
+
+
+func stance_name() -> String:
+	return "боевой" if combat_mode else "обычный"
 
 
 ## Направление движения в осях КАМЕРЫ. Это и есть стандарт экшенов:
@@ -193,7 +210,7 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 		character.update_motion(delta, local_velocity, _action, _action_time, _attack_side, {
 			"distance": planar.length(), "grounded": is_on_floor(),
 			"vertical_speed": velocity.y, "jump_started": _jump_started,
-			"floor_distance": floor_distance,
+			"floor_distance": floor_distance, "combat": combat_mode,
 			"attack_timing": Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
 		})
 
@@ -308,6 +325,7 @@ func _process_dodge(delta: float) -> void:
 
 
 func _start_attack() -> void:
+	combat_mode = true
 	_action = "attack"
 	_action_time = 0.0
 	_last_hit = ""
@@ -406,6 +424,7 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 	if _invulnerable:
 		_last_hit = "увернулся"
 		return
+	combat_mode = true
 	health = max(0.0, health - amount)
 	if character != null and character.has_method("play_hit"):
 		character.play_hit()
@@ -416,8 +435,9 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		_action = ""
 		_invulnerable = false
 		velocity = Vector3.ZERO
+		combat_mode = false
 		if character != null and character.has_method("reset_motion"):
-			character.reset_motion()
+			character.reset_motion(combat_mode)
 		_last_hit = "смерть → респавн"
 
 
@@ -442,7 +462,7 @@ func _update_debug(delta: float) -> void:
 	# Подробности (буферы, цель) включаются клавишей F3 — см. show_details.
 	var lines := [
 		"FPS: %.0f" % _fps,
-		"состояние: %s" % state,
+		"режим: %s [R] · %s" % [stance_name(), state],
 		"здоровье: %.0f   стамина: %.0f" % [health, stamina],
 	]
 	if show_details:
