@@ -27,9 +27,12 @@ extends CharacterBody3D
 
 const T := preload("res://scripts/tuning.gd")
 const CameraRigScene := preload("res://scenes/camera_rig.tscn")
+const LockOn := preload("res://scripts/lock_on.gd")
+const HitCheck := preload("res://scripts/hit_check.gd")
 
 @onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
+@onready var hud: CanvasLayer = get_node_or_null("HUD")
 
 ## Камера живёт в корне сцены и следует за героиней, но не наследует её поворот.
 var rig: Node3D
@@ -69,6 +72,8 @@ var _jump_buffer: float = BUF_NEVER
 var _jump_started := false       ## одно физическое обновление: отличаем прыжок от падения
 
 var _targets: Array = []
+## Захват цели. Отдельный класс, чтобы модель движения и бой не разрастались.
+var lock := LockOn.new()
 var _fps_accum: float = 0.0
 var _fps_frames: int = 0
 var _fps: float = 0.0
@@ -85,6 +90,15 @@ func _ready() -> void:
 	get_tree().current_scene.add_child(rig)
 
 	_refresh_targets()
+	lock.setup(self)
+	# HUD получает ссылки на игрока и на захват: полосы здоровья рисует он,
+	# а не отладочный текст. Подробности остаются на F3.
+	if hud != null and hud.has_method("setup"):
+		hud.setup(self, lock)
+	# Отладочный текст виден только по F3: пользователь дважды жаловался,
+	# что надписей слишком много. Цифры здоровья теперь в полосах HUD.
+	if label != null:
+		label.visible = false
 	if character != null and character.has_method("reset_motion"):
 		character.reset_motion(combat_mode)
 
@@ -95,10 +109,19 @@ func _exit_tree() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Захват цели обрабатывается первым: если он поглотил событие, дальше
+	# мышь не должна крутить камеру, иначе цель «уезжает» из кадра.
+	if lock != null and lock.handle_input(event):
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseMotion:
 		yaw -= event.relative.x * T.MOUSE_SENSITIVITY
 		pitch = clampf(pitch - event.relative.y * T.MOUSE_SENSITIVITY * 60.0,
 			T.CAMERA_PITCH_MIN, T.CAMERA_PITCH_MAX)
+	elif event.is_action_pressed("toggle_debug_details"):
+		show_details = not show_details
+		if label != null:
+			label.visible = show_details
 	elif event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event is InputEventMouseButton and event.pressed:
@@ -120,8 +143,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_jump_buffer = 0.0
 	elif event.is_action_pressed("toggle_stance"):
 		toggle_combat_mode()
-	elif event.is_action_pressed("toggle_debug_details"):
-		show_details = not show_details
 
 
 func toggle_combat_mode() -> void:
@@ -136,6 +157,14 @@ func stance_name() -> String:
 
 ## Направление движения в осях КАМЕРЫ. Это и есть стандарт экшенов:
 ## W — от камеры, A — влево на экране, и так далее.
+## Направление взгляда камеры по горизонтали. Нужно захвату цели: конус
+## поиска должен считаться от того, куда игрок реально смотрит, а не от
+## ориентации тела (тело может быть повёрнуто вбок при движении).
+func aim_forward() -> Vector3:
+	var f := Vector3(-sin(yaw), 0.0, -cos(yaw))
+	return f.normalized()
+
+
 func _input_direction() -> Vector3:
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input.length() < 0.1:
@@ -147,6 +176,8 @@ func _input_direction() -> Vector3:
 func _physics_process(delta: float) -> void:
 	var previous_position := global_position
 	_jump_started = false
+	if lock != null:
+		lock.update()
 	_update_buffers(delta)
 	_update_stamina(delta)
 
@@ -231,6 +262,12 @@ func _update_buffers(delta: float) -> void:
 
 ## Камера следует за героиней по позиции, но НЕ по повороту.
 func _update_camera(delta: float) -> void:
+	# В режиме захвата камеру ведёт цель: yaw плавно доворачивается к ней.
+	# Иначе игрок смотрит в одну сторону, а героиня колотит в другую.
+	if lock != null and lock.active():
+		var wanted: float = lock.camera_yaw(delta, yaw)
+		if not is_nan(wanted):
+			yaw = wanted
 	if is_instance_valid(rig):
 		rig.rotation.y = yaw
 		rig.rotation.x = deg_to_rad(pitch)
@@ -254,20 +291,41 @@ func _spend_stamina(amount: float) -> bool:
 
 func _process_move(delta: float) -> void:
 	var dir := _input_direction()
-	# Shift has priority if both modifiers are held. Stance R changes the
-	# pose/guard, not what the player's three movement modifiers mean.
-	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED if Input.is_action_pressed("walk_slow") else T.JOG_SPEED
+	# В режиме захвата направление задаёт цель, а не камера: A/D — стрейф
+	# вокруг неё. Без этого лок-он бесполезен — тело поворачивалось бы на ввод.
+	if lock != null and lock.active():
+		var flat := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		var out: Array = []
+		if lock.movement(flat, out):
+			dir = out[0]
+	# Одна переменная на три скорости. Раньше это была тройная вложенная
+	# тернарная запись в 130 символов — её невозможно было прочитать.
+	var speed := T.JOG_SPEED
+	if Input.is_action_pressed("walk_slow"):
+		speed = T.WALK_SPEED
+	elif Input.is_action_pressed("run"):
+		# Shift важнее шага: если зажаты оба, игрок ожидает бег.
+		speed = T.RUN_SPEED
 	var target := dir * speed
 	var ac := _air_control()
 	var rate := (T.ACCELERATION if dir.length() > 0.0 else T.DECELERATION) * ac
 	velocity.x = move_toward(velocity.x, target.x, rate * delta)
 	velocity.z = move_toward(velocity.z, target.z, rate * delta)
 
-	if dir.length() > 0.0 and _buf_dodge > T.INPUT_BUFFER:
+	if dir.length() > 0.0 and _buf_dodge > T.INPUT_BUFFER and not (lock != null and lock.active()):
 		# Уворот фиксирует взгляд ДО обычного поворота на ввод.
 		# модель смотрит в +Z, поэтому поворот считается от -Z
 		var want := atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, want, min(1.0, delta * T.TURN_SPEED))
+
+	# При захвате тело смотрит на цель даже когда стоим на месте.
+	# Поворот плавный: мгновенный выглядит как «приклеивание» к врагу.
+	if lock != null and lock.active():
+		var face: Array = []
+		if lock.facing(face):
+			var fwd: Vector3 = face[0]
+			rotation.y = lerp_angle(rotation.y, atan2(-fwd.x, -fwd.z),
+				min(1.0, delta * LockOn.TURN_RATE))
 
 
 func _try_start_actions() -> void:
@@ -348,7 +406,7 @@ func _start_attack() -> void:
 func _attack_phase() -> String:
 	if _action_time < T.ATTACK_WINDUP:
 		return "замах"
-	elif _action_time < T.ATTACK_WINDUP + T.ATTACK_ACTIVE:
+	if _action_time < T.ATTACK_WINDUP + T.ATTACK_ACTIVE:
 		return "удар"
 	return "восстановление"
 
@@ -380,33 +438,49 @@ func _process_attack(delta: float) -> void:
 
 func _do_hit() -> void:
 	_refresh_targets()
-	var origin := global_position
 	var forward := -global_transform.basis.z
-	# Выбираем БЛИЖАЙШУЮ цель в конусе, а не первую попавшуюся в списке:
-	# иначе при двух противниках удар уходил бы в дальнего.
-	var best: Node = null
-	var best_dist := INF
-	for victim in _targets:
-		if not is_instance_valid(victim):
-			continue
-		var to_target: Vector3 = victim.global_position - origin
-		to_target.y = 0.0
-		var dist := to_target.length()
-		if dist > T.ATTACK_RANGE or dist < 0.001:
-			continue
-		var angle := rad_to_deg(forward.angle_to(to_target.normalized()))
-		if angle > T.ATTACK_ANGLE:
-			continue
-		if dist < best_dist:
-			best_dist = dist
-			best = victim
+	# При захвате удар направлен на цель. Это и есть главная польза лок-она:
+	# при угле конуса 45° промахнуться по стоящей цели становится невозможно.
+	if lock != null and lock.active():
+		var face: Array = []
+		if lock.facing(face):
+			forward = face[0]
+	# Попадание считается пересечением кулака с цилиндром цели, а не
+	# расстоянием между центрами. Подробности и обоснование — в hit_check.gd.
+	# Коротко: раньше при ATTACK_RANGE 1.9 удар проходил при зазоре 1.22 м.
+	var best := HitCheck.nearest_hit(self, _targets, forward, T.ATTACK_REACH,
+		T.ATTACK_ANGLE) as Node
 	if best == null:
-		# диагностика: видно, почему удар не прошёл
-		_last_hit = "мимо (до цели %.1f м)" % _nearest_distance()
+		_last_hit = _miss_reason()
 		return
 	_last_hit = String(best.name)
 	if best.has_method("take_damage"):
 		best.take_damage(T.ATTACK_DAMAGE, forward)
+
+
+## Почему удар не попал — для строки F3. Без этого «мимо» ничего не говорит:
+## непонятно, промах по углу, по дистанции или вообще цели нет.
+func _miss_reason() -> String:
+	var near := _nearest_target()
+	if near == null:
+		return "мимо (нет цели в группе damageable)"
+	var gap: float = HitCheck.surface_gap(self, near, 0.30)
+	return "мимо (зазор до тела %.2f м)" % gap
+
+
+## Ближайшая живая цель — для отладочной строки и подсказок.
+func _nearest_target() -> Node3D:
+	var best: Node3D = null
+	var best_d := INF
+	for v in _targets:
+		if not is_instance_valid(v):
+			continue
+		var d: Vector3 = v.global_position - global_position
+		d.y = 0.0
+		if d.length() < best_d:
+			best_d = d.length()
+			best = v
+	return best
 
 
 ## Расстояние до ближайшей цели — только для отладочной строки.
@@ -477,8 +551,11 @@ func _update_debug(delta: float) -> void:
 	var lines := [
 		"FPS: %.0f" % _fps,
 		"режим: %s [R] · %s" % [stance_name(), state],
-		"здоровье: %.0f   стамина: %.0f" % [health, stamina],
+		# Здоровье и стамина теперь полосами в HUD (scripts/hud.gd).
+		# Здесь оставляем цифры только в подробном режиме F3.
 	]
+	if show_details:
+		lines.append("здоровье: %.0f   стамина: %.0f" % [health, stamina])
 	if show_details:
 		lines.append("буфер: удар %s / уворот %s" % [buf_atk, buf_dg])
 		lines.append("цель: %s" % (_last_hit if not _last_hit.is_empty() else "—"))

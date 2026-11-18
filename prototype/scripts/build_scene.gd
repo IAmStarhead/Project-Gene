@@ -68,11 +68,18 @@ void light() {
 	float s1 = smoothstep(0.00 - softness, 0.00 + softness, ndl);
 	float s2 = smoothstep(0.38 - softness, 0.38 + softness, ndl);
 	float s3 = smoothstep(0.72 - softness, 0.72 + softness, ndl);
-	// Подняты ВСЕ ступени, особенно нижняя: именно она давала «темновато».
-	// Было 0.18 / 0.55 / 0.80 / 1.0 — тень слишком близко к чёрному.
-	// Стало 0.42 / 0.68 / 0.86 / 1.0: разница между ступенями сохранена,
-	// но провала в темноту нет.
-	float amount = 0.50 + 0.24 * s1 + 0.16 * s2 + 0.10 * s3;
+	// Ступени: 0.34 / 0.64 / 0.84 / 1.0.
+	//
+	// История чисел: 0.18/0.55/0.80/1.0 давало «темновато», 0.50/0.74/0.90/1.0
+	// — «вымыто». Разгадка не в самих ступенях, а в том, что при свете v3
+	// (ambient 0.95 + солнце 1.75 + LINEAR) суммарная яркость обеих сторон
+	// была выше 1.0, и всё обрезалось в белый. Теперь ambient 0.42, солнце
+	// 1.9, FILMIC — и разброс 0.34…1.0 снова виден как ступени, а не как шум.
+	//
+	// Нижняя ступень 0.34, а не 0.18: при ambient 0.42 абсолютная яркость
+	// тени остаётся около 0.57, провала в чёрноту нет. Это ровно та разница,
+	// которую я искал три круга: контраст делает СОЛНЦЕ, а не отсутствие света.
+	float amount = 0.34 + 0.30 * s1 + 0.20 * s2 + 0.16 * s3;
 	DIFFUSE_LIGHT += amount * ATTENUATION * LIGHT_COLOR / PI;
 	// Узкий ступенчатый блик — только намёк на коже.
 	SPECULAR_LIGHT += s3 * 0.08 * ATTENUATION * LIGHT_COLOR / PI;
@@ -95,6 +102,7 @@ func _ready() -> void:
 	_make_light()
 	_make_room()
 	_make_props()
+	enable_shadows()
 
 
 ## Пересобирает свет под текущий стиль. Вызывается клавишей G из player.gd.
@@ -119,7 +127,11 @@ func _make_materials() -> void:
 	_white.metallic = 0.0
 
 	_floor_mat = StandardMaterial3D.new()
-	_floor_mat.albedo_color = Color(0.88, 0.90, 0.93)
+	# Пол намеренно на 6 % темнее стен. На скрине пользователя пол и стены были
+	# одного тона, поэтому комната выглядела как бесконечное молоко, а фигура
+	# «висела»: не было видно, где стена переходит в пол. Разница в 6 % при
+	# ступенчатом освещении даёт заметную линию и не выглядит «грязно».
+	_floor_mat.albedo_color = Color(0.82, 0.85, 0.89)
 	_floor_mat.roughness = 0.42   # не зеркало: SSR в Compatibility нет,
 	# поэтому roughness 0.28 давал просто мёртвое пятно вместо блика
 	_floor_mat.metallic = 0.0
@@ -135,10 +147,15 @@ func apply_toon(root: Node) -> void:
 		return
 	var shader := Shader.new()
 	shader.code = TOON_SHADER
-	for mesh in _find_meshes(root):
+	var meshes := _find_meshes(root)
+	for mesh in meshes:
 		var mi := mesh as MeshInstance3D
 		if mi.mesh == null or mi.has_meta("textile"):
 			continue
+		# Тень от персонажа обязательна. Без неё фигура «парит» над полом —
+		# на скрине пользователя это одна из причин ощущения пустой комнаты.
+		# Дешёвая тень от направленного света при 30 FPS не мешает.
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		for i in mi.mesh.get_surface_count():
 			var base := mi.mesh.surface_get_material(i)
 			# Глаза и линию века НЕ ТРОГАЕМ. У них своя текстура и свой
@@ -189,12 +206,26 @@ func showcase_lighting() -> void:
 
 ## Возвращает родные материалы модели (выключение селлшейдинга).
 func clear_toon(root: Node) -> void:
-	for mesh in _find_meshes(root):
+	var meshes := _find_meshes(root)
+	for mesh in meshes:
 		var mi := mesh as MeshInstance3D
 		if mi.mesh == null or mi.has_meta("textile"):
 			continue
+		# Тень от персонажа обязательна. Без неё фигура «парит» над полом —
+		# на скрине пользователя это одна из причин ощущения пустой комнаты.
+		# Дешёвая тень от направленного света при 30 FPS не мешает.
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		for i in mi.mesh.get_surface_count():
 			mi.set_surface_override_material(i, null)
+
+
+## Тени от всей геометрии сцены. Вызывается из _ready после сборки комнаты.
+## Свет v5 стал контрастным, и без теней от колонн комната снова «плоская».
+func enable_shadows() -> void:
+	for mesh in _find_meshes(self):
+		var mi := mesh as MeshInstance3D
+		if mi != null:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 
 
 func _find_meshes(node: Node) -> Array:

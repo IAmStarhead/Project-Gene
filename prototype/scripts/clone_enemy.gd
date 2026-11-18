@@ -8,6 +8,7 @@
 extends CharacterBody3D
 
 const T := preload("res://scripts/tuning.gd")
+const HitCheck := preload("res://scripts/hit_check.gd")
 
 ## Два режима, а не три: пользователь просил «включение и выключение боя».
 ## Третий режим («следит, но не бьёт») на практике путал: непонятно, почему
@@ -180,17 +181,22 @@ func _fight(delta: float) -> void:
 	_move_toward_player(delta, T.CLONE_KEEP_DISTANCE, T.CLONE_RUN)
 
 
-func _deal_damage(dist: float) -> void:
+func _deal_damage(_dist: float) -> void:
 	var dir := _dir_to_player().normalized()
 	var forward := -global_basis.z
-	# Тот же прямой кулак, что у игрока: уход за спину должен быть промахом,
-	# особенно после фиксации направления в момент контакта.
-	if dist > T.CLONE_RANGE or dir.is_zero_approx() \
+	if dir.is_zero_approx():
+		_last_deal = 0.0
+		return
+	# Тот же принцип, что у игрока: попадание — пересечение кулака с телом,
+	# а не сравнение расстояний по центрам. Иначе клон бил «невидимо» с
+	# дистанции больше вытянутой руки, и это ощущалось как раздутый хитбокс.
+	if not is_instance_valid(_player) \
+			or not HitCheck.overlaps(self, _player, forward, T.CLONE_REACH) \
 			or rad_to_deg(forward.angle_to(dir)) > T.ATTACK_ANGLE:
 		_last_deal = 0.0
 		return
 	_last_deal = 1.4
-	if is_instance_valid(_player) and _player.has_method("take_damage"):
+	if _player.has_method("take_damage"):
 		_player.take_damage(T.CLONE_DAMAGE, dir)
 
 

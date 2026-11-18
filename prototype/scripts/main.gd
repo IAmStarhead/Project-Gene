@@ -11,6 +11,7 @@ var room: Node3D
 var player: CharacterBody3D
 var clone: CharacterBody3D
 var _hint: Label
+var _hint_age := 0.0
 var menu: Control
 
 
@@ -49,6 +50,8 @@ func _ready() -> void:
 	layer.layer = 20
 	add_child(layer)
 
+	# Панель управления — слева сверху, а полосы здоровья — слева снизу
+	# (scripts/hud.gd). Раньше обе жили в одном углу и перекрывались.
 	var panel := PanelContainer.new()
 	panel.position = Vector2(12, 10)
 	var style := StyleBoxFlat.new()
@@ -66,25 +69,48 @@ func _ready() -> void:
 	_hint = Label.new()
 	_hint.add_theme_font_size_override("font_size", 13)
 	_hint.add_theme_color_override("font_color", Color(0.86, 0.90, 0.96))
-	_hint.text = "WASD — лёгкий бег · L Alt — шаг · Shift — быстрый бег\nF — прыжок\n" \
-		+ "ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот"
+	_hint.text = "WASD — бег · Shift — быстрее · Alt — шаг\n" \
+		+ "ЛКМ / ПКМ — удар левой / правой · Пробел — уворот\n" \
+		+ "F — прыжок · Tab — захват цели · колесо — сменить цель"
 	_hint.add_theme_constant_override("line_spacing", 3)
 	panel.add_child(_hint)
 
 	# Кнопки-подсказки: клавиша в рамке + что делает.
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 8)
-	bar.position = Vector2(12, 96)
+	# Плашки ставим в ПРАВЫЙ верхний угол. Причина: слева сверху уже
+	# подсказка по управлению, а три строки + плашки в 96 px наезжали друг
+	# на друга, и пользователь видел кашу. Правый верх пустует.
+	bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT,
+		Control.PRESET_MODE_MINSIZE, 0)
+	bar.position += Vector2(-14.0, 14.0)
 	layer.add_child(bar)
-	for pair in [["R", "стойка игрока"], ["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
+	for pair in [["R", "стойка игрока"], ["Tab", "захват цели"], ["H", "ВИТРИНА"],
+			["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"], ["F3", "цифры"]]:
 		bar.add_child(_key_badge(pair[0], pair[1]))
 
 	# ── МЕНЮ ПАУЗЫ (Esc). Пользователь просил: из игры перейти в витрину,
 	# поменять настройки и выйти из игры. Раньше Esc только освобождал
 	# курсор, и меню не было.
+	# Подсказка живёт 20 секунд и гаснет. Пользователь просил меньше надписей
+	# на экране: постоянная панель — это и есть «слишком много надписей».
+	# Плашки с клавишами остаются: они и есть краткая шпаргалка.
+	set_process(true)
+
 	menu = PRELOAD_MENU.instantiate()
 	menu.action.connect(_on_menu_action)
 	layer.add_child(menu)
+
+
+func _process(delta: float) -> void:
+	# Плавное гашение подсказки по управлению через 20 с.
+	if _hint == null or not _hint.visible:
+		return
+	_hint_age += delta
+	if _hint_age > 20.0:
+		_hint.visible = false
+	elif _hint_age > 18.5:
+		_hint.modulate.a = maxf(0.0, (20.0 - _hint_age) / 1.5)
 
 
 ## Плашка «клавиша + подпись». Сделана как кнопка, а не как текст:
