@@ -54,6 +54,7 @@ func _run() -> void:
 	_test_air_progress(character)
 	_test_stance_blending(character)
 	_test_three_tiers(character)
+	_test_ordinary_arm_carriage(character)
 	_test_native_blended_soles(character)
 	_test_relaxed_jump(character)
 	_test_directional_dodge(character)
@@ -316,6 +317,72 @@ func _test_three_tiers(character: Node3D) -> void:
 			{"combat": true, "grounded": true, "distance": T.CLONE_RUN/60})
 	check(character._gait_blend > .5 and character._gait_blend < .9 and character._sprint_blend == 0.0,
 		"clone 3.4 m/s still uses the previous combat walk/run mix, not player sprint")
+
+
+func _test_ordinary_arm_carriage(character: Node3D) -> void:
+	# Sample the real distance-phase runtime, not a second Euler animation.
+	# Python protects accepted lower-body keys and dense skin clearance;
+	# these checks catch a different pose / wrist frame reaching Godot.
+	var skeleton: Skeleton3D = character.skeleton
+	for speed in [T.WALK_SPEED, T.JOG_SPEED, T.RUN_SPEED]:
+		character.reset_motion(false)
+		var context := {"combat": false, "grounded": true, "distance": speed/60.0,
+			"walk_speed": T.WALK_SPEED, "jog_speed": T.JOG_SPEED, "sprint_speed": T.RUN_SPEED}
+		for i in 60:
+			character.update_motion(1.0/60, Vector3(0, 0, speed), "", 0, "R", context)
+		var upper_angles: Array[float] = []
+		var elbow_bends: Array[float] = []
+		var nearest_back := INF
+		var farthest_front := -INF
+		var min_palm_inward := 1.0
+		var max_wrist_angle := 0.0
+		var head_min := Vector3(INF, INF, INF)
+		var head_max := -head_min
+		for i in 144:
+			character.update_motion(1.0/60, Vector3(0, 0, speed), "", 0, "R", context)
+			var chest: Basis = skeleton.get_bone_global_pose(skeleton.find_bone("chest")).basis.orthonormalized()
+			var head: Vector3 = skeleton.get_bone_global_pose(skeleton.find_bone("head")).basis.get_euler()
+			head_min = head_min.min(head)
+			head_max = head_max.max(head)
+			for side in ["L", "R"]:
+				var sign_side := 1.0 if side == "L" else -1.0
+				var shoulder := joint(character, "upper_arm."+side)
+				var elbow := joint(character, "forearm."+side)
+				var wrist := joint(character, "hand."+side)
+				var upper := elbow-shoulder
+				upper_angles.append(atan2(upper.z, -upper.y))
+				elbow_bends.append(upper.angle_to(wrist-elbow))
+				nearest_back = minf(nearest_back, (wrist-shoulder).z)
+				farthest_front = maxf(farthest_front, (wrist-shoulder).z)
+				var hand: Basis = skeleton.get_bone_global_pose(skeleton.find_bone("hand."+side)).basis.orthonormalized()
+				var fore: Basis = skeleton.get_bone_global_pose(skeleton.find_bone("forearm."+side)).basis.orthonormalized()
+				min_palm_inward = minf(min_palm_inward, (sign_side*hand.x).dot(-sign_side*chest.x))
+				max_wrist_angle = maxf(max_wrist_angle, fore.get_rotation_quaternion().angle_to(hand.get_rotation_quaternion()))
+		var mean_upper := 0.0
+		var mean_bend := 0.0
+		for i in upper_angles.size():
+			mean_upper += upper_angles[i]/upper_angles.size()
+			mean_bend += elbow_bends[i]/elbow_bends.size()
+		var covariance := 0.0
+		var upper_variance := 0.0
+		var bend_variance := 0.0
+		for i in upper_angles.size():
+			var u := upper_angles[i]-mean_upper
+			var b := elbow_bends[i]-mean_bend
+			covariance += u*b
+			upper_variance += u*u
+			bend_variance += b*b
+		var correlation := covariance/sqrt(maxf(upper_variance*bend_variance, .000000001))
+		check(correlation > .8, "native elbows flex with the front swing at %.2f m/s" % speed)
+		check(min_palm_inward > .92, "actual GLB palm +/-X stays neutral, not a 90-degree axis mixup")
+		check(rad_to_deg(max_wrist_angle) < 2, "forearm carries twist without a wrist-only kink")
+		check(farthest_front < .32, "native wrist does not stay stretched far in front of the body")
+		check(nearest_back < (.025 if speed == T.JOG_SPEED else -.045),
+			"native hand returns towards/past its shoulder rather than sawing in front")
+		check(head_max.y-head_min.y > deg_to_rad(1.8) and maxf(absf(head_max.y), absf(head_min.y)) < deg_to_rad(2.2),
+			"head has a quiet response, not a world-space lock or a large look-away")
+		check(head_max.x-head_min.x > deg_to_rad(1.8) and head_max.x < deg_to_rad(6),
+			"native head nod remains small but alive")
 
 
 func _test_native_blended_soles(character: Node3D) -> void:

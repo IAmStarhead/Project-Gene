@@ -43,8 +43,12 @@ try {
       assert.equal(joints.length, 21);
       assert(joints.every((joint) => joint.position.every(Number.isFinite)), `Non-finite joint in ${name}`);
       const relaxed = name.endsWith('_relaxed');
-      const minHandHeight = name === 'sprint_relaxed' ? .90 : name === 'run_relaxed' ? .92 : ['run', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
-      assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > (relaxed ? -.1 : .1)));
+      // A running recovery passes near the moving hip, not an arbitrary
+      // fixed y=.90/.92 plane which pinned the old hands in front of the belt.
+      const runningRelaxed = ['run_relaxed', 'sprint_relaxed'].includes(name);
+      const minHandHeight = runningRelaxed ? joints.find((joint) => joint.name === 'hips').position[1] + .02
+        : ['run', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
+      assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > (relaxed ? -.1 : .1)), `Hand/hip carriage in ${name}`);
       if (relaxed) {
         assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < (['run_relaxed', 'sprint_relaxed'].includes(name) ? 1.30 : .95)), 'Ordinary arms must not return to face-level guard');
       }

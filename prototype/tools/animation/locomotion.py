@@ -20,16 +20,25 @@ REFERENCE = json.loads(Path(__file__).with_name('locomotion_reference.json').rea
 GAITS = {
     'walk': dict(duration=1.08, stride=1.242, duty=.58, width=.052, touchdown=.260,
                  height=.886, bounce=.012, lateral=.022,
-                 pelvis=(2.0, 5.8, 3.2), lumbar=(9.5, 3.2, 1.9), thorax=(4.2, 5.4, 2.4),
-                 arm=(0, 18, 20, 5)),
+                 pelvis=(2.0, 5.8, 3.2), lumbar=(9.5, 3.2, 1.9), thorax=(4.2, 5.4, 2.4)),
     'jog': dict(duration=.80, stride=2.32, duty=.28, width=.045, touchdown=.215,
                 height=.893, bounce=.023, lateral=.010,
-                pelvis=(6.0, 4.2, 3.0), lumbar=(17, 7.0, 2.4), thorax=(11, 10.0, 3.6),
-                arm=(0, 25, 84, 8)),
+                pelvis=(6.0, 4.2, 3.0), lumbar=(17, 7.0, 2.4), thorax=(11, 10.0, 3.6)),
     'sprint': dict(duration=.62, stride=3.472, duty=.20, width=.043, touchdown=.205,
                    height=.913, bounce=.034, lateral=.008,
-                   pelvis=(10, 5.6, 3.7), lumbar=(22, 9.4, 3.1), thorax=(18, 13.0, 4.4),
-                   arm=(2, 38, 83, 9)),
+                   pelvis=(10, 5.6, 3.7), lumbar=(22, 9.4, 3.1), thorax=(18, 13.0, 4.4)),
+}
+
+# Independent upper-body carriage. Do not retime or reauthor the accepted
+# pelvis / legs to repair a wrist silhouette. Shoulder angle is from gravity
+# down; elbow is FLEXION (0 = straight), not the internal angle at the joint.
+ARMS = {
+    'walk': dict(shoulder=(-4, 16), elbow=(24, 7), lag=.040,
+                 upper_out=.190, fore_out=.320, medial=.030, clavicle=1.0, palm=12),
+    'jog': dict(shoulder=(-10, 28), elbow=(91, 13), lag=.035,
+                upper_out=.10, fore_out=.230, medial=.410, clavicle=1.7, palm=8),
+    'sprint': dict(shoulder=(-10, 38), elbow=(94, 16), lag=.035,
+                   upper_out=.13, fore_out=.230, medial=.390, clavicle=2.5, palm=6),
 }
 
 
@@ -142,46 +151,83 @@ def _body(rig, name, phase, height):
         y = yaw*((.45*wave(name, 'thorax_yaw', phase)-.85*wave(name, 'pelvis_yaw', phase))/_counter_scale(name) if channel == 'thorax' else wave(name, channel+'_yaw', phase))
         z = roll*wave(name, channel+'_roll', phase)
         p.orient(bone, rotation(x, y, z)@rig.rest_world[rig.index[bone], :3, :3])
-    # The head is stabilised, not glued to the chest. A small delayed nod and
-    # counter-roll preserve a forward gaze while the thorax actively rotates.
-    lag = phase-.035
-    p.orient('neck', rotation(x=1.0+.5*wave(name, 'head_pitch', lag),
-                            y=.7*wave(name, 'head_yaw', lag),
-                            z=.5*wave(name, 'head_roll', lag))@rig.rest_world[rig.index['neck'], :3, :3])
-    p.orient('head', rotation(x=.6*wave(name, 'head_pitch', lag),
-                            y=.8*wave(name, 'head_yaw', lag),
-                            z=.4*wave(name, 'head_roll', lag)))
+    _head(p, name, phase)
     return p
 
 
-def _arm(p, name, side, phase):
-    g = GAITS[name]
-    sign = 1 if side == 'L' else -1
-    bias, amplitude, elbow, variation = g['arm']
-    drive = -np.cos(2*np.pi*(phase-.025))
-    shoulder = bias+amplitude*drive
-    bend = elbow-variation*drive
-    p.bend('shoulder.'+side, x=.8*np.sin(2*np.pi*(phase-.04)),
-           y=sign*(1.0 if name == 'walk' else 2.2)*drive,
-           z=sign*.7*np.sin(2*np.pi*phase))
-    root = p.world('upper_arm.'+side)[:3, 3].copy()
+def _head(p, name, phase, resting=False):
+    # Stabilisation is not a world-space rotation lock. The previous head
+    # cancelled virtually ALL chest motion: a moving neck under a frozen face.
+    # Let a quiet, delayed response survive, while the neck absorbs most turn
+    # and roll. Translation still follows the real pelvis / spine chain.
     chest = p.world('chest')[:3, :3]
-    # Angles are measured from gravity-down, while yaw/roll still follow
-    # the thorax. Compensate mean forward lean rather than letting it pin
-    # both hands down at the belt during a fast run.
+    pitch = np.rad2deg(np.arctan2(chest[2, 1], chest[1, 1]))
+    yaw = np.rad2deg(np.arctan2(chest[0, 2], chest[2, 2]))
+    roll = np.rad2deg(np.arctan2(-chest[0, 1], chest[1, 1]))
+    if resting:
+        breath = np.sin(phase*2*np.pi)
+        nod, turn, tilt = .5+.25*breath, .20*breath, .15*breath
+    else:
+        lag = phase-.045
+        mean, amplitude = {'walk': (.6, 1.1), 'jog': (1.8, 1.6), 'sprint': (3.0, 1.9)}[name]
+        nod = mean+amplitude*wave(name, 'head_pitch', lag)
+        turn = .14*yaw+.45*wave(name, 'head_yaw', lag)
+        tilt = .12*roll+.55*wave(name, 'head_roll', lag)
+    p.orient('neck', rotation(x=.32*pitch+.68*nod, y=.35*yaw+.65*turn,
+                             z=.35*roll+.65*tilt)@p.rig.rest_world[p.rig.index['neck'], :3, :3])
+    p.orient('head', rotation(nod, turn, tilt)@p.rig.rest_world[p.rig.index['head'], :3, :3])
+
+
+def _neutral_hand(p, side, chest, phase=0.0, palm_angle=10):
+    sign = 1 if side == 'L' else -1
+    along = p.world('forearm.'+side)[:3, 1].copy()
+    inward = -sign*chest[:, 0]
+    palm = unit(inward-along*np.dot(inward, along))
+    # Model-specific axes, verified against the existing hand authoring:
+    # palm normal is +local X on L / -local X on R, NOT local Z. Confusing
+    # width with thickness would twist the fingers 90° into the thigh.
+    x = sign*palm
+    neutral = np.column_stack((x, along, unit(np.cross(x, along))))
+    # Keep pronation independent of the moving IK elbow plane; carry the
+    # small twist through the FOREARM, rather than rotating only the wrist.
+    neutral = neutral@rotation(y=sign*palm_angle)
+    p.orient('forearm.'+side, neutral)
+    # Small passive lag only; neither a flapping wrist nor a rigid paddle.
+    p.orient('hand.'+side, neutral@rotation(x=1.2*np.sin(2*np.pi*(phase-.075)),
+                                          z=sign*.7*np.sin(2*np.pi*(phase-.10))))
+
+
+def _arm(p, name, side, phase):
+    g, a = GAITS[name], ARMS[name]
+    sign = 1 if side == 'L' else -1
+    drive = -np.cos(2*np.pi*(phase-.025))
+    lagged = -np.cos(2*np.pi*(phase-.025-a['lag']))
+    shoulder = a['shoulder'][0]+a['shoulder'][1]*drive
+    # Flex on the FORWARD swing; unfold on the way back with a small lag.
+    # The old minus sign did the reverse, keeping both hands far out in
+    # front and making the forearms saw through almost horizontal arcs.
+    bend = a['elbow'][0]+a['elbow'][1]*lagged
+    chest = p.world('chest')[:3, :3].copy()
+    p.orient('shoulder.'+side, chest@rotation(y=-sign*a['clavicle']*drive,
+                                            z=sign*.35*drive)@
+             p.rig.rest_world[p.rig.index['shoulder.'+side], :3, :3])
+    root = p.world('upper_arm.'+side)[:3, 3].copy()
+    # Follow thorax yaw/roll, compensating only its MEAN lean. The accepted
+    # counterrotation / weight transfer remains, not a global-axis arm orbit.
     lean = g['thorax'][0]
     upper_angle, fore_angle = np.deg2rad([shoulder+lean, shoulder+bend+lean])
-    # Arms inherit torso direction. Previously only their origin moved with
-    # the torso while their entire swing stayed locked to global axes.
-    upper = chest@unit([sign*.075, -np.cos(upper_angle), np.sin(upper_angle)])
-    lower = chest@unit([sign*.150, -np.cos(fore_angle), np.sin(fore_angle)])
+    forward = (lagged+1)*.5
+    upper = chest@unit([sign*a['upper_out'], -np.cos(upper_angle), np.sin(upper_angle)])
+    # Carry past the actual loose gown at low hip height, not through it.
+    # Front running hands approach the centre as they rise; only the low
+    # recovery has outward clearance, not an always-wide handbag silhouette.
+    lower = chest@unit([sign*(a['fore_out']-a['medial']*forward),
+                       -np.cos(fore_angle), np.sin(fore_angle)])
     l1 = np.linalg.norm(p.rig.positions[p.rig.index['forearm.'+side]])
     l2 = np.linalg.norm(p.rig.positions[p.rig.index['hand.'+side]])
-    pole = root+l1*upper
-    wrist = pole+l2*lower
-    p.arm(side, wrist, pole=pole, roll=sign*(5+2*np.sin(2*np.pi*(phase-.06))))
-    hand = p.world('hand.'+side)[:3, :3].copy()
-    p.orient('hand.'+side, hand@rotation(x=2*np.sin(2*np.pi*(phase-.09))))
+    elbow = root+l1*upper
+    p.arm(side, elbow+l2*lower, pole=elbow)
+    _neutral_hand(p, side, chest, phase, a['palm'])
 
 
 def gait(rig, time, name):
@@ -233,9 +279,11 @@ def idle(rig, time):
     for side, sign in [('L', 1), ('R', -1)]:
         p.foot(side, [sign*.072, .08, .018 if side == 'L' else -.012], pivot=False)
         root = p.world('upper_arm.'+side)[:3, 3].copy()
-        upper = unit([sign*.075, -1, .02])
-        lower = unit([sign*.15, -.98, .20])
+        upper = unit([sign*.10, -1, .02])
+        lower = unit([sign*.28, -.98, .20])
         l1, l2 = [np.linalg.norm(rig.positions[rig.index[n+'.'+side]]) for n in ['forearm', 'hand']]
         elbow = root+l1*upper
-        p.arm(side, elbow+l2*lower, pole=elbow, roll=sign*5)
+        p.arm(side, elbow+l2*lower, pole=elbow)
+        _neutral_hand(p, side, p.world('chest')[:3, :3].copy(), phase, ARMS['walk']['palm'])
+    _head(p, 'walk', phase, resting=True)
     return p

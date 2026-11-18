@@ -326,7 +326,12 @@ class MotionSetTests(unittest.TestCase):
                     # arms on landing must NOT be forced back to combat guard.
                     if name.endswith('_relaxed'):
                         running = name in ('run_relaxed', 'sprint_relaxed')
-                        self.assertGreater(hand[1], .90 if running else .78, (name, side))
+                        # A trailing running hand may pass waist height as
+                        # the pelvis compresses. Absolute y>.90 pinned it in
+                        # front of the belly; use the actual hip, and keep the
+                        # separate skinned hand/body clearance regression.
+                        self.assertGreater(hand[1], self.joint(g, 'hips')[1]+.02 if running else .78,
+                                           (name, side))
                         self.assertLess(hand[1], 1.30 if running else .95, (name, side, 'not a face-level guard'))
                         self.assertLess(hand[1], self.joint(g, 'neck')[1]-.08, (name, side, 'hand at the neck'))
                         self.assertGreater(hand[2], -.10, (name, side))
