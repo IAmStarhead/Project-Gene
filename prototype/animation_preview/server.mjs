@@ -10,8 +10,8 @@ const root = dirname(fileURLToPath(import.meta.url));
 const vendor = resolve(root, 'node_modules/three');
 const files = new Map([
   ['/', resolve(root, 'index.html')],
-  ...['index.html', 'main.js', 'style.css'].map((name) => ['/' + name, resolve(root, name)]),
-  ...['female_A_rigged_safe.glb', 'animations/motion_set.json'].map((name) => [
+  ...['index.html', 'main.js', 'appearance.js', 'style.css'].map((name) => ['/' + name, resolve(root, name)]),
+  ...['female_A_rigged_safe.glb', 'animations/motion_set.json', 'appearance/lab_uniform.json'].map((name) => [
     '/assets/heroine/' + name, resolve(root, '../assets/heroine', name),
   ]),
 ]);

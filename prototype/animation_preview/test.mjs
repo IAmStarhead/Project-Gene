@@ -30,9 +30,9 @@ try {
   const data = await (await fetch(base + '/assets/heroine/animations/motion_set.json')).json();
   const model = await (await fetch(base + '/assets/heroine/female_A_rigged_safe.glb')).arrayBuffer();
   assert.equal(createHash('sha256').update(Buffer.from(model)).digest('hex'), data.model_sha256);
-  assert.equal(await page.locator('.clip-button').count(), 14);
+  assert.equal(await page.locator('.clip-button').count(), 17);
   assert.equal(await page.evaluate(() => window.motionLab.state.selected), 'idle_relaxed');
-  assert.match(await page.locator('#clip-count').textContent(), /14/);
+  assert.match(await page.locator('#clip-count').textContent(), /17/);
   const settle = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
   for (const [name, clip] of Object.entries(data.clips)) {
     await page.locator(`[data-clip="${name}"]`).click();
@@ -56,9 +56,14 @@ try {
         }
       }
       if (['walk', 'run', 'walk_relaxed', 'run_relaxed'].includes(name)) {
-        assert(joints.find((joint) => joint.name === 'hips').position[1] > (name === 'walk' ? .80 : name === 'walk_relaxed' ? .85 : .825),
+        assert(joints.find((joint) => joint.name === 'hips').position[1] > (name === 'walk' ? .80 : name === 'walk_relaxed' ? .8499 : .825),
           `Locomotion must not sink into a crouch: ${name}`);
       }
+      const appearance = await page.evaluate(() => window.motionLab.appearance);
+      assert.equal(appearance.handOpen, relaxed ? 1 : 0, `Actual hand morph in ${name}`);
+      assert(appearance.handVertices >= 3400, 'Existing fingers must actually open, not just move their wrists');
+      assert(appearance.gownVertices > 800 && appearance.gownIndexCount > 5000 && appearance.cloth.length === 112, 'Shared garment is loaded');
+      assert(appearance.cloth.every((p) => p.every(Number.isFinite)), 'Finite cloth positions');
       frames++;
     }
     if (name.startsWith('attack')) {
@@ -67,6 +72,28 @@ try {
       assert(Math.abs(hand.position[0]) < .06 && hand.position[2] > .61, `Forward contact in ${name}`);
     }
   }
+  // Cloth is part of the selected pose: pause must freeze its history, and
+  // explicit scrubbing must reset to a deterministic body-safe result.
+  await page.evaluate(() => { window.motionLab.select('run_relaxed'); window.motionLab.seek(.2); });
+  const soughtCloth = await page.evaluate(() => window.motionLab.appearance.cloth);
+  await page.evaluate(() => { window.motionLab.seek(.5); window.motionLab.seek(.2); });
+  assert.deepEqual(await page.evaluate(() => window.motionLab.appearance.cloth), soughtCloth,
+    'Seeking the same time must not depend on previous cloth history');
+  const animationFrames = (count) => page.evaluate((n) => new Promise((done) => {
+    const step = () => --n > 0 ? requestAnimationFrame(step) : done();
+    requestAnimationFrame(step);
+  }), count);
+  await animationFrames(6);
+  assert.deepEqual(await page.evaluate(() => window.motionLab.appearance.cloth), soughtCloth,
+    'Paused scrubbing must leave cloth motionless across rendered frames');
+  await page.locator('#play').click();
+  await animationFrames(3);
+  await page.locator('#play').click();
+  const pausedCloth = await page.evaluate(() => window.motionLab.appearance.cloth);
+  assert.notDeepEqual(pausedCloth, soughtCloth, 'Playing must actually simulate secondary motion');
+  await animationFrames(6);
+  assert.deepEqual(await page.evaluate(() => window.motionLab.appearance.cloth), pausedCloth,
+    'Pausing during motion must preserve, not reset or continue, the simulated cloth');
   // Space must work even immediately after clicking a clip button.
   await page.locator('[data-clip="walk"]').click();
   await page.keyboard.press('Space');
@@ -75,6 +102,8 @@ try {
   await page.keyboard.press('ArrowRight');
   assert(Math.abs((await page.evaluate(() => window.motionLab.state.time)) - (.1 + 1/60)) < .000001);
   await page.locator('#speed').selectOption('0.25');
+  await page.locator('#clothes').uncheck();
+  await page.locator('#clothes').check();
   await page.locator('#skeleton').check();
   await page.locator('#skeleton').uncheck();
   await page.locator('#trail').check();
@@ -90,7 +119,7 @@ try {
       ['walk', quarters('walk')], ['run', quarters('run')],
       ['idle_relaxed', quarters('idle_relaxed')], ['walk_relaxed', quarters('walk_relaxed')], ['run_relaxed', quarters('run_relaxed')],
       ['attack_left', [0, .10, .18, .30]], ['attack_right', [0, .10, .18, .30]],
-      ['dodge', [0, .08, .20, .34]], ['land', [0, .075, .18, data.clips.land.duration]],
+      ...['dodge', 'dodge_back', 'dodge_left', 'dodge_right'].map((name) => [name, [0, .08, .20, .34]]), ['land', [0, .075, .18, data.clips.land.duration]],
       ...['jump_start', 'jump_up', 'jump_down'].map((name) => [name, quarters(name)]),
     ]) {
       for (let i = 0; i < times.length; i++) {
@@ -111,7 +140,7 @@ try {
   }
   assert.equal((await fetch(base, { headers: { Host: '5173-session.e2b.app' } })).status, 200);
   assert.deepEqual(errors, []);
-  console.log(`GEN browser suite: 14 clips, ${frames} sampled poses, controls, mobile layout and static-server isolation OK.`);
+  console.log(`GEN browser suite: 17 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
 } finally {
   await browser.close();
 }

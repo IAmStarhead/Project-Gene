@@ -7,8 +7,10 @@ class_name Tuning
 
 
 # ─────────────────────────────────────────────── ДВИЖЕНИЕ
-const WALK_SPEED := 1.65         ## м/с: именно шаг, не ускоренный бег на месте
-const RUN_SPEED := 4.6           ## м/с, бег на Shift; фаза следует дистанции
+const WALK_SPEED := 1.35         ## м/с: именно шаг, не ускоренный бег на месте
+const RUN_SPEED := 3.8           ## м/с, бег на Shift; фаза следует дистанции
+const COMBAT_WALK_SPEED := 1.65  ## боевую локомоцию не замедляем
+const COMBAT_RUN_SPEED := 4.6
 const ACCELERATION := 16.0       ## как быстро набирается скорость
 const DECELERATION := 20.0       ## как быстро гасится скорость
 const TURN_SPEED := 14.0         ## скорость поворота тела к направлению движения
@@ -28,8 +30,8 @@ const CAMERA_HEIGHT := 1.45
 const CAMERA_FOLLOW_SPEED := 12.0
 
 # ─────────────────────────────────────────────── УВОРОТ
-const DODGE_SPEED := 8.5
-const DODGE_DURATION := 0.42     ## полная длительность переката
+const DODGE_SPEED := 5.6
+const DODGE_DURATION := 0.42     ## длительность направленного уворота
 const DODGE_IFRAMES_START := 0.04  ## с какого момента включается неуязвимость
 const DODGE_IFRAMES_END := 0.30    ## до какого момента действует неуязвимость
 const DODGE_STAMINA := 22.0

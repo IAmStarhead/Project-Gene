@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Appearance } from './appearance.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -8,13 +9,16 @@ const $ = (id) => document.getElementById(id);
 const CATALOG = [
   ['idle_relaxed', 'Спокойная стойка', 'Ровный корпус, мягкое дыхание, руки опущены.', 'locomotion', '○'],
   ['walk_relaxed', 'Обычная ходьба', 'Перекат с пятки на носок, свободный встречный мах рук.', 'locomotion', '↗'],
-  ['run_relaxed', 'Обычный бег', 'Привычная опора и толчок, без напряжённой защиты руками.', 'locomotion', '»'],
+  ['run_relaxed', 'Обычный бег', 'Новая работа ног и естественный темп, мягкие кисти.', 'locomotion', '»'],
   ['guard', 'Боевая стойка', 'Дыхание, мягкие колени и компактная защита.', 'locomotion', '◇'],
   ['walk', 'Ходьба · бой', 'Перенос ноги, опора и встречное движение корпуса.', 'locomotion', '↗'],
   ['run', 'Бег · бой', 'Опора под тазом, отталкивание и встречный мах от плеча.', 'locomotion', '»'],
   ['attack_left', 'Джеб · левая', 'Короткая подготовка → прямой удар → возврат в защиту.', 'combat', '↗'],
   ['attack_right', 'Кросс · правая', 'Поворот таза и плеча. Свободная рука прикрывает лицо.', 'combat', '↗'],
-  ['dodge', 'Уклонение', 'Низкий уход рывком — не кувырок через голову.', 'combat', '⤳'],
+  ['dodge', 'Уворот вперёд', 'Короткий подшаг с ведущей ногой, без разворота тела.', 'combat', '↑'],
+  ['dodge_back', 'Уворот назад', 'Отход спиной, без поворота на 180 градусов.', 'combat', '↓'],
+  ['dodge_left', 'Уворот влево', 'Боковой уход с приставлением второй ноги.', 'combat', '←'],
+  ['dodge_right', 'Уворот вправо', 'Боковой уход с сохранением взгляда на противника.', 'combat', '→'],
   ['hit', 'Реакция на удар', 'Короткая отдача корпуса и восстановление защиты.', 'combat', '✧'],
   ['jump_start', 'Отрыв от земли', 'Разгибание ног и мах руками. Без задержки ввода.', 'air', '↑'],
   ['jump_up', 'Взлёт', 'Плавный подбор ног к вершине физической траектории.', 'air', '↥'],
@@ -89,7 +93,7 @@ const impactDot = new THREE.Mesh(new THREE.SphereGeometry(.013, 12, 8), new THRE
 impactDot.visible = false;
 scene.add(impactDot);
 
-let data, model, bones, helper;
+let data, model, bones, helper, appearance;
 let selected = 'idle_relaxed', time = 0, playing = true, speed = 1;
 let last = performance.now();
 const q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion(), vector = new THREE.Vector3();
@@ -116,7 +120,7 @@ function support(side) {
   const c = data.clips[selected];
   if (c.duty) return ((time / c.duration + (side ? .5 : 0)) % 1) <= c.duty;
   if (selected.startsWith('jump')) return false;
-  if (selected === 'dodge') return time < .05 || time > .37;
+  if (selected.startsWith('dodge')) return time < .05 || time > .37;
   return true;
 }
 
@@ -163,6 +167,8 @@ function selectClip(name) {
   document.querySelectorAll('.clip-button').forEach((button) => button.classList.toggle('active', button.dataset.clip === name));
   samplePose(name, 0);
   buildTrail();
+  appearance?.setHands(name.endsWith("_relaxed") ? 1 : 0);
+  appearance?.reset();
   updateUI();
 }
 
@@ -185,6 +191,8 @@ function seek(value) {
   time = THREE.MathUtils.clamp(value, 0, data.clips[selected].duration);
   playing = false;
   samplePose(selected, time);
+  appearance?.setHands(selected.endsWith("_relaxed") ? 1 : 0);
+  appearance?.reset();
   updateUI();
 }
 
@@ -198,6 +206,7 @@ $('play').addEventListener('click', () => {
 $('speed').addEventListener('change', (event) => { speed = Number(event.target.value); });
 $('prev-frame').addEventListener('click', () => data && seek(time - 1 / data.fps));
 $('next-frame').addEventListener('click', () => data && seek(time + 1 / data.fps));
+$('clothes').addEventListener('change', (event) => appearance?.setVisible(event.target.checked));
 $('skeleton').addEventListener('change', (event) => { if (helper) helper.visible = event.target.checked; });
 $('trail').addEventListener('change', () => data && buildTrail());
 document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
@@ -230,6 +239,7 @@ function render(now) {
       else if (time >= c.duration) { time = c.duration; playing = false; }
     }
     samplePose(selected, time);
+    if (playing) appearance?.update(dt*speed);
     footMarkers.forEach((marker, i) => {
       const foot = bones[data.bones.indexOf(`foot.${i ? 'R' : 'L'}`)];
       foot.getWorldPosition(vector);
@@ -264,6 +274,8 @@ async function load() {
   bones = data.bones.map((name) => byName.get(name));
   if (bones.some((bone) => !bone)) throw new Error('Риг модели не соответствует набору анимаций.');
   scene.add(model);
+  const uniform = await (await fetch("/assets/heroine/appearance/lab_uniform.json")).json();
+  appearance = new Appearance(model, data.bones, uniform);
   helper = new THREE.SkeletonHelper(model);
   helper.material.color.set('#b5efd8');
   helper.material.depthTest = false;
@@ -284,6 +296,7 @@ async function load() {
   $('load-state').classList.add('hidden');
   window.motionLab = {
     select: selectClip, seek, setView,
+    get appearance() { return { handOpen: appearance.handOpen, handVertices: appearance.handVertices, gownVertices: appearance.gown.geometry.attributes.position.count, gownIndexCount: appearance.gown.geometry.index.count, cloth: appearance.points.map((p) => p.toArray()) }; },
     get state() { return { selected, time, playing, clips: Object.keys(data.clips) }; },
     get joints() { return data.bones.map((name, i) => ({ name, position: bones[i].getWorldPosition(new THREE.Vector3()).toArray() })); },
     // Tests can pause/seek the exact source clips without synthesizing input events.

@@ -15,6 +15,9 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from functools import lru_cache
+
+from scipy.interpolate import PchipInterpolator, CubicHermiteSpline
 
 import numpy as np
 
@@ -81,7 +84,7 @@ GAITS = {
 }
 
 
-def swing_targets(p, side, shoulder_angle, elbow_bend, spread=.055):
+def swing_targets(p, side, shoulder_angle, elbow_bend, spread=.055, carrying=.015):
     """Anatomical shoulder swing, NOT a fist orbit around a fixed elbow pole.
 
     Degrees: zero upper arm hangs down; positive swings forward. Elbow flexion
@@ -93,15 +96,15 @@ def swing_targets(p, side, shoulder_angle, elbow_bend, spread=.055):
     root = p.world('upper_arm.' + side)[:3, 3].copy()
     upper_angle, lower_angle = np.deg2rad([shoulder_angle, shoulder_angle + elbow_bend])
     upper = unit([sign * spread, -np.cos(upper_angle), np.sin(upper_angle)])
-    lower = unit([sign * .015, -np.cos(lower_angle), np.sin(lower_angle)])
+    lower = unit([sign * carrying, -np.cos(lower_angle), np.sin(lower_angle)])
     upper_length = np.linalg.norm(p.rig.positions[p.rig.index['forearm.' + side]])
     lower_length = np.linalg.norm(p.rig.positions[p.rig.index['hand.' + side]])
     elbow = root + upper_length * upper
     return elbow + lower_length * lower, elbow
 
 
-def swing_arm(p, side, shoulder_angle, elbow_bend, spread=.055, roll=5):
-    wrist, elbow = swing_targets(p, side, shoulder_angle, elbow_bend, spread)
+def swing_arm(p, side, shoulder_angle, elbow_bend, spread=.055, roll=5, carrying=.015):
+    wrist, elbow = swing_targets(p, side, shoulder_angle, elbow_bend, spread, carrying)
     p.arm(side, wrist, pole=elbow, roll=roll if side == 'L' else -roll)
 
 
@@ -188,74 +191,112 @@ def gait_pose(rig, t, name):
     return p
 
 
-RELAXED_WALK = {'duration': .76, 'stride': 1.24, 'duty': .60, 'clearance': .12}
+@lru_cache(maxsize=64)
+def _trajectory(keys, endpoint_speed=None):
+    x, y = np.asarray(keys, dtype=float).T
+    interpolant = PchipInterpolator(x, y)
+    if endpoint_speed is None:
+        return interpolant
+    slopes = interpolant.derivative()(x)
+    slopes[0] = slopes[-1] = endpoint_speed
+    return CubicHermiteSpline(x, y, slopes)
+
+
+def trajectory(t, keys, endpoint_speed=None):
+    # C1 shape-preserving interpolation: do NOT come to a full stop at every
+    # intermediate waypoint, as chained smoothsteps did in the old gait.
+    return float(_trajectory(tuple(keys), endpoint_speed)(t))
+
+
+# These are full left-to-left cycles, NOT steps. Runtime cadence is
+# 120 * actual_speed / stride, regardless of the authoring sample duration.
+RELAXED_WALK = {'duration': 1.04, 'stride': 1.34, 'duty': .57, 'clearance': .10}
+RELAXED_RUN = {'duration': .70, 'stride': 2.65, 'duty': .25, 'clearance': .26}
 
 
 def relaxed_idle(rig, t):
     breath = np.sin(t / 3.2 * np.pi * 2)
-    p = body(rig, hip=(.003 * breath, .894 + .001 * breath, .012),
-             yaw=(0, 0, 0), lean=(.8, .4), roll=.25 * breath, breath=.35 * breath)
+    p = body(rig, hip=(.002 * breath, .894 + .0007 * breath, .012),
+             yaw=(0, 0, 0), lean=(.5, .3), roll=.15 * breath, breath=.25 * breath)
     for side, sign in [('L', 1), ('R', -1)]:
-        swing_arm(p, side, 2 + .4 * breath, 14 + .5 * breath, spread=.14, roll=-65)
-        p.foot(side, [sign * .105, .08, .025 if side == 'L' else -.020], yaw=sign * 5)
+        swing_arm(p, side, 1 + .3 * breath, 10 + .4 * breath, spread=.18, roll=5, carrying=.23)
+        p.foot(side, [sign * .100, .08, .018 if side == 'L' else -.012], yaw=sign * 4)
     return p
 
 
 def relaxed_walk_path(phase):
-    # Human heel -> ankle -> forefoot rocker. Contact is closer to the hip
-    # than the old symmetric combat step; heel rise lets the trailing leg
-    # extend WITHOUT dropping the pelvis into a crouch. References: Perry,
-    # Muybridge plate 16 and CMU 16_31 (see ANIMATIONS.md).
+    # CMU 16_31: heel recovery behind the pelvis, then the shin unfolds.
+    # The previous 0.76 s / 1.24 m at 1.65 m/s meant ~160 steps/minute!
+    # Reducing height alone cannot fix that hurried, heavy-looking gait.
     gait = RELAXED_WALK
-    stride, duty, touchdown = gait['stride'], gait['duty'], .27
+    stride, duty, touchdown = gait['stride'], gait['duty'], .272
     if phase <= duty:
-        pitch = curve(phase / duty, [(0, -6), (.12, 0), (.50, 0),
-                                    (.70, 18), (.88, 43), (1, 58)])
-        return .08, touchdown - stride * phase, pitch
+        pitch = curve(phase / duty, [(0, -6), (.12, 0), (.42, 0),
+                                    (.66, 24), (.86, 44), (1, 59)])
+        return .08 + max(0, -np.sin(np.deg2rad(pitch)))*.045, touchdown - stride * phase, pitch
     v = (phase - duty) / (1 - duty)
-    start, end = touchdown - stride*duty, touchdown
+    start = touchdown - stride*duty + .12 + .06*np.sin(np.deg2rad(59)) - .12*np.cos(np.deg2rad(59))
+    end = touchdown
     m = -stride * (1 - duty)
-    z = (2*v**3 - 3*v**2 + 1)*start + (v**3 - 2*v**2 + v)*m \
-        + (-2*v**3 + 3*v**2)*end + (v**3 - v**2)*m
-    y = curve(v, [(0, .08), (.10, .17), (.24, .08 + gait['clearance']),
-                  (.44, .145), (.64, .12), (.86, .10), (1, .08)])
-    pitch = curve(v, [(0, 58), (.18, 25), (.45, 5), (.75, -6), (1, -6)])
+    z = trajectory(v, [(0, start), (.10, start-.012), (.28, -.33),
+                       (.50, -.08), (.74, .19), (.90, .297), (1, end)], m)
+    # Ankle heights, not an ankle lift PLUS an airborne toe-pivot lift.
+    y = trajectory(v, [(0, .154), (.10, .205), (.28, .21), (.50, .163),
+                       (.72, .120), (.90, .107), (1, .085)])
+    pitch = curve(v, [(0, 59), (.22, 26), (.48, 3), (.75, -6), (1, -6)])
     return y, z, pitch
 
 
 def relaxed_walk(rig, t):
     phase = (t / RELAXED_WALK['duration']) % 1
     drive, sway = np.cos(phase * np.pi * 2), np.sin(phase * np.pi * 2)
-    height = curve(phase % .5, [(0, .853), (.10, .874), (.20, .890),
-                               (.30, .886), (.40, .875), (.50, .853)])
-    p = body(rig, hip=(.012 * sway, height, .02), yaw=(3*sway, -sway, -4*sway),
-             lean=(1.2, .6), roll=1.2 * sway)
-    # Palms face inward, not flat into the thigh. A natural forearm roll keeps
-    # the existing fists clear of the hip without forcing the arms out wide.
-    # Low, relaxed arms; elbow ROM is NOT an absolute 30-degree prescription.
-    # Opposite arm/leg motion, with a little more flexion on the forward swing.
+    height = trajectory(phase % .5, [(0, .850), (.07, .869), (.16, .887),
+                                    (.25, .894), (.34, .894), (.40, .883), (.45, .867), (.50, .850)], 0.0)
+    p = body(rig, hip=(.009 * sway, height, .016), yaw=(2.5*sway, -sway, -3*sway),
+             lean=(.8, .5), roll=.8 * sway)
     for side, sign, offset in [('L', 1, 0), ('R', -1, .5)]:
-        swing_arm(p, side, 3 - sign*17*drive, 24 - sign*10*drive, spread=.14, roll=-65)
-        y, z, pitch = relaxed_walk_path((phase + offset) % 1)
-        # Pose.foot supplies the Y/Z toe pivot. With a turned-out walking foot,
-        # compensate its lateral arc too, keeping the planted forefoot fixed.
+        # Elbow stays soft; the hand is opened separately by the shared
+        # appearance rig, including in Godot, not merely in the browser.
+        swing_arm(p, side, 1 - sign*13*drive, 15 - sign*5*drive, spread=.18, roll=5, carrying=.23)
+        fp = (phase + offset) % 1
+        y, z, pitch = relaxed_walk_path(fp)
+        contact = fp <= RELAXED_WALK['duty']
         angle = np.deg2rad(max(pitch, 0))
-        pivot_x = np.sin(np.deg2rad(sign*4)) * (.12 + .06*np.sin(angle) - .12*np.cos(angle))
-        p.foot(side, [sign * .105 + pivot_x, y, z], pitch=pitch, yaw=sign * 4)
+        pivot_x = np.sin(np.deg2rad(sign*3)) * (.12 + .06*np.sin(angle) - .12*np.cos(angle)) if contact else 0
+        p.foot(side, [sign * .095 + pivot_x, y, z], pitch=pitch, yaw=sign * 3, pivot=contact)
     return p
 
 
+def relaxed_run_path(phase):
+    gait = RELAXED_RUN
+    stride, duty, touchdown = gait['stride'], gait['duty'], .230
+    if phase <= duty:
+        pitch = curve(phase / duty, [(0, -2), (.15, 0), (.45, 0), (.75, 31), (1, 60)])
+        return .081, touchdown-stride*phase, pitch
+    v = (phase-duty)/(1-duty)
+    start = touchdown-stride*duty + .12 + .06*np.sin(np.deg2rad(60)) - .12*np.cos(np.deg2rad(60))
+    end, m = touchdown, -stride*(1-duty)
+    z = trajectory(v, [(0, start), (.16, start-.032), (.34, -.33),
+                       (.52, -.13), (.74, .12), (.90, .25), (1, end)], m)
+    y = trajectory(v, [(0, .155), (.06, .219), (.17, .29), (.34, .34), (.48, .325),
+                       (.66, .23), (.82, .15), (.94, .11), (1, .081)])
+    pitch = curve(v, [(0, 60), (.20, 35), (.44, 6), (.70, -6), (1, -2)])
+    return y, z, pitch
+
+
 def relaxed_run(rig, t):
-    # Reuse the accepted run's pelvis, leg contacts and toe-off, not a new
-    # unreviewed lower-body cycle. Only the upper body loses combat tension.
-    p = gait_pose(rig, t, 'run')
-    phase = (t / GAITS['run']['duration']) % 1
-    drive, sway = np.cos(phase * np.pi * 2), np.sin(phase * np.pi * 2)
-    p.bend('spine', x=1.8, y=-2*sway, z=-.45*sway)
-    p.bend('chest', x=1.2, y=-4*sway, z=-.35*sway)
-    p.bend('head', x=-1.95, y=2.55*sway)
-    swing_arm(p, 'L', 3 - 24*drive, 83 + 5*drive, spread=.08, roll=-45)
-    swing_arm(p, 'R', 3 + 24*drive, 83 - 5*drive, spread=.08, roll=-45)
+    phase = (t / RELAXED_RUN['duration']) % 1
+    drive, sway = np.cos(phase*np.pi*2), np.sin(phase*np.pi*2)
+    height = trajectory(phase % .5, [(0, .870), (.07, .864), (.16, .881),
+                                    (.25, .891), (.37, .929), (.46, .889), (.50, .870)], 0.0)
+    p = body(rig, hip=(.006*sway, height, .025), yaw=(2*sway, -1.5*sway, -3*sway),
+             lean=(3.2, 1.6), roll=.65*sway)
+    for side, sign, offset in [('L', 1, 0), ('R', -1, .5)]:
+        swing_arm(p, side, 3-sign*22*drive, 83+sign*6*drive, spread=.075, roll=5)
+        fp = (phase+offset) % 1
+        y, z, pitch = relaxed_run_path(fp)
+        p.foot(side, [sign*.095, y, z], pitch=pitch, yaw=0,
+               pivot=fp <= RELAXED_RUN['duty'])
     return p
 
 
@@ -288,14 +329,26 @@ def attack(rig, t, side):
     return p
 
 
-def dodge(rig, t):
-    load = curve(t, [(0, 0), (.06, .85), (.15, 1), (.26, .8), (.42, 0)])
-    flight = curve(t, [(0, 0), (.05, 0), (.13, 1), (.28, .8), (.37, 0), (.42, 0)])
-    p = body(rig, hip=(0, .835 - .16 * load, .02 + .035 * load),
-             yaw=(-6, -4, -7), lean=(3 + 14 * load, 2 + 5 * load))
-    guard_hands(p, -.14 * load, .025 * load)
-    p.foot('L', [.125, .08 + .11 * flight, .155 + .08 * flight], pitch=10 * flight, yaw=6)
-    p.foot('R', [-.135, .08 + .15 * flight, -.135 - .06 * flight], pitch=22 * flight, yaw=-10)
+def dodge(rig, t, direction=(0, 1)):
+    # A directional quickstep, with a leading foot and a trailing recovery.
+    # Keep the facing; a sideways dodge is NOT a forward pose rotated 90 deg.
+    dx, dz = direction
+    load = curve(t, [(0, 0), (.055, .7), (.13, 1), (.25, .55), (.42, 0)])
+    stride = trajectory(t, [(0, 0), (.07, .12), (.18, 1), (.29, .72), (.42, 0)])
+    p = body(rig, hip=(dx*.025*load, .835-.060*load, .02+dz*.025*load),
+             yaw=(-6+dx*3*load, -4-dx*2*load, -7-dx*4*load),
+             lean=(3+dz*8*load, 2+max(dz, 0)*3*load), roll=-dx*6*load)
+    guard_hands(p, -.065*load, .012*load)
+    leading = 'L' if dx > 0 or dz > 0 else 'R'
+    for side, sign, z in [('L', 1, .155), ('R', -1, -.135)]:
+        first = side == leading
+        lift = trajectory(t, [(0, 0), (.06, 0 if first else .015),
+                              (.15, .10 if first else .035), (.24, .015 if first else .08),
+                              (.34, 0 if first else .035), (.42, 0)])
+        shift = (.26 if first else -.08)*stride
+        p.foot(side, [sign*(.125 if side == 'L' else .135)+dx*shift,
+                      .08+lift, z+dz*shift], pitch=(8 if first else 15)*load,
+               yaw=(6 if side == 'L' else -10)+dx*6*load)
     return p
 
 
@@ -382,9 +435,9 @@ def definitions():
         ('walk_relaxed', RELAXED_WALK['duration'], True, relaxed_walk,
          {'stride': RELAXED_WALK['stride'],
           'speed': RELAXED_WALK['stride'] / RELAXED_WALK['duration'], 'duty': RELAXED_WALK['duty']}),
-        ('run_relaxed', GAITS['run']['duration'], True, relaxed_run,
-         {'stride': GAITS['run']['stride'], 'speed': GAITS['run']['stride'] / GAITS['run']['duration'],
-          'duty': GAITS['run']['duty']}),
+        ('run_relaxed', RELAXED_RUN['duration'], True, relaxed_run,
+         {'stride': RELAXED_RUN['stride'], 'speed': RELAXED_RUN['stride'] / RELAXED_RUN['duration'],
+          'duty': RELAXED_RUN['duty']}),
         *[(name, g['duration'], True, lambda r, t, n=name: gait_pose(r, t, n),
            {'stride': g['stride'], 'speed': g['stride'] / g['duration'], 'duty': g['duty']})
           for name, g in GAITS.items()],
@@ -392,7 +445,10 @@ def definitions():
          {'windup': .18, 'active_end': .30, 'impact': .18, 'side': 'L'}),
         ('attack_right', .56, False, lambda r, t: attack(r, t, 'R'),
          {'windup': .18, 'active_end': .30, 'impact': .18, 'side': 'R'}),
-        ('dodge', .42, False, dodge, {}),
+        ('dodge', .42, False, dodge, {'direction': 'forward'}),
+        ('dodge_back', .42, False, lambda r, t: dodge(r, t, (0, -1)), {'direction': 'back'}),
+        ('dodge_left', .42, False, lambda r, t: dodge(r, t, (1, 0)), {'direction': 'left'}),
+        ('dodge_right', .42, False, lambda r, t: dodge(r, t, (-1, 0)), {'direction': 'right'}),
         ('jump_start', JUMP_START, False, jump_start, {}),
         ('jump_up', JUMP_UP, False, lambda r, t: air_pose(r, t), {}),
         ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
@@ -449,7 +505,7 @@ def tres(data):
         lines += [f'[sub_resource type="Animation" id="Animation_{name}"]',
                   f'resource_name = "{name}"', f'length = {clip["duration"]}',
                   f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / FPS:.10f}']
-        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side'):
+        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction'):
             if key in clip:
                 lines.append(f'metadata/{key} = {json.dumps(clip[key])}')
         q = np.asarray(clip['rotations'])

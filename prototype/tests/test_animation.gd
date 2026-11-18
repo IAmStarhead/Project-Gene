@@ -54,6 +54,8 @@ func _run() -> void:
 	_test_air_progress(character)
 	_test_stance_blending(character)
 	_test_relaxed_jump(character)
+	_test_directional_dodge(character)
+	_test_appearance(character)
 	_test_player_modes()
 	_test_combat()
 	_test_showcase()
@@ -67,7 +69,7 @@ func _run() -> void:
 func _test_native_tracks(character: Node3D) -> void:
 	var mirror: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
 		"res://assets/heroine/animations/motion_set.json"))
-	check(Character.MOTIONS.get_animation_list().size() == 14, "all 14 native clips loaded")
+	check(Character.MOTIONS.get_animation_list().size() == 17, "all 17 native clips loaded")
 	check(character.skeleton.get_bone_count() == 21, "the original 21-bone rig is retained")
 	var max_rotation_error := 0.0
 	var max_position_error := 0.0
@@ -153,7 +155,7 @@ func _test_distance_and_air(character: Node3D) -> void:
 func _test_locomotion_posture(character: Node3D) -> void:
 	# Exercise the actual sampler/blender too, including the clone's 3.4 m/s
 	# walk/run mix. Raising the Character node cannot satisfy these bone checks.
-	for speed in [T.WALK_SPEED, T.CLONE_RUN, T.RUN_SPEED]:
+	for speed in [T.COMBAT_WALK_SPEED, T.CLONE_RUN, T.COMBAT_RUN_SPEED]:
 		character.reset_motion()
 		var context := {"grounded": true, "distance": speed / 60.0}
 		for i in 60:
@@ -288,6 +290,133 @@ func _test_relaxed_jump(character: Node3D) -> void:
 		"reset clears the captured launch pose too")
 
 
+func _test_directional_dodge(character: Node3D) -> void:
+	for entry in [[Vector3(0, 0, 1), "dodge"], [Vector3(0, 0, -1), "dodge_back"],
+			[Vector3(1, 0, 0), "dodge_left"], [Vector3(-1, 0, 0), "dodge_right"]]:
+		var pose: Dictionary = character.sample_dodge(.18, entry[0])
+		var expected: Dictionary = character.sample_clip(entry[1], .18)
+		var identical := true
+		for b in pose["rotations"].size():
+			identical = identical and absf((pose["rotations"][b] as Quaternion).dot(expected["rotations"][b])) > .999999
+		check(identical, "direction chooses its own native dodge: "+entry[1])
+	var diagonal: Dictionary = character.sample_dodge(.18, Vector3(1, 0, -1).normalized())
+	var expected_diagonal: Dictionary = character._blend_pose(character.sample_clip("dodge_back", .18),
+		character.sample_clip("dodge_left", .18), .5)
+	check((diagonal["hips"] as Vector3).distance_to(expected_diagonal["hips"]) < .000001,
+		"diagonals blend the adjacent directional clips, not facing rotation")
+	var player := PlayerScene.instantiate()
+	player.set_physics_process(false)
+	world.add_child(player)
+	for direction in [Vector3(1, 0, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1),
+			Vector3(0, 0, -1), Vector3(1, 0, -1).normalized()]:
+		player.rotation.y = .71
+		player._buf_dir = player.character.global_basis*direction
+		var facing: Basis = player.global_basis
+		player._start_dodge()
+		check(player.global_basis.is_equal_approx(facing), "starting a dodge preserves body facing")
+		check(player._dodge_local_dir.distance_to(direction) < .00001, "world input becomes correct model-local dodge")
+		player._process_dodge(.10)
+		var travel := Vector3(player.velocity.x, 0, player.velocity.z).normalized()
+		check(travel.distance_to((player.character.global_basis*direction).normalized()) < .00001,
+			"actual dodge velocity follows requested travel independently of facing")
+	player._buf_dir = Vector3.ZERO
+	player._start_dodge()
+	check(player._dodge_local_dir.z < -.999, "no-input dodge moves back relative to the body, not the camera")
+	player.rotation = Vector3.ZERO
+	player._buf_dodge = 0.0
+	Input.action_press("move_left")
+	player._process_move(1.0/60)
+	Input.action_release("move_left")
+	check(absf(player.rotation.y) < .00001, "ordinary move cannot turn the body on the buffered dodge's first frame")
+	player.free()
+
+
+func _test_appearance(character: Node3D) -> void:
+	var appearance: Node3D = character.appearance
+	check(appearance != null and appearance.gown != null and appearance.skirt != null,
+		"heroine has a real bodice and simulated skirt")
+	check(appearance.gown.get_node(appearance.gown.skeleton) == character.skeleton,
+		"native gown is bound to the actual imported skeleton")
+	var bind_order := true
+	for i in character.skeleton.get_bone_count():
+		bind_order = bind_order and appearance.gown.skin.get_bind_name(i) == character.skeleton.get_bone_name(i)
+	check(bind_order, "garment joint indices use the original named Skin binds")
+	var gown_arrays: Array = appearance.gown.mesh.surface_get_arrays(0)
+	check((gown_arrays[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 5000
+		and (gown_arrays[Mesh.ARRAY_INDEX] as PackedInt32Array)[3] != 0,
+		"native bodice has real indexed triangles after JSON conversion")
+	var seam_gap := 0.0
+	var gown_points: PackedVector3Array = gown_arrays[Mesh.ARRAY_VERTEX]
+	var gown_bones: PackedInt32Array = gown_arrays[Mesh.ARRAY_BONES]
+	for pose_name in ["idle_relaxed", "walk_relaxed", "run_relaxed", "dodge_left", "guard"]:
+		character.seek_clip(pose_name, character.clip_duration(pose_name)*.43)
+		var cloth: PackedVector3Array = appearance.cloth_vertices()
+		for i in int(appearance._data["gown"]["waist_vertices"]):
+			var at: float = float(i)/float(appearance._data["gown"]["waist_vertices"])*appearance._segments
+			var lo := floori(at)
+			var pinned := cloth[lo].lerp(cloth[(lo+1)%appearance._segments], at-lo)
+			var bind := gown_bones[i*4]
+			var bone: int = character.skeleton.find_bone(appearance.gown.skin.get_bind_name(bind))
+			var skin_pose: Transform3D = character.skeleton.get_bone_global_pose(bone)*appearance.gown.skin.get_bind_pose(bind)
+			var native: Vector3 = character.global_transform.affine_inverse()*character.skeleton.global_transform*(skin_pose*gown_points[i])
+			seam_gap = maxf(seam_gap, native.distance_to(pinned))
+	check(seam_gap < .00001, "native Skin and pinned cloth have a shared waist seam without overlapping surfaces")
+	check(appearance.body.mesh.get_blend_shape_count() == 1
+		and appearance.body.mesh.get_meta("hand_vertices") >= 3400,
+		"post-import mesh contains the existing fingers' real relaxed shape")
+	character.reset_motion(false)
+	check(appearance.hand_open == 1.0 and appearance.body.get_blend_shape_value(0) == 1.0,
+		"ordinary idle actually opens the mesh, not just the wrist bones")
+	character.reset_motion(true)
+	check(appearance.hand_open == 0.0 and appearance.body.get_blend_shape_value(0) == 0.0,
+		"combat keeps the exact original baked fists")
+	check(appearance.gown.has_meta("textile") and appearance.skirt.has_meta("textile"),
+		"toon sweep identifies clothing as textile, not untextured skin")
+	var clone := CloneScene.instantiate()
+	clone.set_physics_process(false)
+	clone.position.x = 3.0
+	world.add_child(clone)
+	var clone_appearance: Node3D = clone.character.appearance
+	check(clone_appearance.gown.mesh == appearance.gown.mesh,
+		"clone uses the same generated garment mesh")
+	check(clone_appearance.clone_variant and clone_appearance.gown.material_override != appearance.gown.material_override,
+		"clone has its own cool-tinted fabric material")
+	check(clone_appearance._points != appearance._points, "actors do not share cloth particle state")
+	var worst_gap := INF
+	var finite := true
+	var worst_secondary := 0.0
+	for fps in [30, 60, 120]:
+		character.reset_motion(false)
+		var dt: float = 1.0/fps
+		for i in fps*2:
+			character.position.z += T.RUN_SPEED*dt
+			character.update_motion(dt, Vector3(0, 0, T.RUN_SPEED), "", 0, "L",
+				{"combat": false, "grounded": true, "distance": T.RUN_SPEED*dt})
+			worst_gap = minf(worst_gap, appearance.collision_gap())
+			for k in appearance._points.size():
+				finite = finite and (appearance._points[k] as Vector3).is_finite()
+				worst_secondary = maxf(worst_secondary, (appearance._points[k] as Vector3).distance_to(appearance._goals[k]))
+		check(appearance.hand_open == 1.0, "running hands remain relaxed at %d FPS" % fps)
+		character.update_motion(.10, Vector3.ZERO, "attack", .10, "L", {"combat": false})
+		check(appearance.body.get_blend_shape_value(0) == 0.0,
+			"even an ordinary-mode punch closes the actual fingers before contact")
+	check(finite and appearance.cloth_vertices().size() == 112, "cloth remains finite at 30/60/120 FPS")
+	check(worst_gap > -.00001, "free cloth points stay outside the analytic leg collision envelopes")
+	check(worst_secondary < .15, "bounded secondary motion even after body-collision priority")
+	check(appearance.collision_count > 0, "body collision is actually exercised, not just declared")
+	character.position = Vector3(10, 0, -10)
+	character.update_motion(.016, Vector3.ZERO, "", 0, "R", {"combat": false})
+	var after_teleport := 0.0
+	for i in appearance._points.size():
+		after_teleport = maxf(after_teleport, (appearance._points[i] as Vector3).distance_to(appearance._goals[i]))
+	check(after_teleport < .10, "teleport resets cloth instead of dragging it across the room")
+	print("Clothing: 112 particles; actual imported hand matches %d; sampled capsule gap %.6f m; secondary max %.3f m" % [
+		appearance.body.mesh.get_meta("hand_vertices"), worst_gap, worst_secondary])
+	clone.free()
+	character.position = Vector3.ZERO
+	character.reset_motion(false)
+
+
 func _test_player_modes() -> void:
 	var player := PlayerScene.instantiate()
 	player.set_physics_process(false)
@@ -301,6 +430,21 @@ func _test_player_modes() -> void:
 		"R is a physical-key binding for player stance")
 	check(InputMap.action_get_events("toggle_clone")[0].physical_keycode == KEY_T,
 		"T remains the separate clone-combat binding")
+	Input.action_press("move_forward")
+	for entry in [[false, false, T.WALK_SPEED], [false, true, T.RUN_SPEED],
+			[true, false, T.COMBAT_WALK_SPEED], [true, true, T.COMBAT_RUN_SPEED]]:
+		player.combat_mode = entry[0]
+		player.velocity = Vector3.ZERO
+		if entry[1]:
+			Input.action_press("run")
+		else:
+			Input.action_release("run")
+		player._process_move(1.0)
+		check(absf(Vector2(player.velocity.x, player.velocity.z).length()-float(entry[2])) < .00001,
+			"actual player speed distinguishes ordinary/combat walking/running")
+	Input.action_release("run")
+	Input.action_release("move_forward")
+	player.combat_mode = false
 	var toggle := InputEventAction.new()
 	toggle.action = "toggle_stance"
 	toggle.pressed = true
@@ -414,6 +558,26 @@ func _test_showcase() -> void:
 		check(same, "showcase seeks actual library keys: " + clip_name)
 	showcase._step_frame(1)
 	check(not showcase._playing, "frame stepping pauses playback")
+	showcase._select_clip(2)  # Ordinary run, with real secondary motion.
+	for i in 30:
+		showcase._process(1.0/60)
+	showcase._toggle_play()
+	var paused: PackedVector3Array = showcase.character.appearance.cloth_vertices().duplicate()
+	for i in 12:
+		showcase._process(1.0/60)
+	check(showcase.character.appearance.cloth_vertices() == paused,
+		"showcase pause freezes simulated cloth without resetting its history")
+	showcase._seek(.2)
+	var sought: PackedVector3Array = showcase.character.appearance.cloth_vertices().duplicate()
+	showcase._seek(.5)
+	showcase._seek(.2)
+	check(showcase.character.appearance.cloth_vertices() == sought,
+		"showcase seek resets cloth deterministically at the selected pose")
+	showcase._toggle_play()
+	for i in 6:
+		showcase._process(1.0/60)
+	check(showcase.character.appearance.cloth_vertices() != sought,
+		"showcase resumes real cloth simulation after a paused seek")
 	showcase.free()
 
 

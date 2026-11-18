@@ -40,6 +40,8 @@ func _ready() -> void:
 	_make_label()
 	if character != null and character.has_method("reset_motion"):
 		character.reset_motion(false)
+	if character != null and character.appearance != null:
+		character.appearance.set_variant(true)
 
 
 func _make_label() -> void:

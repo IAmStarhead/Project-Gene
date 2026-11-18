@@ -11,10 +11,12 @@
 ## пройденного расстояния ПОСЛЕ move_and_slide(), не от настенных часов.
 extends Node3D
 
+const Appearance := preload("res://scripts/character_appearance.gd")
 const T := preload("res://scripts/tuning.gd")
 const MODEL_PATH := "res://assets/heroine/female_A_rigged_safe.glb"
 const MOTIONS: AnimationLibrary = preload("res://assets/heroine/animations/motion_set.tres")
 
+var appearance: Node3D
 var skeleton: Skeleton3D
 var animation_player: AnimationPlayer
 var _model: Node
@@ -61,6 +63,8 @@ func load_character(path: String) -> bool:
 	if found == null:
 		instance.free()
 		return false
+	if is_instance_valid(appearance):
+		appearance.free()
 	if is_instance_valid(_model):
 		_model.free()
 	if is_instance_valid(animation_player):
@@ -79,6 +83,12 @@ func load_character(path: String) -> bool:
 	_hips_index = skeleton.find_bone("hips")
 	if _hips_index < 0 or not _bind_tracks():
 		return false
+
+	appearance = Node3D.new()
+	appearance.set_script(Appearance)
+	appearance.name = "LaboratoryAppearance"
+	add_child(appearance)
+	appearance.install(self, skeleton, instance)
 
 	# Библиотеку видно у AnimationPlayer в удалённом инспекторе Godot.
 	# Сам player не пишет позу: ниже мы сэмплируем его нативные треки и
@@ -144,11 +154,17 @@ func sample_clip(clip_name: StringName, time: float) -> Dictionary:
 
 
 ## Витрина и автотесты получают ТОЧНЫЙ кадр тех же треков, без low-pass.
-func seek_clip(clip_name: StringName, time: float) -> void:
+func seek_clip(clip_name: StringName, time: float, preview_delta: float = 0.0) -> void:
 	var pose := sample_clip(clip_name, time)
 	if not pose.is_empty():
 		_last_pose = pose
 		_apply_pose(pose)
+		if appearance != null:
+			appearance.set_hands(1.0 if str(clip_name).ends_with("_relaxed") else 0.0)
+			if preview_delta > 0.0:
+				appearance.update_pose(preview_delta)
+			elif preview_delta == 0.0:
+				appearance.reset_cloth()
 
 
 ## Перевод игрового времени в клип: подготовка / активная фаза / возврат.
@@ -177,7 +193,7 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	_land_time += delta
 	var grounded: bool = context.get("grounded", true)
 	_combat_mode = context.get("combat", true)
-	_combat_blend = move_toward(_combat_blend, 1.0 if _combat_mode else 0.0, delta * 4.0)
+	_combat_blend = move_toward(_combat_blend, 1.0 if _combat_mode else 0.0, delta * 3.0)
 	if grounded and not _was_grounded:
 		_land_time = 0.0
 	if not grounded:
@@ -197,16 +213,18 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	var walk := MOTIONS.get_animation("walk")
 	var run := MOTIONS.get_animation("run")
 	var relaxed_walk := MOTIONS.get_animation("walk_relaxed")
+	var relaxed_run := MOTIONS.get_animation("run_relaxed")
 	var stance := smoothstep(0.0, 1.0, _combat_blend)
 	var walk_stride := lerpf(float(relaxed_walk.get_meta("stride")), float(walk.get_meta("stride")), stance)
 	var walk_speed := lerpf(float(relaxed_walk.get_meta("speed")), float(walk.get_meta("speed")), stance)
-	var run_speed: float = run.get_meta("stride") / run.length
+	var run_stride := lerpf(float(relaxed_run.get_meta("stride")), float(run.get_meta("stride")), stance)
+	var run_speed := lerpf(float(relaxed_run.get_meta("speed")), float(run.get_meta("speed")), stance)
 	var want_gait := smoothstep(walk_speed + 0.3, run_speed, planar)
 	_gait_blend = move_toward(_gait_blend, want_gait, delta * 4.0)
 	_move_weight = move_toward(_move_weight, smoothstep(0.03, 0.6, planar), delta * 7.5)
 	if grounded and action != "attack" and action != "dodge":
 		var distance: float = context.get("distance", planar * delta)
-		var stride := lerpf(walk_stride, float(run.get_meta("stride")), _gait_blend)
+		var stride := lerpf(walk_stride, run_stride, _gait_blend)
 		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
 		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
@@ -220,7 +238,9 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		pose = attack_pose if grounded else _replace_upper(_air_pose(context), attack_pose)
 	elif action == "dodge":
 		state = "dodge"
-		pose = sample_clip("dodge", action_time / T.DODGE_DURATION * clip_duration("dodge"))
+		pose = sample_dodge(action_time, context.get("dodge_direction", Vector3(0, 0, 1)))
+		if not _combat_mode:
+			pose = _blend_pose(pose, _locomotion_pose(), smoothstep(.30, T.DODGE_DURATION, action_time))
 	elif not grounded:
 		state = "air"
 		pose = _air_pose(context)
@@ -248,6 +268,18 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		pose = _add_hit(pose, .35 if action == "attack" else 1.0)
 	_last_pose = pose
 	_apply_pose(pose)
+	if appearance != null:
+		var open_hand := 0.0 if action == "attack" else 1.0-_combat_blend
+		appearance.set_hands(move_toward(appearance.hand_open, open_hand, delta*12.0))
+		appearance.update_pose(delta, grounded)
+
+
+func sample_dodge(time: float, direction: Vector3) -> Dictionary:
+	var along := sample_clip("dodge" if direction.z >= 0.0 else "dodge_back", time)
+	if absf(direction.x) < .001:
+		return along
+	var across := sample_clip("dodge_left" if direction.x > 0.0 else "dodge_right", time)
+	return _blend_pose(along, across, absf(direction.x)/(absf(direction.x)+absf(direction.z)))
 
 
 func _locomotion_pose() -> Dictionary:
@@ -256,7 +288,7 @@ func _locomotion_pose() -> Dictionary:
 	if _combat_blend >= 1.0:
 		return _locomotion_set(true)
 	# Одна и та же фаза контакта ног. R не перезапускает шаг и не
-	# телепортирует руки; полный переход занимает четверть секунды.
+	# телепортирует руки; переход занимает треть секунды.
 	return _blend_pose(_locomotion_set(false), _locomotion_set(true),
 		smoothstep(0.0, 1.0, _combat_blend))
 

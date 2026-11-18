@@ -135,7 +135,7 @@ func apply_toon(root: Node) -> void:
 	shader.code = TOON_SHADER
 	for mesh in _find_meshes(root):
 		var mi := mesh as MeshInstance3D
-		if mi.mesh == null:
+		if mi.mesh == null or mi.has_meta("textile"):
 			continue
 		for i in mi.mesh.get_surface_count():
 			var base := mi.mesh.surface_get_material(i)
@@ -189,7 +189,7 @@ func showcase_lighting() -> void:
 func clear_toon(root: Node) -> void:
 	for mesh in _find_meshes(root):
 		var mi := mesh as MeshInstance3D
-		if mi.mesh == null:
+		if mi.mesh == null or mi.has_meta("textile"):
 			continue
 		for i in mi.mesh.get_surface_count():
 			mi.set_surface_override_material(i, null)

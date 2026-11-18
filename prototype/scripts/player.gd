@@ -61,6 +61,7 @@ var _buf_secondary: float = BUF_NEVER   ## ПКМ: удар правой рук�
 var _attack_side: String = "L"
 var _buf_dir: Vector3 = Vector3.ZERO
 
+var _dodge_local_dir := Vector3(0, 0, 1)
 var _dodge_dir: Vector3 = Vector3.ZERO
 var _invulnerable: bool = false
 var _coyote: float = 0.0          ## сколько ещё можно прыгнуть после схода с края
@@ -124,8 +125,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func toggle_combat_mode() -> void:
-	# Меняем только выбор локомоции. Не отменяем удар/уворот, не сбрасываем
-	# фазу шага, скорость, стамину или траекторию прыжка.
+	# Меняем локомоцию и целевую скорость, но не отменяем действие,
+	# не сбрасываем фазу шага, стамину или вертикальную траекторию.
 	combat_mode = not combat_mode
 
 
@@ -211,6 +212,7 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			"distance": planar.length(), "grounded": is_on_floor(),
 			"vertical_speed": velocity.y, "jump_started": _jump_started,
 			"floor_distance": floor_distance, "combat": combat_mode,
+			"dodge_direction": _dodge_local_dir,
 			"attack_timing": Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
 		})
 
@@ -252,13 +254,16 @@ func _spend_stamina(amount: float) -> bool:
 func _process_move(delta: float) -> void:
 	var dir := _input_direction()
 	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED
+	if combat_mode:
+		speed = T.COMBAT_RUN_SPEED if Input.is_action_pressed("run") else T.COMBAT_WALK_SPEED
 	var target := dir * speed
 	var ac := _air_control()
 	var rate := (T.ACCELERATION if dir.length() > 0.0 else T.DECELERATION) * ac
 	velocity.x = move_toward(velocity.x, target.x, rate * delta)
 	velocity.z = move_toward(velocity.z, target.z, rate * delta)
 
-	if dir.length() > 0.0:
+	if dir.length() > 0.0 and _buf_dodge > T.INPUT_BUFFER:
+		# Уворот фиксирует взгляд ДО обычного поворота на ввод.
 		# модель смотрит в +Z, поэтому поворот считается от -Z
 		var want := atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, want, min(1.0, delta * T.TURN_SPEED))
@@ -285,13 +290,16 @@ func _try_start_actions() -> void:
 func _start_dodge() -> void:
 	_action = "dodge"
 	_action_time = 0.0
-	# направление: ввод, иначе назад от камеры
-	_dodge_dir = _buf_dir if _buf_dir.length() > 0.0 else _camera_forward()
+	# Ввод задаёт перемещение, но НЕ разворачивает модель. Без ввода —
+	# шаг назад относительно тела, даже если камера смотрит с другой стороны.
+	_dodge_dir = _buf_dir if _buf_dir.length() > 0.0 else global_basis.z
 	_dodge_dir.y = 0.0
 	if _dodge_dir.length() < 0.1:
 		_dodge_dir = _camera_forward()
 	_dodge_dir = _dodge_dir.normalized()
-	rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
+	_dodge_local_dir = character.global_basis.inverse() * _dodge_dir
+	_dodge_local_dir.y = 0.0
+	_dodge_local_dir = _dodge_local_dir.normalized()
 	_invulnerable = false
 
 

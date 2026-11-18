@@ -11,7 +11,8 @@ const CLIPS := [
 	["run_relaxed", "Обычный бег"],
 	["guard", "Боевая стойка"], ["walk", "Ходьба — бой"], ["run", "Бег — бой"],
 	["attack_left", "Джеб — левая"], ["attack_right", "Кросс — правая"],
-	["dodge", "Уклонение"], ["jump_start", "Отрыв от земли"],
+	["dodge", "Уворот вперёд"], ["dodge_back", "Уворот назад"],
+	["dodge_left", "Уворот влево"], ["dodge_right", "Уворот вправо"], ["jump_start", "Отрыв от земли"],
 	["jump_up", "Подъём в прыжке"], ["jump_down", "Падение"],
 	["land", "Приземление"], ["hit", "Реакция на удар"],
 ]
@@ -227,7 +228,7 @@ func _process(delta: float) -> void:
 			else:
 				_time = duration
 				_playing = false
-	character.seek_clip(CLIPS[_selected][0], _time)
+	character.seek_clip(CLIPS[_selected][0], _time, delta*SPEEDS[_speed_index] if _playing else -1.0)
 	var orbit := Basis(Vector3.UP, deg_to_rad(_yaw)) * Basis(Vector3.RIGHT, deg_to_rad(_pitch))
 	var focus := Vector3(0, .85, 0)
 	cam.global_position = focus + orbit * Vector3(0, 0, _distance)

@@ -5,6 +5,7 @@
 extends SceneTree
 
 const PlayerScene := preload("res://scenes/player.tscn")
+const CloneScene := preload("res://scenes/clone.tscn")
 const FPS := 60
 var world: Node3D
 
@@ -17,19 +18,30 @@ func vector(v: Vector3) -> Array:
 	return [v.x, v.y, v.z]
 
 
-func frame(player: CharacterBody3D) -> Dictionary:
-	var character: Node3D = player.get_node("Character")
+func actor_frame(character: Node3D) -> Dictionary:
 	var skeleton: Skeleton3D = character.skeleton
 	var rotations: Array = []
 	for i in skeleton.get_bone_count():
 		var q := skeleton.get_bone_pose_rotation(i)
 		rotations.append([q.x, q.y, q.z, q.w])
 	var q := character.global_basis.get_rotation_quaternion()
+	var cloth: Array = []
+	for point in character.appearance.cloth_vertices():
+		cloth.append(vector(point))
 	return {"rotations": rotations,
 		"hips": vector(skeleton.get_bone_pose_position(skeleton.find_bone("hips"))),
 		"position": vector(character.global_position), "orientation": [q.x, q.y, q.z, q.w],
-		"vertical_speed": player.velocity.y, "grounded": player.is_on_floor(), "state": character._state,
-		"combat": player.combat_mode, "phase": character._phase, "gait_blend": character._gait_blend}
+		"hand_open": character.appearance.body.get_blend_shape_value(0), "cloth": cloth,
+		"cloth_gap": character.appearance.collision_gap(),
+		"state": character._state, "phase": character._phase, "gait_blend": character._gait_blend}
+
+
+func frame(player: CharacterBody3D) -> Dictionary:
+	var result := actor_frame(player.get_node("Character"))
+	result.merge({"vertical_speed": player.velocity.y, "grounded": player.is_on_floor(),
+		"combat": player.combat_mode, "action": player._action,
+		"dodge_direction": vector(player._dodge_local_dir)})
+	return result
 
 
 func take(moving: bool, jump_at: int, count: int, combat: bool = true,
@@ -60,6 +72,46 @@ func take(moving: bool, jump_at: int, count: int, combat: bool = true,
 	return result
 
 
+func take_dodge(direction: Vector3) -> Array:
+	var player := PlayerScene.instantiate() as CharacterBody3D
+	player.position.y = .1
+	world.add_child(player)
+	for i in 25:
+		await physics_frame
+	var result: Array = []
+	for i in 90:
+		if i == 18:
+			player._buf_dodge = 0.0
+			player._buf_dir = player.character.global_basis*direction.normalized()
+		await physics_frame
+		result.append(frame(player))
+	player.free()
+	return result
+
+
+func take_clone() -> Array:
+	var player := PlayerScene.instantiate() as CharacterBody3D
+	player.position = Vector3(-.9, .1, 0)
+	world.add_child(player)
+	var clone := CloneScene.instantiate() as CharacterBody3D
+	clone.position = Vector3(.9, .1, -2)
+	world.add_child(clone)
+	for i in 25:
+		await physics_frame
+	var result: Array = []
+	for i in 300:
+		if i == 72:
+			clone.cycle_mode()
+		await physics_frame
+		var value := frame(player)
+		value["clone"] = actor_frame(clone.character)
+		value["clone_mode"] = clone.mode
+		result.append(value)
+	clone.free()
+	player.free()
+	return result
+
+
 func _record() -> void:
 	world = Node3D.new()
 	root.add_child(world)
@@ -82,7 +134,14 @@ func _record() -> void:
 			"jump_relaxed": await take(false, 18, 108, false),
 			"run_jump_relaxed": await take(true, 18, 108, false),
 			"walk_switch": await take(true, -1, 216, false, false, [60, 132]),
-			"run_switch": await take(true, -1, 216, false, true, [60, 132])}}
+			"run_switch": await take(true, -1, 216, false, true, [60, 132]),
+			"dodge": await take_dodge(Vector3(0, 0, 1)),
+			"dodge_back": await take_dodge(Vector3(0, 0, -1)),
+			"dodge_left": await take_dodge(Vector3(1, 0, 0)),
+			"dodge_right": await take_dodge(Vector3(-1, 0, 0)),
+			"dodge_front_left": await take_dodge(Vector3(1, 0, 1)),
+			"dodge_back_right": await take_dodge(Vector3(-1, 0, -1)),
+			"clone_uniform": await take_clone()}}
 	var path := OS.get_environment("GEN_TRACE_OUTPUT")
 	if path.is_empty():
 		path = "user://motion-trace.json"

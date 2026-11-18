@@ -108,7 +108,7 @@ class SkinWeightTests(unittest.TestCase):
                 minimum, maximum = min(minimum, ratio.min()), max(maximum, ratio.max())
                 self.assertLess(ratio.max(), 1.25, name)  # old attack: >9x
                 self.assertGreater(ratio.min(), .75, name)
-        print(f'\n  Inner upper-arm edge stretch: {minimum:.3f}–{maximum:.3f}x (all 14 clips)')
+        print(f'\n  Inner upper-arm edge stretch: {minimum:.3f}–{maximum:.3f}x (all authored clips)')
 
     def test_relaxed_hands_do_not_cut_through_the_hips(self):
         m, r = self.mesh, self.rig

@@ -156,14 +156,14 @@ class Pose:
         self.orient(lower, lower_world)
         return lower_world
 
-    def foot(self, side, position, pitch=0.0, yaw=0.0):
+    def foot(self, side, position, pitch=0.0, yaw=0.0, pivot=True):
         name = 'foot.' + side
         foot_rotation = rotation(y=yaw) @ rotation(x=pitch) @ self.rig.rest_world[
             self.rig.index[name], :3, :3]
         position = np.array(position, float)
         # A toe-off pivots about the forefoot, not the ankle through the floor.
         toe_vector = rotation(y=yaw) @ rotation(x=pitch) @ np.array([0, -.06, .12])
-        if pitch > 0:
+        if pitch > 0 and pivot:
             position[1] += -.06 - toe_vector[1]
             position[2] += .12 - toe_vector[2]
         self.limb('thigh.' + side, 'shin.' + side, name, position,
