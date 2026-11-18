@@ -1,0 +1,4 @@
+# Python 3.11+. Authoring / offline tests only; Godot needs neither package.
+# Pinned to the versions used to bake the checked-in quaternion tracks.
+numpy==2.4.6
+scipy==1.17.1

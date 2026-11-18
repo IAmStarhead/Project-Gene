@@ -129,13 +129,15 @@ func _make_materials() -> void:
 ## после спавна героини и клона: материалы уже импортированы, остаётся
 ## подменить их на шейдер.
 func apply_toon(root: Node) -> void:
-	if not T.TOON_ENABLED:
+	# Headless-тесты используют Dummy renderer: GPU-материал там не нужен
+	# и в Godot 4.7 вызывает ошибку при освобождении RID шейдера.
+	if not T.TOON_ENABLED or DisplayServer.get_name() == "headless":
 		return
 	var shader := Shader.new()
 	shader.code = TOON_SHADER
 	for mesh in _find_meshes(root):
 		var mi := mesh as MeshInstance3D
-		if mi.mesh == null:
+		if mi.mesh == null or mi.has_meta("textile"):
 			continue
 		for i in mi.mesh.get_surface_count():
 			var base := mi.mesh.surface_get_material(i)
@@ -189,7 +191,7 @@ func showcase_lighting() -> void:
 func clear_toon(root: Node) -> void:
 	for mesh in _find_meshes(root):
 		var mi := mesh as MeshInstance3D
-		if mi.mesh == null:
+		if mi.mesh == null or mi.has_meta("textile"):
 			continue
 		for i in mi.mesh.get_surface_count():
 			mi.set_surface_override_material(i, null)

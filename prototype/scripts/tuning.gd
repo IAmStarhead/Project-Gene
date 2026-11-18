@@ -7,8 +7,11 @@ class_name Tuning
 
 
 # ─────────────────────────────────────────────── ДВИЖЕНИЕ
-const WALK_SPEED := 3.4          ## м/с, обычная ходьба
-const RUN_SPEED := 6.2           ## м/с, бег (на Shift)
+const WALK_SPEED := 1.15         ## L Alt: спокойный шаг
+const JOG_SPEED := 2.9           ## без модификаторов: лёгкий бег
+const RUN_SPEED := 5.6           ## Shift: быстрый динамичный бег
+const COMBAT_WALK_SPEED := 1.65  ## калибровка боевых клипов/клона, не модификатор игрока
+const COMBAT_RUN_SPEED := 4.6
 const ACCELERATION := 16.0       ## как быстро набирается скорость
 const DECELERATION := 20.0       ## как быстро гасится скорость
 const TURN_SPEED := 14.0         ## скорость поворота тела к направлению движения
@@ -28,8 +31,8 @@ const CAMERA_HEIGHT := 1.45
 const CAMERA_FOLLOW_SPEED := 12.0
 
 # ─────────────────────────────────────────────── УВОРОТ
-const DODGE_SPEED := 8.5
-const DODGE_DURATION := 0.42     ## полная длительность переката
+const DODGE_DISTANCE := 1.10     ## метры на свободном полу, независимо от FPS
+const DODGE_DURATION := 0.48     ## загрузка → толчок → ловля веса
 const DODGE_IFRAMES_START := 0.04  ## с какого момента включается неуязвимость
 const DODGE_IFRAMES_END := 0.30    ## до какого момента действует неуязвимость
 const DODGE_STAMINA := 22.0
@@ -38,8 +41,8 @@ const DODGE_STAMINA := 22.0
 const ATTACK_WINDUP := 0.18      ## замах: ещё нет урона
 const ATTACK_ACTIVE := 0.12      ## активные кадры: урон наносится
 const ATTACK_RECOVERY := 0.26    ## восстановление: уязвим, но можно отменить уворотом
-const ATTACK_RANGE := 1.9
-const ATTACK_ANGLE := 70.0       ## половина угла конуса попадания, градусы
+const ATTACK_RANGE := 1.10      ## кулак ~0.75 м + радиус корпуса цели
+const ATTACK_ANGLE := 45.0       ## прямой удар, не невидимая атака вокруг себя
 const ATTACK_DAMAGE := 24.0
 const ATTACK_STAMINA := 18.0
 const ATTACK_CANCEL_WINDOW := 0.12  ## за сколько до конца можно отменить уворотом
@@ -59,11 +62,11 @@ const DUMMY_KNOCKBACK := 0.35
 
 # ─────────────────────────────────────────────── КЛОН-ПРОТИВНИК
 const CLONE_HEALTH := 120.0
-const CLONE_WALK := 2.6          ## м/с, спокойный шаг
-const CLONE_RUN := 4.6           ## м/с, сближение
+const CLONE_WALK := 1.65         ## м/с, отход лицом к игроку
+const CLONE_RUN := 3.4           ## м/с, сближение
 const CLONE_ACCEL := 12.0
-const CLONE_KEEP_DISTANCE := 1.6 ## ближе не подходит, пока не бьёт
-const CLONE_RANGE := 2.0         ## радиус удара
+const CLONE_KEEP_DISTANCE := 0.95 ## дистанция настоящего контакта кулака
+const CLONE_RANGE := 1.10        ## тот же физический масштаб, что у игрока
 const CLONE_DAMAGE := 14.0
 const CLONE_WINDUP := 0.34       ## замах заметно длиннее, чем у игрока
 const CLONE_ACTIVE := 0.12
@@ -89,11 +92,6 @@ static var TOON_ENABLED := true   ## переключается клавишей
 ##   0 — «сумрачно»: то, что было
 ##   1 — «средне»: по умолчанию, ощутимо светлее
 ##   2 — «ярко»: чистая белая лаборатория, почти стерильно
-## Одежда: лабораторное платье, сгенерированное кодом (tools/garment).
-## false — снять платье, не трогая файлы. Нужно, чтобы посмотреть анатомию,
-## веса или сравнить «до/после».
-static var DRESS_ENABLED := true
-
 static var BRIGHTNESS := 1
 const BRIGHTNESS_NAMES := ["сумрачно", "средне", "ярко"]
 
@@ -101,3 +99,9 @@ const BRIGHTNESS_NAMES := ["сумрачно", "средне", "ярко"]
 const ROOM_WIDTH := 18.0
 const ROOM_DEPTH := 18.0
 const ROOM_HEIGHT := 5.0
+
+
+## Та же кривая пройденного пути, что при авторинге уворота.
+static func dodge_progress(value: float) -> float:
+	var u := clampf(value, 0, 1)
+	return u*u*u*(10.0-15.0*u+6.0*u*u)

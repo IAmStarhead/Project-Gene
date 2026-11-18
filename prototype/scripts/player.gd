@@ -39,6 +39,10 @@ var pitch: float = -14.0                   ## наклон камеры, гра�
 var health: float = T.MAX_HEALTH
 var stamina: float = T.MAX_STAMINA
 
+## Стойка игрока, НЕ переключатель тренировочного клона (он по T).
+## Начинаем с обычного передвижения; удар или полученный урон включают бой.
+var combat_mode := false
+
 var _stamina_cooldown: float = 0.0
 
 # Состояние действия: "" | "attack" | "dodge"
@@ -57,10 +61,12 @@ var _buf_secondary: float = BUF_NEVER   ## ПКМ: удар правой рук�
 var _attack_side: String = "L"
 var _buf_dir: Vector3 = Vector3.ZERO
 
+var _dodge_local_dir := Vector3(0, 0, 1)
 var _dodge_dir: Vector3 = Vector3.ZERO
 var _invulnerable: bool = false
 var _coyote: float = 0.0          ## сколько ещё можно прыгнуть после схода с края
 var _jump_buffer: float = BUF_NEVER
+var _jump_started := false       ## одно физическое обновление: отличаем прыжок от падения
 
 var _targets: Array = []
 var _fps_accum: float = 0.0
@@ -79,6 +85,8 @@ func _ready() -> void:
 	get_tree().current_scene.add_child(rig)
 
 	_refresh_targets()
+	if character != null and character.has_method("reset_motion"):
+		character.reset_motion(combat_mode)
 
 
 func _exit_tree() -> void:
@@ -97,24 +105,33 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_buf_attack = 0.0
-			_attack_side = "L"
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			_buf_secondary = 0.0
-			_attack_side = "R"
 	elif event.is_action_pressed("attack"):
 		_buf_attack = 0.0
-		_attack_side = "L"
 	elif event.is_action_pressed("attack_secondary"):
 		_buf_secondary = 0.0
-		_attack_side = "R"
+	# Сторону фиксируем ТОЛЬКО при старте атаки. Нажатие другой кнопки
+	# в буфер не должно менять уже летящий кулак посреди удара.
 	elif event.is_action_pressed("dodge"):
 		_buf_dodge = 0.0
 		_buf_dir = _input_direction()
 	elif event.is_action_pressed("jump"):
 		_jump_buffer = 0.0
+	elif event.is_action_pressed("toggle_stance"):
+		toggle_combat_mode()
 	elif event.is_action_pressed("toggle_debug_details"):
 		show_details = not show_details
 
+
+func toggle_combat_mode() -> void:
+	# Меняем локомоцию и целевую скорость, но не отменяем действие,
+	# не сбрасываем фазу шага, стамину или вертикальную траекторию.
+	combat_mode = not combat_mode
+
+
+func stance_name() -> String:
+	return "боевой" if combat_mode else "обычный"
 
 
 ## Направление движения в осях КАМЕРЫ. Это и есть стандарт экшенов:
@@ -128,8 +145,9 @@ func _input_direction() -> Vector3:
 
 
 func _physics_process(delta: float) -> void:
+	var previous_position := global_position
+	_jump_started = false
 	_update_buffers(delta)
-	_update_camera(delta)
 	_update_stamina(delta)
 
 	if _action == "dodge":
@@ -139,21 +157,6 @@ func _physics_process(delta: float) -> void:
 	else:
 		_process_move(delta)
 		_try_start_actions()
-
-	# ── Прыжок. ПОЧЕМУ ОН РАНЬШЕ НЕ РАБОТАЛ ────────────────────────────────
-	# Ошибка была не в кнопке и не в буфере, а в порядке строк. Вот что
-	# происходило при нажатии F:
-	#
-	#   1. _try_jump() ставит velocity.y = +7.43 (скорость для высоты 1.15 м);
-	#   2. СЛЕДУЮЩАЯ строка: `elif _action != "dodge": velocity.y = 0.0` —
-	#      персонаж ещё на полу, ветка is_on_floor() ложная? нет, true,
-	#      значит скорость взлёта обнуляется В ТОМ ЖЕ кадре;
-	#   3. move_and_slide() вызывается с нулевой вертикальной скоростью.
-	#
-	# То есть прыжок физически не мог начаться: его гасили через одну строку
-	# после запуска. Теперь «прилипание к полу» выполняется ДО прыжка, а не
-	# после, и прыжок не попадает под него.
-	_update_character_anim(delta)
 
 	# Гравитация разная для подъёма и падения: падать быстрее, чем взлетать, —
 	# так прыжок читается собранным, а не «на луне».
@@ -173,12 +176,17 @@ func _physics_process(delta: float) -> void:
 		_try_jump()
 
 	move_and_slide()
+	# Анимация получает фактическое перемещение и УЖЕ обновлённый пол.
+	# У стены ноги не бегут на месте, взлёт/посадка не запаздывают на кадр.
+	_update_character_anim(delta, global_position - previous_position)
+	_update_camera(delta)
 	_update_debug(delta)
 
 
 ## Прыжок с заданной высоты: скорость = sqrt(2 * g * h).
 func _try_jump() -> void:
 	velocity.y = sqrt(2.0 * T.GRAVITY * T.JUMP_HEIGHT)
+	_jump_started = true
 	_jump_buffer = BUF_NEVER
 	_coyote = 0.0
 
@@ -188,17 +196,26 @@ func _air_control() -> float:
 	return 1.0 if is_on_floor() else T.AIR_CONTROL
 
 
-## Передаёт модели скорость и текущее действие: она считает позу кодом.
-func _update_character_anim(delta: float) -> void:
-	if character != null and character.has_method("update_anim"):
-		var planar := Vector2(velocity.x, velocity.z).length()
-		var ratio := planar / T.RUN_SPEED
-		# в воздухе показываем отдельную позу, если не идёт удар или уворот
-		var act := _action
-		if act == "" and not is_on_floor():
-			act = "air"
-		var side := _attack_side if act == "attack" else ""
-		character.update_anim(delta, ratio, act, _action_time, side)
+## Библиотека общая с витриной и клоном, физика остаётся авторитетной.
+func _update_character_anim(delta: float, displacement: Vector3) -> void:
+	if character != null and character.has_method("update_motion"):
+		var planar := Vector3(displacement.x, 0.0, displacement.z)
+		var local_velocity := character.global_basis.inverse() * (planar / maxf(delta, .001))
+		var floor_distance := -1.0
+		if not is_on_floor() and velocity.y <= 0.0:
+			var query := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP*.06,
+				global_position + Vector3.DOWN*3.0, collision_mask, [get_rid()])
+			var hit := get_world_3d().direct_space_state.intersect_ray(query)
+			if not hit.is_empty():
+				floor_distance = maxf(0.0, global_position.y - (hit["position"] as Vector3).y)
+		character.update_motion(delta, local_velocity, _action, _action_time, _attack_side, {
+			"distance": planar.length(), "grounded": is_on_floor(),
+			"vertical_speed": velocity.y, "jump_started": _jump_started,
+			"floor_distance": floor_distance, "combat": combat_mode,
+			"dodge_direction": _dodge_local_dir,
+			"walk_speed": T.WALK_SPEED, "jog_speed": T.JOG_SPEED, "sprint_speed": T.RUN_SPEED,
+			"attack_timing": Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
+		})
 
 
 func _update_buffers(delta: float) -> void:
@@ -237,14 +254,17 @@ func _spend_stamina(amount: float) -> bool:
 
 func _process_move(delta: float) -> void:
 	var dir := _input_direction()
-	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED
+	# Shift has priority if both modifiers are held. Stance R changes the
+	# pose/guard, not what the player's three movement modifiers mean.
+	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED if Input.is_action_pressed("walk_slow") else T.JOG_SPEED
 	var target := dir * speed
 	var ac := _air_control()
 	var rate := (T.ACCELERATION if dir.length() > 0.0 else T.DECELERATION) * ac
 	velocity.x = move_toward(velocity.x, target.x, rate * delta)
 	velocity.z = move_toward(velocity.z, target.z, rate * delta)
 
-	if dir.length() > 0.0:
+	if dir.length() > 0.0 and _buf_dodge > T.INPUT_BUFFER:
+		# Уворот фиксирует взгляд ДО обычного поворота на ввод.
 		# модель смотрит в +Z, поэтому поворот считается от -Z
 		var want := atan2(-dir.x, -dir.z)
 		rotation.y = lerp_angle(rotation.y, want, min(1.0, delta * T.TURN_SPEED))
@@ -269,15 +289,20 @@ func _try_start_actions() -> void:
 
 
 func _start_dodge() -> void:
+	velocity.x = 0.0
+	velocity.z = 0.0
 	_action = "dodge"
 	_action_time = 0.0
-	# направление: ввод, иначе назад от камеры
-	_dodge_dir = _buf_dir if _buf_dir.length() > 0.0 else _camera_forward()
+	# Ввод задаёт перемещение, но НЕ разворачивает модель. Без ввода —
+	# шаг назад относительно тела, даже если камера смотрит с другой стороны.
+	_dodge_dir = _buf_dir if _buf_dir.length() > 0.0 else global_basis.z
 	_dodge_dir.y = 0.0
 	if _dodge_dir.length() < 0.1:
 		_dodge_dir = _camera_forward()
 	_dodge_dir = _dodge_dir.normalized()
-	rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
+	_dodge_local_dir = character.global_basis.inverse() * _dodge_dir
+	_dodge_local_dir.y = 0.0
+	_dodge_local_dir = _dodge_local_dir.normalized()
 	_invulnerable = false
 
 
@@ -289,12 +314,15 @@ func _camera_forward() -> Vector3:
 
 
 func _process_dodge(delta: float) -> void:
+	var before := T.dodge_progress(_action_time/T.DODGE_DURATION)
 	_action_time += delta
 	_invulnerable = _action_time >= T.DODGE_IFRAMES_START and _action_time <= T.DODGE_IFRAMES_END
-	var t := _action_time / T.DODGE_DURATION
-	var speed_curve := 1.0 - pow(clampf(t, 0.0, 1.0), 1.6)  # быстро в начале, гаснет
-	velocity.x = _dodge_dir.x * T.DODGE_SPEED * speed_curve
-	velocity.z = _dodge_dir.z * T.DODGE_SPEED * speed_curve
+	var after := T.dodge_progress(_action_time/T.DODGE_DURATION)
+	# Integrating the displacement curve exactly avoids FPS-dependent travel
+	# and gives the animator the same root path as its foot contact anchors.
+	var speed := T.DODGE_DISTANCE*(after-before)/maxf(delta, .000001)
+	velocity.x = _dodge_dir.x * speed
+	velocity.z = _dodge_dir.z * speed
 
 	if _action_time >= T.DODGE_DURATION:
 		_action = ""
@@ -311,6 +339,7 @@ func _process_dodge(delta: float) -> void:
 
 
 func _start_attack() -> void:
+	combat_mode = true
 	_action = "attack"
 	_action_time = 0.0
 	_last_hit = ""
@@ -325,13 +354,16 @@ func _attack_phase() -> String:
 
 
 func _process_attack(delta: float) -> void:
+	var previous_time := _action_time
 	_action_time += delta
 	# тормозим на месте во время удара, чтобы удар «весил»
 	velocity.x = move_toward(velocity.x, 0.0, T.DECELERATION * delta)
 	velocity.z = move_toward(velocity.z, 0.0, T.DECELERATION * delta)
 
-	var phase := _attack_phase()
-	if phase == "удар" and _last_hit.is_empty():
+	# Пересечение окна, а не равенство кадру: при просадке FPS нельзя
+	# перескочить активную фазу целиком и потерять удар.
+	if previous_time < T.ATTACK_WINDUP + T.ATTACK_ACTIVE \
+			and _action_time >= T.ATTACK_WINDUP and _last_hit.is_empty():
 		_do_hit()
 
 	# отмена уворотом — только в восстановлении и только если хватает стамины
@@ -406,11 +438,20 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 	if _invulnerable:
 		_last_hit = "увернулся"
 		return
+	combat_mode = true
 	health = max(0.0, health - amount)
+	if character != null and character.has_method("play_hit"):
+		character.play_hit()
 	if health <= 0.0:
 		health = T.MAX_HEALTH
 		stamina = T.MAX_STAMINA
 		global_position = Vector3(0.0, 1.0, 6.0)
+		_action = ""
+		_invulnerable = false
+		velocity = Vector3.ZERO
+		combat_mode = false
+		if character != null and character.has_method("reset_motion"):
+			character.reset_motion(combat_mode)
 		_last_hit = "смерть → респавн"
 
 
@@ -435,7 +476,7 @@ func _update_debug(delta: float) -> void:
 	# Подробности (буферы, цель) включаются клавишей F3 — см. show_details.
 	var lines := [
 		"FPS: %.0f" % _fps,
-		"состояние: %s" % state,
+		"режим: %s [R] · %s" % [stance_name(), state],
 		"здоровье: %.0f   стамина: %.0f" % [health, stamina],
 	]
 	if show_details:

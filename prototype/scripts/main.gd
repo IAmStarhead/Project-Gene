@@ -66,7 +66,7 @@ func _ready() -> void:
 	_hint = Label.new()
 	_hint.add_theme_font_size_override("font_size", 13)
 	_hint.add_theme_color_override("font_color", Color(0.86, 0.90, 0.96))
-	_hint.text = "WASD — идти · Shift — бег · F — прыжок\n" \
+	_hint.text = "WASD — лёгкий бег · L Alt — шаг · Shift — быстрый бег\nF — прыжок\n" \
 		+ "ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот"
 	_hint.add_theme_constant_override("line_spacing", 3)
 	panel.add_child(_hint)
@@ -76,7 +76,7 @@ func _ready() -> void:
 	bar.add_theme_constant_override("separation", 8)
 	bar.position = Vector2(12, 96)
 	layer.add_child(bar)
-	for pair in [["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
+	for pair in [["R", "стойка игрока"], ["H", "ВИТРИНА"], ["B", "яркость"], ["G", "селлшейдинг"], ["T", "бой клона"]]:
 		bar.add_child(_key_badge(pair[0], pair[1]))
 
 	# ── МЕНЮ ПАУЗЫ (Esc). Пользователь просил: из игры перейти в витрину,
@@ -142,6 +142,9 @@ func _unhandled_input(event: InputEvent) -> void:
 ## понятными подписями и без необходимости помнить раскладку.
 func _on_menu_action(id: String) -> void:
 	match id:
+		"stance":
+			if is_instance_valid(player):
+				player.toggle_combat_mode()
 		"showcase":
 			get_tree().change_scene_to_file("res://scenes/showcase.tscn")
 		"brightness":

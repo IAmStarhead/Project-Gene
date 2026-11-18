@@ -1,20 +1,10 @@
 ## Клон героини — тренировочный противник.
 ##
-## Три режима, переключаются клавишей T (и подписью в оверлее):
+## Два режима по T: бой выключен / включён. При включении сближается,
+## бьёт и отступает лицом к игроку. Подготовка длиннее, чем у героини.
 ##
-##   СПИТ    — стоит и не реагирует. Нужен, чтобы тестировать движение,
-##             камеру, прыжок, свет, не отвлекаясь на драку.
-##   СЛЕДИТ  — идёт за героиней, но НЕ бьёт. Можно смотреть, как он
-##             двигается и держит дистанцию.
-##   БЬЁТ     — сближается и атакует. Ведёт себя как противник из соулса:
-##             подходит, держит дистанцию, бьёт, отходит после удара.
-##
-## Почему режимы, а не сразу «агрессивный»: на этапе прототипа нужен
-## противник, которого можно включить и выключить. Иначе он убивает
-## тестировщика в тот момент, когда тот смотрит на текстуру.
-##
-## Модель — та же female_A_rigged_safe.glb, что у героини. Движение
-## считается кодом (scripts/clone_anim.gd), физика — CharacterBody3D.
+## Модель и AnimationLibrary — те же, что у героини; scripts/clone_anim.gd
+## наследует общий проигрыватель. Физика остаётся в CharacterBody3D.
 extends CharacterBody3D
 
 const T := preload("res://scripts/tuning.gd")
@@ -48,6 +38,10 @@ func _ready() -> void:
 	add_to_group("clone")
 	_player = get_tree().get_first_node_in_group("player")
 	_make_label()
+	if character != null and character.has_method("reset_motion"):
+		character.reset_motion(false)
+	if character != null and character.appearance != null:
+		character.appearance.set_variant(true)
 
 
 func _make_label() -> void:
@@ -84,6 +78,7 @@ func mode_name() -> String:
 
 
 func _physics_process(delta: float) -> void:
+	var previous_position := global_position
 	_cooldown = maxf(0.0, _cooldown - delta)
 	_recover = maxf(0.0, _recover - delta)
 	if _last_deal > 0.0:
@@ -107,14 +102,16 @@ func _physics_process(delta: float) -> void:
 	# поворот к направлению движения или к игроку
 	_face(delta)
 
-	if character != null and character.has_method("update_anim"):
-		var planar := Vector2(velocity.x, velocity.z).length()
-		var action := ""
-		var atime := 0.0
-		if _attack_time >= 0.0:
-			action = "attack"
-			atime = _attack_time
-		character.update_anim(delta, planar / T.RUN_SPEED, action, atime, "R")
+	if character != null and character.has_method("update_motion"):
+		var displacement := global_position - previous_position
+		var planar := Vector3(displacement.x, 0.0, displacement.z)
+		var local_velocity := character.global_basis.inverse() * (planar / maxf(delta, .001))
+		var action := "attack" if _attack_time >= 0.0 else ""
+		character.update_motion(delta, local_velocity, action, maxf(_attack_time, 0.0), "R", {
+			"distance": planar.length(), "grounded": is_on_floor(),
+			"vertical_speed": velocity.y, "combat": mode == Mode.ON,
+			"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
+		})
 
 	_update_label()
 
@@ -184,18 +181,26 @@ func _fight(delta: float) -> void:
 
 
 func _deal_damage(dist: float) -> void:
-	if dist > T.CLONE_RANGE:
+	var dir := _dir_to_player().normalized()
+	var forward := -global_basis.z
+	# Тот же прямой кулак, что у игрока: уход за спину должен быть промахом,
+	# особенно после фиксации направления в момент контакта.
+	if dist > T.CLONE_RANGE or dir.is_zero_approx() \
+			or rad_to_deg(forward.angle_to(dir)) > T.ATTACK_ANGLE:
 		_last_deal = 0.0
 		return
 	_last_deal = 1.4
 	if is_instance_valid(_player) and _player.has_method("take_damage"):
-		var dir := _dir_to_player().normalized()
 		_player.take_damage(T.CLONE_DAMAGE, dir)
 
 
 func _face(delta: float) -> void:
 	var look := velocity
-	if mode == Mode.ON and _attack_time >= 0.0:
+	if mode == Mode.ON:
+		# Не доворачиваем уже вылетевший кулак вслед за целью.
+		if _attack_time >= T.CLONE_WINDUP:
+			return
+		# При отходе сохраняем лицо к игроку: анимация шага идёт назад.
 		look = _dir_to_player()
 	if look.length() < 0.05 and is_instance_valid(_player):
 		look = _dir_to_player()
@@ -211,10 +216,17 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		return                      # выключенного не бьют: он для тестов
 	health = maxf(0.0, health - amount)
 	_flash = 1.0
+	if character != null and character.has_method("play_hit"):
+		character.play_hit()
 	if health <= 0.0:
 		health = T.CLONE_HEALTH
 		global_position = Vector3(-3.0, 1.0, -6.0)
 		mode = Mode.OFF
+		_attack_time = -1.0
+		_recover = 0.0
+		velocity = Vector3.ZERO
+		if character != null and character.has_method("reset_motion"):
+			character.reset_motion(false)
 
 
 func _update_label() -> void:

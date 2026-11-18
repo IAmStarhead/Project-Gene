@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#111922" />
+  <title>GEN — лаборатория движения</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <a class="brand" href="./" aria-label="GEN Motion Lab">G<span class="brand-mark">E</span>N<span class="divider"></span><span class="brand-sub">MOTION LAB</span></a>
+    <div class="header-note"><i class="status-dot"></i> ИСХОДНЫЙ РИГ · 21 КОСТЬ <span class="tag">БЕЗ BLENDER</span></div>
+  </header>
+  <main>
+    <aside class="library">
+      <div class="eyebrow">БИБЛИОТЕКА ДВИЖЕНИЙ <span>01 / 01</span></div>
+      <h1>Героиня<span class="accent">.</span></h1>
+      <p class="intro">Новый набор для прототипа Gen.<br>Одна модель. Один источник анимаций.</p>
+      <div class="section-label">ДВИЖЕНИЕ</div><nav id="locomotion" aria-label="Движение"></nav>
+      <div class="section-label">БОЙ</div><nav id="combat" aria-label="Бой"></nav>
+      <div class="section-label">В ВОЗДУХЕ</div><nav id="air" aria-label="Прыжок"></nav>
+      <div class="library-footer"><span class="tiny-square"></span> <span id="clip-count">18 КЛИПОВ</span> <span>60/120 ГЦ</span></div>
+    </aside>
+    <section class="workspace" aria-label="Трёхмерный просмотр анимаций">
+      <div id="viewport"></div>
+      <div class="view-top"><div><div class="eyebrow">ПРОСМОТР АНИМАЦИИ</div><h2 id="clip-title">Спокойная стойка</h2><p id="clip-description"></p></div><span class="view-badge">3D · LIVE</span></div>
+      <div class="view-tools" role="group" aria-label="Ракурс камеры"><button data-view="front" class="active">Спереди</button><button data-view="side">Сбоку</button><button data-view="back">Сзади</button><button data-view="three">¾</button></div>
+      <div class="view-bottom"><span><i class="status-dot"></i> <span id="phase-label">СПОКОЙНАЯ СТОЙКА</span></span><span>ЛКМ — вращать · колесо — масштаб</span></div>
+      <div id="load-state" role="status">Загрузка исходной модели…</div>
+    </section>
+    <aside class="inspector">
+      <div class="eyebrow">ПАРАМЕТРЫ КЛИПА</div>
+      <dl><div><dt>Длительность</dt><dd id="duration">3.20 с</dd></div><div><dt>Режим</dt><dd id="loop">Цикл</dd></div><div><dt>Кадр</dt><dd id="frame">000 / 192</dd></div><div><dt>Дистанция цикла</dt><dd id="stride">—</dd></div></dl>
+      <div class="inspector-rule"></div><div class="eyebrow">ДИАГНОСТИКА</div>
+      <label class="check"><input type="checkbox" id="clothes" checked /><span>Лабораторное платье</span></label>
+      <label class="check"><input type="checkbox" id="skeleton" /><span>Показать скелет</span></label>
+      <label class="check"><input type="checkbox" id="contacts" checked /><span>Опора стоп</span></label>
+      <label class="check"><input type="checkbox" id="trail" /><span>Траектория кулака</span></label>
+      <div class="contact-legend"><i></i> Опора <i></i> Перенос</div>
+      <div class="info-box"><span>ЕДИНЫЙ ИСТОЧНИК</span><p>Здесь — та же модель и те же ключи, что в Godot. Это диагностический просмотрщик, не сборка игры.</p></div>
+      <div class="file-note">female_A_rigged_safe.glb<br>motion_set.tres / json</div>
+    </aside>
+  </main>
+  <footer class="transport">
+    <div class="transport-title"><span class="eyebrow">ВОСПРОИЗВЕДЕНИЕ</span><div><strong id="clip-code">IDLE RELAXED</strong><span id="clip-number">01 / 18</span></div></div>
+    <div class="timeline-area"><div class="timeline-label"><span id="current-time">0.00 с</span><span id="phase-note">Зацикленная анимация</span><span id="end-time">3.20 с</span></div><input id="timeline" type="range" min="0" max="3.2" step="0.001" value="0" aria-label="Время анимации" /><div class="ruler"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+    <div class="play-controls"><div class="buttons"><button id="prev-frame" title="Предыдущий кадр [←]" aria-label="Предыдущий кадр">|‹</button><button id="play" class="play" title="Пуск / пауза [Пробел]" aria-label="Пауза">Ⅱ</button><button id="next-frame" title="Следующий кадр [→]" aria-label="Следующий кадр">›|</button><select id="speed" aria-label="Скорость"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1.0×</option></select></div><span class="keyboard-note">ПРОБЕЛ — ПАУЗА · ← → ПО КАДРАМ</span></div>
+  </footer>
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
