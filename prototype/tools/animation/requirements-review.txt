@@ -1,0 +1,6 @@
+# Optional offline triangle/BVH diagnostics only. NOT needed for Godot/F5,
+# the asset generators, or the standard regression tests.
+-r requirements.txt
+trimesh==5.2.1
+rtree==1.4.1
+python-fcl==0.7.0.11

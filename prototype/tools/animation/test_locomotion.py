@@ -76,8 +76,39 @@ class WholeBodyTests(unittest.TestCase):
             payload = {key: c[key] for key in ['hips', 'times', 'duration', 'loop']}
             payload['rotations'] = [[frame[i] for i in lower] for frame in c['rotations']]
             self.assertEqual(digest(payload), sha, name)
-        unaffected = {name: c for name, c in self.data['clips'].items() if name not in expected}
-        self.assertEqual(digest(unaffected), '7dad74fadf2ebe287aa2940a83dc867fdf7cd564ceec007c0e9739a8f6923aa7')
+        # Garment repair: preserve ALL ordinary keys from 357ec4d, including
+        # the accepted reciprocal arm/head work, and all 10 non-dodge clips.
+        ordinary = {name: self.data['clips'][name] for name in expected}
+        self.assertEqual(digest(ordinary), '6f4f046f014bdff54e43f33cc7457767259e712514d53a2b0289abc8c1a6d3b8')
+        unaffected = {name: c for name, c in self.data['clips'].items()
+                      if name not in expected and not name.startswith('dodge')}
+        self.assertEqual(digest(unaffected), 'f646e6b101a6554464db4c0a320813a9fe1b25980352f6f2bbad9a5aba5f9e9c')
+        # Only the six arm joints of evasion may change. Keep its head,
+        # thorax, pelvis, feet, metadata, contacts and times EXACTLY intact.
+        keep = [i for i, name in enumerate(self.rig.names)
+                if not name.startswith(('upper_arm.', 'forearm.', 'hand.'))]
+        dodges = {}
+        for name, clip in self.data['clips'].items():
+            if name.startswith('dodge'):
+                dodges[name] = clip | {'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
+        self.assertEqual(digest(dodges), 'a12c173f99b7a8dff1a6b131a29c11800e67b3f901e90b50e1d3611d1cc924c3')
+
+    def test_dodge_hands_follow_the_chest_without_folding_into_the_shoulder(self):
+        r = self.rig
+        for name in ['dodge', 'dodge_back', 'dodge_left', 'dodge_right']:
+            for phase in np.linspace(0, 1, 121):
+                g = self.globals(name, phase)
+                inverse = np.linalg.inv(g[r.index['chest']])
+                for side in ['L', 'R']:
+                    shoulder, elbow, wrist = [g[r.index[b+'.'+side], :3, 3]
+                                               for b in ['upper_arm', 'forearm', 'hand']]
+                    upper, fore = elbow-shoulder, wrist-elbow
+                    bend = np.rad2deg(np.arccos(np.clip(np.dot(upper, fore)/np.linalg.norm(upper)/np.linalg.norm(fore), -1, 1)))
+                    self.assertLess(bend, 140, (name, phase, side))
+                    self.assertGreater(np.linalg.norm(wrist-shoulder), .185, 'Former ~4 cm near-singular fold')
+                    tip = wrist+g[r.index['hand.'+side], :3, 1]*.075
+                    self.assertGreater((inverse@np.r_[tip, 1])[2], .18, 'Fist must stay in FRONT of the shoulder/chest')
+
 
     def test_elbows_fold_forward_and_hands_return_towards_the_hip(self):
         r = self.rig

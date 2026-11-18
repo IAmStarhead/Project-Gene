@@ -1,7 +1,8 @@
 ## Shared lab gown, body-safe lightweight skirt and relaxed hands.
 ## Imported GLB stays morph-free: the hand shape is added to an ArrayMesh
 ## AFTER import, using the source model's existing fist/correction targets.
-## 112 cloth points, fixed 60 Hz steps, two constraint passes, body capsules.
+## Tailored continuous shoulders; 32-sided local-contact cloth at fixed 60 Hz.
+## Reuse the dynamic mesh surface instead of recreating it every frame.
 extends Node3D
 
 const DATA_PATH := "res://assets/heroine/appearance/lab_uniform.json"
@@ -22,29 +23,37 @@ var collision_count := 0
 var _hips := -1
 var _hips_inverse_bind: Transform3D
 var _rest := PackedVector3Array()
+var _waist_normals := PackedVector3Array()
 var _points := PackedVector3Array()
 var _previous := PackedVector3Array()
-var _edge_a := PackedInt32Array()
-var _edge_b := PackedInt32Array()
-var _edge_length := PackedFloat32Array()
-var _edge_strength := PackedFloat32Array()
+var _radial := PackedVector3Array()
+var _rest_radius := PackedFloat32Array()
+var _goal_radii := PackedFloat32Array()
+var _cell_centers := PackedVector3Array()
+var _cells := PackedInt32Array()
+var _sample_heights := PackedFloat32Array()
+var _sample_directions := PackedVector2Array()
+var _sample_base := PackedFloat32Array()
 var _goals := PackedVector3Array()
 var _hips_transform: Transform3D
 var _hips_inverse: Transform3D
-var _thickness := .018
-var _surface_margin := .018
-var _max_secondary := .045
+var _thickness := .004
+var _surface_margin := .014
+var _max_secondary := .025
 var _capsules: Array = []
-var _capsule_world: Array = []
-var _segments := 16
-var _rings := 7
-var _iterations := 2
+var _capsule_local: Array = []
+var _segments := 32
+var _rings := 10
 var _accumulator := 0.0
 var _last_origin := Vector3.ZERO
 var _material: StandardMaterial3D
 var _skirt_indices := PackedInt32Array()
 var _skirt_colors := PackedColorArray()
 var _skirt_mesh := ArrayMesh.new()
+var _vertex_bytes := PackedByteArray()
+var _normal_offset := 0
+var _normal_stride := 0
+var _tangent_offset := 0
 var _floor_points := PackedVector3Array()
 var _floor_joints := PackedInt32Array()
 var _floor_weights := PackedFloat32Array()
@@ -91,23 +100,24 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	skirt.mesh = _skirt_mesh
 	skirt.material_override = _material
 	skirt.set_meta("textile", true)
+	skirt.custom_aabb = AABB(Vector3(-1, -.3, -1), Vector3(2, 2.6, 2.3))
 	add_child(skirt)
+	for normal in _data["gown"]["waist_normals"]:
+		_waist_normals.append(_vector(normal))
 	var cloth: Dictionary = _data["cloth"]
 	_segments = int(cloth["segments"])
 	_rings = int(cloth["rings"])
-	_iterations = int(cloth["iterations"])
 	for value in cloth["positions"]:
-		_rest.append(_vector(value))
-	for edge in cloth["edges"]:
-		_edge_a.append(int(edge[0]))
-		_edge_b.append(int(edge[1]))
-		_edge_length.append(float(edge[2]))
-		_edge_strength.append(float(edge[3]))
+		var point := _vector(value)
+		_rest.append(point)
+		var radial := Vector3(point.x, 0, point.z-.02)
+		_rest_radius.append(radial.length())
+		_radial.append(radial.normalized())
 	_thickness = float(cloth["thickness"])
 	_surface_margin = float(cloth["surface_margin"])
 	_max_secondary = float(cloth["max_secondary_offset"])
 	for item in cloth["capsules"]:
-		_capsules.append([skeleton.find_bone(item[0]), skeleton.find_bone(item[1]), float(item[2])])
+		_capsules.append([skeleton.find_bone(item[0]), skeleton.find_bone(item[1]), float(item[2]), float(item[3])])
 	_hips = skeleton.find_bone("hips")
 	# Bind transforms come from the same source as the animation author, not
 	# an assumption about Godot's imported rest normalization.
@@ -118,8 +128,19 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 			var a := row*_segments+k
 			var b := row*_segments+(k+1)%_segments
 			_skirt_indices.append_array(PackedInt32Array([a, b, a+_segments, b, b+_segments, a+_segments]))
+			_cells.append_array(PackedInt32Array([a, b, a+_segments, b+_segments]))
+			_cell_centers.append((_rest[a]+_rest[b]+_rest[a+_segments]+_rest[b+_segments])*.25)
 	for i in _rest.size():
 		_skirt_colors.append(Color(_data["cloth"]["binding"][0], _data["cloth"]["binding"][1], _data["cloth"]["binding"][2]) if i/_segments == _rings-1 else Color(_data["cloth"]["fabric"][0], _data["cloth"]["fabric"][1], _data["cloth"]["fabric"][2]))
+	# Interleave node rows and half-cell rows; fixed ray directions are
+	# cached once. Capsule coefficients then need computing only per ROW.
+	for row in _rings*2-1:
+		var source_row := row/2
+		_sample_heights.append(_rest[source_row*_segments].y if row%2 == 0 else _cell_centers[source_row*_segments].y)
+		for k in _segments:
+			var point := _rest[source_row*_segments+k] if row%2 == 0 else _cell_centers[source_row*_segments+k]
+			_sample_directions.append(Vector2(point.x, point.z-.02).normalized())
+			_sample_base.append(0.0)
 	reset_cloth()
 
 
@@ -170,23 +191,31 @@ static func _hand_row(point: Vector3, normal: Vector3) -> Array:
 
 static func covered(point: Vector3, bones: PackedInt32Array, weights: PackedFloat32Array,
 		index: int, names: Array) -> bool:
-	# Cull only skin actually inside the sewn cap sleeve. The old axial-only
-	# mask left mixed chest/arm axilla triangles drawing THROUGH the fabric.
-	for sleeve in _data["coverage"]["sleeves"]:
-		var relative := point-_vector(sleeve["origin"])
-		var axis := _vector(sleeve["axis"])
+	# Keep continuous shoulder/arm skin UNDER the tailored sleeve. The old
+	# cylinder mask cut a real hole visible through its wide open cuff.
+	# Only the closed proximal axilla is culled. Its cutoff is 53 mm INSIDE
+	# the cuff, not the former broad .14 m shoulder/arm amputation cylinder.
+	for core in _data["coverage"]["underarm_cores"]:
+		var relative := point-_vector(core["origin"])
+		var axis := _vector(core["axis"])
 		var along := relative.dot(axis)
-		if along >= float(sleeve["start"]) and along <= float(sleeve["end"]) \
-				and (relative-axis*along).length() < float(sleeve["radius"]):
+		if along >= float(core["start"]) and along <= float(core["end"]) \
+				and (relative-axis*along).length() < float(core["radius"]):
 			return true
 	if point.y < .74 or point.y > 1.355:
 		return false
 	var axial := 0.0
+	var arm := 0.0
 	for k in 4:
 		var name: String = names[bones[index*4+k]]
+		var weight := weights[index*4+k]
 		if name in ["hips", "spine", "chest", "neck"] or name.begins_with("thigh."):
-			axial += weights[index*4+k]
-	return axial > .80
+			axial += weight
+		if name.begins_with("upper_arm.") or name.begins_with("forearm.") \
+				or name.begins_with("hand.") or name.begins_with("shoulder."):
+			arm += weight
+	return axial > .80 and arm < float(_data["coverage"]["arm_weight_threshold"])
+
 
 
 func _body_with_relaxed_hands(source: Mesh) -> ArrayMesh:
@@ -260,7 +289,14 @@ static func _build_gown_mesh() -> ArrayMesh:
 	arrays[Mesh.ARRAY_TEX_UV] = uv
 	arrays[Mesh.ARRAY_BONES] = joints
 	arrays[Mesh.ARRAY_WEIGHTS] = weights
-	arrays[Mesh.ARRAY_INDEX] = PackedInt32Array(source["indices"])
+	# Authoring/Three use GLTF CCW; native ArrayMesh front faces are CW.
+	# Keep the OUTWARD normals, reverse winding only at this boundary.
+	var indices := PackedInt32Array(source["indices"])
+	for i in range(0, indices.size(), 3):
+		var temp := indices[i+1]
+		indices[i+1] = indices[i+2]
+		indices[i+2] = temp
+	arrays[Mesh.ARRAY_INDEX] = indices
 	var result := ArrayMesh.new()
 	result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return result
@@ -331,12 +367,13 @@ func reset_cloth() -> void:
 func _update_colliders() -> void:
 	_hips_transform = actor.global_transform*skeleton.get_bone_global_pose(_hips)*_hips_inverse_bind
 	_hips_inverse = _hips_transform.affine_inverse()
-	_capsule_world.clear()
+	_capsule_local.clear()
 	for capsule in _capsules:
-		var a := actor.global_transform*skeleton.get_bone_global_pose(capsule[0]).origin
-		var b := actor.global_transform*skeleton.get_bone_global_pose(capsule[1]).origin
+		var a := _hips_inverse*(actor.global_transform*skeleton.get_bone_global_pose(capsule[0]).origin)
+		var b := _hips_inverse*(actor.global_transform*skeleton.get_bone_global_pose(capsule[1]).origin)
+		a = a.lerp(b, capsule[3])
 		var axis := b-a
-		_capsule_world.append([a, b, axis, axis.length_squared(), capsule[2]+_thickness+_surface_margin])
+		_capsule_local.append([a, b, axis, axis.length_squared(), capsule[2]+_thickness+_surface_margin])
 
 
 static func _sphere_far(origin: Vector3, direction: Vector3, center: Vector3, radius: float) -> float:
@@ -362,66 +399,124 @@ static func _capsule_far(origin: Vector3, direction: Vector3, capsule: Array) ->
 	var bb := length_squared*direction.dot(relative)-projected_origin*projected_direction
 	var cc := length_squared*(relative.length_squared()-radius*radius)-projected_origin*projected_origin
 	var determinant := bb*bb-aa*cc
-	var result := maxf(_sphere_far(origin, direction, a, radius),
-		_sphere_far(origin, direction, capsule[1], radius))
-	if aa > .000001 and determinant >= 0.0:
+	if aa > .000001:
+		# The end spheres lie INSIDE the infinite cylinder. A ray missing
+		# that cylinder cannot hit either sphere; most skirt rays miss.
+		if determinant < 0.0:
+			return -1.0
 		var far := (-bb+sqrt(determinant))/aa
+		if far <= 0.0:
+			return -1.0
 		var at := projected_origin+far*projected_direction
 		if at >= 0.0 and at <= length_squared:
-			result = maxf(result, far)
-	return result
+			return far
+		return _sphere_far(origin, direction, a if at < 0.0 else capsule[1], radius)
+	return maxf(_sphere_far(origin, direction, a, radius),
+		_sphere_far(origin, direction, capsule[1], radius))
 
 
-func _collide(point: Vector3) -> Vector3:
-	# Project OUTSIDE the whole body envelope, not to the nearer/inside side
-	# of either thigh. Ordinary nearest-capsule projection can push a skirt
-	# particle between the legs and let an entire knee poke through a face.
-	var local := _hips_inverse*point
-	var radial := Vector3(local.x, 0, local.z-.02)
-	var distance := radial.length()
-	if distance < .00001:
-		radial = Vector3.FORWARD
-	else:
-		radial /= distance
-	var origin := _hips_transform*Vector3(0, local.y, .02)
-	var direction := _hips_transform.basis*radial
+func _surface_minimum(local: Vector3) -> float:
+	# All rays and colliders share HIP coordinates. In particular ray.y == 0:
+	# no per-vertex world/inverse transform and a tight vertical broad phase.
+	var radial := Vector3(local.x, 0, local.z-.02).normalized()
+	var origin := Vector3(0, local.y, .02)
 	var minimum := 0.0
 	var dy := (local.y-.89)/.145
 	if absf(dy) < 1.0:
-		minimum = sqrt((1.0-dy*dy)/(radial.x*radial.x/(.202*.202)+radial.z*radial.z/(.137*.137)))
-	for capsule in _capsule_world:
-		minimum = maxf(minimum, _capsule_far(origin, direction, capsule))
-	# Tiny contact slop survives world/hips round trips in native float32.
-	if distance < minimum+.0001:
-		collision_count += 1
-		return origin+direction*(minimum+.0001)
-	return point
+		minimum = sqrt((1.0-dy*dy)/(radial.x*radial.x/(.187*.187)+radial.z*radial.z/(.124*.124)))
+	for capsule in _capsule_local:
+		minimum = maxf(minimum, _capsule_far(origin, radial, capsule))
+	return minimum
 
 
 func _fit_goals() -> void:
-	_goals.clear()
-	var radii := PackedFloat32Array()
-	for i in _rest.size():
-		var point := _hips_transform*_rest[i]
-		point = point if i < _segments else _collide(point)
-		var local := _hips_inverse*point
-		radii.append(Vector2(local.x, local.z-.02).length())
-	# Conservative low-resolution surface: spread a knee's local bulge to
-	# neighbouring cells instead of a single spike between inverted rings.
+	# Same analytic ray/capsule intersection as _capsule_far, batched by
+	# horizontal row: no thousands of GDScript calls / temporary Vector3s.
+	var samples := _sample_base.duplicate()
+	for row in _sample_heights.size():
+		var dy := (_sample_heights[row]-.89)/.145
+		if absf(dy) < 1.0:
+			for k in _segments:
+				var i := row*_segments+k
+				var d := _sample_directions[i]
+				samples[i] = maxf(samples[i], sqrt((1.0-dy*dy)/(d.x*d.x/(.187*.187)+d.y*d.y/(.124*.124))))
+	for capsule in _capsule_local:
+		var a: Vector3 = capsule[0]
+		var b: Vector3 = capsule[1]
+		var axis: Vector3 = capsule[2]
+		var length_squared: float = capsule[3]
+		var radius: float = capsule[4]
+		var ra_x := -a.x
+		var ra_z := .02-a.z
+		var rb_x := -b.x
+		var rb_z := .02-b.z
+		for row in _sample_heights.size():
+			var y := _sample_heights[row]
+			if y < minf(a.y, b.y)-radius or y > maxf(a.y, b.y)+radius:
+				continue
+			var ra_y := y-a.y
+			var rb_y := y-b.y
+			var projected_origin := ra_x*axis.x+ra_y*axis.y+ra_z*axis.z
+			var sphere_a := radius*radius-ra_x*ra_x-ra_y*ra_y-ra_z*ra_z
+			var sphere_b := radius*radius-rb_x*rb_x-rb_y*rb_y-rb_z*rb_z
+			var cc := -length_squared*sphere_a-projected_origin*projected_origin
+			for k in _segments:
+				var i := row*_segments+k
+				var d := _sample_directions[i]
+				var projected_direction := axis.x*d.x+axis.z*d.y
+				var along := ra_x*d.x+ra_z*d.y
+				var aa := length_squared-projected_direction*projected_direction
+				var bb := length_squared*along-projected_origin*projected_direction
+				var far := -1.0
+				if aa > .000001:
+					var determinant := bb*bb-aa*cc
+					if determinant < 0.0:
+						continue
+					far = (-bb+sqrt(determinant))/aa
+					if far <= 0.0:
+						continue
+					var at := projected_origin+far*projected_direction
+					if at < 0.0 or at > length_squared:
+						if at > length_squared:
+							along -= projected_direction
+						var disc := along*along+(sphere_a if at < 0.0 else sphere_b)
+						far = -along+sqrt(disc) if disc >= 0.0 else -1.0
+				else:
+					var disc_a := along*along+sphere_a
+					var along_b := along-projected_direction
+					var disc_b := along_b*along_b+sphere_b
+					far = maxf(-along+sqrt(disc_a) if disc_a >= 0.0 else -1.0, -along_b+sqrt(disc_b) if disc_b >= 0.0 else -1.0)
+				samples[i] = maxf(samples[i], far)
+	_goal_radii = _rest_radius.duplicate()
+	for row in range(1, _rings):
+		for k in _segments:
+			var i := row*_segments+k
+			_goal_radii[i] = maxf(_goal_radii[i], samples[row*2*_segments+k]+.0001)
+			if _goal_radii[i] > _rest_radius[i]+.00001:
+				collision_count += 1
+	# Half-cell contact supports all corners of the displayed triangles.
+	var factor := 1.0/cos(PI/_segments)
+	for row in _rings-1:
+		for k in _segments:
+			var minimum := samples[(row*2+1)*_segments+k]*factor+.0015
+			if row == 0:
+				minimum = maxf(minimum, 2.0*minimum-(_rest_radius[k]+_rest_radius[(k+1)%_segments])*.5)
+			var cell := row*_segments+k
+			for corner in 4:
+				var i := _cells[cell*4+corner]
+				if i >= _segments:
+					_goal_radii[i] = maxf(_goal_radii[i], minimum)
+	# Local bend only: no max-dilation around half the skirt / down to the hem.
 	for iteration in 2:
-		var source := radii.duplicate()
+		var source := _goal_radii.duplicate()
 		for row in range(1, _rings):
 			for k in _segments:
 				var i := row*_segments+k
-				var radius := maxf(source[i], maxf(source[row*_segments+(k+1)%_segments], source[row*_segments+(k+_segments-1)%_segments])-.045)
-				if row > 1:
-					radius = maxf(radius, source[i-_segments]-absf(_rest[i].y-_rest[i-_segments].y)*.9)
-				if row < _rings-1:
-					radius = maxf(radius, source[i+_segments]-absf(_rest[i].y-_rest[i+_segments].y)*.9)
-				radii[i] = radius
+				_goal_radii[i] = maxf(source[i], source[row*_segments+(k+_segments-1)%_segments]*.18+source[i]*.64+source[row*_segments+(k+1)%_segments]*.18)
+	_goals.resize(_rest.size())
 	for i in _rest.size():
-		var radial := Vector3(_rest[i].x, 0, _rest[i].z-.02).normalized()
-		_goals.append(_hips_transform*Vector3(radial.x*radii[i], _rest[i].y, .02+radial.z*radii[i]))
+		var radial := _radial[i]*_goal_radii[i]
+		_goals[i] = _hips_transform*Vector3(radial.x, _rest[i].y, .02+radial.z)
 
 
 func update_pose(delta: float, grounded: bool = true) -> void:
@@ -440,24 +535,9 @@ func update_pose(delta: float, grounded: bool = true) -> void:
 				_points[i] = _goals[i]
 				_previous[i] = _goals[i]
 				continue
-			var velocity := (_points[i]-_previous[i])*.985
+			var velocity := (_points[i]-_previous[i])*.92
 			_previous[i] = _points[i]
 			_points[i] += velocity+((_goals[i]-_points[i])*65.0+Vector3.DOWN*3.0)*STEP*STEP
-		for iteration in _iterations:
-			for edge in _edge_a.size():
-				var a := _edge_a[edge]
-				var b := _edge_b[edge]
-				var difference := _points[b]-_points[a]
-				var length := difference.length()
-				var error := length-_edge_length[edge]
-				var correction := difference*(error/maxf(length, .00001))*_edge_strength[edge]
-				if error < 0:
-					correction *= .18
-				var wa := 0.0 if a < _segments else 1.0
-				var wb := 0.0 if b < _segments else 1.0
-				if wa+wb > 0:
-					_points[a] += correction*wa/(wa+wb)
-					_points[b] -= correction*wb/(wa+wb)
 		_project_points(grounded)
 	if not stepped:
 		# The body can change pose at 120/144 FPS even between 60 Hz cloth
@@ -475,9 +555,8 @@ func _project_points(grounded: bool) -> void:
 	# turn two rows inside-out or wrap the hem twice around the same knee.
 	for i in range(_segments, _points.size()):
 		var local := _hips_inverse*_points[i]
-		var radial := Vector3(_rest[i].x, 0, _rest[i].z-.02).normalized()
-		var goal := _hips_inverse*_goals[i]
-		var minimum := Vector2(goal.x, goal.z-.02).length()
+		var radial := _radial[i]
+		var minimum := _goal_radii[i]
 		var radius := clampf(Vector3(local.x, 0, local.z-.02).dot(radial), minimum, minimum+_max_secondary)
 		_points[i] = _hips_transform*Vector3(radial.x*radius, _rest[i].y, .02+radial.z*radius)
 		if grounded:
@@ -487,11 +566,11 @@ func _project_points(grounded: bool) -> void:
 func collision_gap() -> float:
 	var gap := INF
 	for i in range(_segments, _points.size()):
-		for capsule in _capsule_world:
+		for capsule in _capsule_local:
 			var a: Vector3 = capsule[0]
 			var axis: Vector3 = capsule[2]
-			var nearest := a+axis*clampf((_points[i]-a).dot(axis)/maxf(axis.length_squared(), .00001), 0, 1)
-			gap = minf(gap, _points[i].distance_to(nearest)-float(capsule[4]))
+			var nearest := a+axis*clampf((_hips_inverse*_points[i]-a).dot(axis)/maxf(axis.length_squared(), .00001), 0, 1)
+			gap = minf(gap, (_hips_inverse*_points[i]).distance_to(nearest)-float(capsule[4]))
 	return gap
 
 
@@ -509,22 +588,50 @@ func _upload_skirt() -> void:
 	for point in _points:
 		vertices.append(inverse*point)
 	var normals := PackedVector3Array()
+	var tangents := PackedVector3Array()
 	normals.resize(vertices.size())
-	for i in range(0, _skirt_indices.size(), 3):
-		var a := _skirt_indices[i]
-		var b := _skirt_indices[i+1]
-		var c := _skirt_indices[i+2]
-		var normal := (vertices[b]-vertices[a]).cross(vertices[c]-vertices[a])
-		normals[a] += normal
-		normals[b] += normal
-		normals[c] += normal
+	tangents.resize(vertices.size())
+	# Central differences on the fixed textile grid are smooth and O(vertices),
+	# instead of accumulating every triangle in script on every frame.
+	for row in _rings:
+		for k in _segments:
+			var i := row*_segments+k
+			var tangent := vertices[row*_segments+(k+1)%_segments]-vertices[row*_segments+(k+_segments-1)%_segments]
+			var vertical := vertices[mini(row+1, _rings-1)*_segments+k]-vertices[maxi(row-1, 0)*_segments+k]
+			normals[i] = vertical.cross(tangent).normalized()
+			if row == 0:
+				# Identical to the hips-skinned bodice's pinned seam normal;
+				# no independent lighting crease that reads as a grey belt.
+				normals[i] = (inverse.basis*_hips_transform.basis*_waist_normals[k]).normalized()
+			tangents[i] = tangent.slide(normals[i]).normalized()
+	if _skirt_mesh.get_surface_count() == 0:
+		var arrays: Array = []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		arrays[Mesh.ARRAY_NORMAL] = normals
+		arrays[Mesh.ARRAY_COLOR] = _skirt_colors
+		arrays[Mesh.ARRAY_INDEX] = _skirt_indices
+		_skirt_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE)
+		var format := _skirt_mesh.surface_get_format(0)
+		_normal_offset = RenderingServer.mesh_surface_get_format_offset(format, vertices.size(), Mesh.ARRAY_NORMAL)
+		_normal_stride = RenderingServer.mesh_surface_get_format_normal_tangent_stride(format, vertices.size())
+		_tangent_offset = RenderingServer.mesh_surface_get_format_offset(format, vertices.size(), Mesh.ARRAY_TANGENT)
+	# Godot automatically adds tangents when normals are present. Query its
+	# actual offsets/stride: assuming a 4-byte normal-only stream corrupts
+	# every second normal/tangent (the real normal+tangent stride is 8).
+	_vertex_bytes = vertices.to_byte_array()
+	_vertex_bytes.resize(_normal_offset+_normal_stride*vertices.size())
 	for i in normals.size():
-		normals[i] = normals[i].normalized()
-	var arrays: Array = []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
-	arrays[Mesh.ARRAY_NORMAL] = normals
-	arrays[Mesh.ARRAY_COLOR] = _skirt_colors
-	arrays[Mesh.ARRAY_INDEX] = _skirt_indices
-	_skirt_mesh.clear_surfaces()
-	_skirt_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var encoded := normals[i].octahedron_encode()
+		_vertex_bytes.encode_u16(_normal_offset+i*_normal_stride, int(clampf(encoded.x*65535.0, 0, 65535)))
+		_vertex_bytes.encode_u16(_normal_offset+i*_normal_stride+2, int(clampf(encoded.y*65535.0, 0, 65535)))
+		var tangent := tangents[i].octahedron_encode()
+		# Native octahedron_tangent_encode with positive handedness.
+		tangent.y = maxf(tangent.y, 1.0/32767.0)*.5+.5
+		var tx := int(clampf(tangent.x*65535.0, 0, 65535))
+		var ty := int(clampf(tangent.y*65535.0, 0, 65535))
+		if tx == 0 and ty == 65535:
+			tx = 65535  # Godot's reserved compressed-tangent sentinel.
+		_vertex_bytes.encode_u16(_tangent_offset+i*_normal_stride, tx)
+		_vertex_bytes.encode_u16(_tangent_offset+i*_normal_stride+2, ty)
+	_skirt_mesh.surface_update_vertex_region(0, 0, _vertex_bytes)

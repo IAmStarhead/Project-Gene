@@ -52,7 +52,8 @@ class AppearanceTests(unittest.TestCase):
     def test_gown_is_geometry_with_normalized_skeleton_weights(self):
         gown = self.data['gown']
         p, n, j, w = [np.asarray(gown[k]) for k in ['positions', 'normals', 'joints', 'weights']]
-        self.assertGreater(len(p), 800)
+        self.assertGreater(len(p), 3000)
+        self.assertLess(len(p), 5000, 'Tailored mesh stays small enough for both actors')
         self.assertTrue(np.isfinite(p).all() and np.isfinite(n).all())
         self.assertGreaterEqual(w.min(), 0)
         self.assertLess(j.max(), len(self.rig.names))
@@ -64,52 +65,69 @@ class AppearanceTests(unittest.TestCase):
         self.assertLess(triangles.max(), len(p))
         area = np.linalg.norm(np.cross(p[triangles[:, 1]]-p[triangles[:, 0]],
                                       p[triangles[:, 2]]-p[triangles[:, 0]]), axis=1)
-        self.assertGreater(area.min(), 1e-7)
+        # Cutting a dense source triangle at a plane can leave valid tiny
+        # slivers. The former coarse-ring 1e-7 bound does not apply; retain
+        # strict nonzero area plus unit-normal/manifold/boundary tests.
+        self.assertGreater(area.min(), 1e-10)
 
     def test_bodice_and_cloth_have_the_same_pinned_waist_seam(self):
         gown, cloth = self.data['gown'], self.data['cloth']
         n, segments = gown['waist_vertices'], cloth['segments']
         rim = np.asarray(cloth['positions'])[:segments]
+        seam_normals = np.asarray(gown['waist_normals'])
+        self.assertEqual(seam_normals.shape, (segments, 3))
+        np.testing.assert_allclose(np.linalg.norm(seam_normals, axis=1), 1, atol=1e-6)
         bodice = np.asarray(gown['positions'])[:n]
-        for k in range(n):
-            at = k/n*segments
+        for k, at in enumerate(gown['waist_cloth_samples']):
             lo = int(at)
             expected = rim[lo]*(1-(at-lo))+rim[(lo+1)%segments]*(at-lo)
             np.testing.assert_allclose(bodice[k], expected, atol=1e-7)
+            normal = seam_normals[lo]*(1-(at-lo))+seam_normals[(lo+1)%segments]*(at-lo)
+            normal /= np.linalg.norm(normal)
+            np.testing.assert_allclose(gown['normals'][k], normal, atol=1e-6,
+                                       err_msg='Pinned seam lighting must match, not read as a separate grey belt')
         np.testing.assert_allclose(np.asarray(gown['weights'])[:n, 0], 1)
         self.assertTrue(np.all(np.asarray(gown['joints'])[:n, 0] == self.rig.index['hips']))
 
-    def test_armpits_are_sewn_not_overlapping_unconnected_sleeves(self):
+    def test_continuous_shoulders_have_no_unsewn_armhole_edges(self):
         from collections import Counter
+        from scipy.sparse import coo_matrix
+        from scipy.sparse.csgraph import connected_components
         gown = self.data['gown']
         tri = np.asarray(gown['indices']).reshape(-1, 3)
         edges = Counter(tuple(sorted((a, b))) for t in tri for a, b in zip(t, np.roll(t, -1)))
-        self.assertEqual(len(gown['armhole_edges']), 52)
-        self.assertTrue(all(edges[tuple(sorted(edge))] == 2 for edge in gown['armhole_edges']),
-                        'Each armhole edge must have a real sleeve face on the other side')
-        # Both sleeves and the torso are one connected garment surface, not
-        # three floating tubes. The remaining components are the badge layers.
-        from scipy.sparse import coo_matrix
-        from scipy.sparse.csgraph import connected_components
+        self.assertTrue(all(count in [1, 2] for count in edges.values()), 'No non-manifold textile edges')
+        # Cuff/neck outer edges are sewn to turned facings, not left as
+        # independent, open overlapping tubes. Their INNER ends remain open.
+        self.assertGreater(len(gown['cuff_edges']), 60)
+        for edge in gown['cuff_edges']+gown['neck_edges']:
+            self.assertEqual(edges[tuple(sorted(edge))], 2)
         pairs = np.array(list(edges))
         graph = coo_matrix((np.ones(len(pairs)), pairs.T), shape=(len(gown['positions']),)*2)
         count, labels = connected_components(graph, directed=False)
-        sizes = np.bincount(labels)
-        self.assertEqual((sizes > 100).sum(), 1)
-        self.assertEqual(count, 4)
+        self.assertEqual((np.bincount(labels) > 1000).sum(), 1)
+        self.assertEqual(count, 4, 'One connected bodice+sleeves and three small badge layers')
+        boundary = np.array([edge for edge, count in edges.items() if count == 1])
+        graph = coo_matrix((np.ones(len(boundary)), boundary.T), shape=(len(gown['positions']),)*2)
+        _, labels = connected_components(graph, directed=False)
+        self.assertEqual(len(np.unique(labels[boundary.ravel()])), 7,
+                         'Only waist, neck facing, two cuff facings, and three badge outlines are open')
         fabric = np.asarray(self.data['cloth']['fabric'])
         self.assertGreater(fabric.min(), .75)
-        self.assertLess(np.ptp(fabric), .04, 'Requested white/light grey, not the former blue gown')
+        self.assertLess(np.ptp(fabric), .04)
+        self.assertGreater(min(self.data['cloth']['binding']), .60, 'No near-black collar/binding')
 
-    def test_underarm_occlusion_is_confined_inside_the_real_short_sleeves(self):
-        for sleeve in self.data['coverage']['sleeves']:
-            axis = np.asarray(sleeve['axis'])
-            self.assertAlmostEqual(np.linalg.norm(axis), 1)
-            self.assertLess(sleeve['start'], 0)
-            self.assertLess(sleeve['end'], .16, 'Bare arm must begin inside, not beyond, the cuff')
-            self.assertGreater(sleeve['end'], .12)
-            self.assertLess(sleeve['radius'], .13)
-            self.assertGreater(sleeve['radius'], .09)
+    def test_underarm_mask_stops_well_inside_the_tailored_cuff(self):
+        coverage = self.data['coverage']
+        self.assertTrue(coverage['preserve_limbs'])
+        self.assertEqual(coverage['sleeves'], [], 'The broad legacy sleeve cylinders must not be used')
+        self.assertEqual(len(coverage['underarm_cores']), 2)
+        for core in coverage['underarm_cores']:
+            self.assertAlmostEqual(np.linalg.norm(core['axis']), 1)
+            self.assertLessEqual(core['end'], .11)
+            self.assertLessEqual(core['radius'], .085)
+            self.assertGreaterEqual(core['cuff']-core['end'], .05,
+                                    'At least 5 cm of real skin overlap behind the cuff, not an amputated edge')
 
     def test_reduced_sole_probes_are_real_mesh_vertices_and_cover_blends(self):
         from test_motion_set import sample
@@ -148,23 +166,29 @@ class AppearanceTests(unittest.TestCase):
                     largest_error = max(largest_error, reduced-actual)
         self.assertLess(largest_error, .0007, 'Runtime 1 mm lift must cover the full sole too')
 
-    def test_cloth_is_small_finite_and_has_real_body_colliders(self):
+    def test_cloth_is_bounded_and_samples_surface_contacts(self):
         cloth = self.data['cloth']
         p = np.asarray(cloth['positions'])
-        self.assertEqual(p.shape, (112, 3))
+        self.assertEqual(p.shape, (320, 3))
         self.assertEqual(len(p), cloth['rings']*cloth['segments'])
-        self.assertLessEqual(cloth['max_secondary_offset'], .07)
-        self.assertEqual(cloth['iterations'], 2)
-        for a, b, length, stiffness in cloth['edges']:
-            self.assertGreater(length, .001)
-            self.assertGreater(stiffness, 0)
-            self.assertLessEqual(stiffness, 1)
-            self.assertAlmostEqual(length, np.linalg.norm(p[a]-p[b]), places=6)
+        self.assertEqual(cloth['segments'], 32, 'No old 16-sided umbrella')
+        self.assertLessEqual(cloth['max_secondary_offset'], .025)
+        self.assertEqual(cloth['solver'], 'bounded_radial_surface_v2')
+        self.assertTrue(cloth['surface_samples'], 'Contact at half cells, not just particles')
+        self.assertEqual(cloth['iterations'], 0, 'Do not solve then discard edge constraints in a radial shell')
+        self.assertEqual(cloth['edges'], [])
+        self.assertGreaterEqual(p[0, 1], 1.0, 'Waist must be above the flexed upper thigh / knee')
+        self.assertAlmostEqual(p[-1, 1], .543)
+        self.assertLess(np.max(np.linalg.norm(p[:, [0, 2]], axis=1)), .24)
         self.assertEqual(len(cloth['capsules']), 4)
-        for a, b, radius in cloth['capsules']:
+        for a, b, radius, start in cloth['capsules']:
             self.assertIn(a, self.rig.names)
             self.assertIn(b, self.rig.names)
             self.assertGreater(radius, .05)
+            self.assertGreaterEqual(start, 0)
+            self.assertLess(start, .3)
+        self.assertTrue(all(c[3] >= .15 for c in cloth['capsules'][:2]),
+                        'No false hip-end sphere expanding the skirt into the idle forearms')
 
 
 if __name__ == '__main__':

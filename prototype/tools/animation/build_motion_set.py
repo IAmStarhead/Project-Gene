@@ -275,6 +275,11 @@ def dodge_progress(value):
     return u**3*(10-15*u+6*u*u)
 
 
+@lru_cache(maxsize=4)
+def _guard_chest_inverse(rig):
+    return np.linalg.inv(body(rig).world('chest'))
+
+
 def dodge(rig, t, direction=(0, 1)):
     # Game-reference quickstep: load -> push -> short flight -> catch ->
     # recover. The old 26 cm shuffle was unrelated to a 1.4 m root slide.
@@ -304,14 +309,18 @@ def dodge(rig, t, direction=(0, 1)):
         p.foot(side, [sign*(.125 if side == 'L' else .135)+dx*travel,
                       .08+lift, z+dz*travel], pitch=pitch, yaw=yaw,
                pivot=False, toe_pitch=pitch if 0 < u < 1 else min(pitch, 0))
-        wrist = np.array([.145, 1.295, .265] if side == 'L' else [-.145, 1.305, .205])
-        if lateral:
-            wrist += load*np.array([dx*(.09 if first else .025), -.13 if first else .025, -.05 if first else .13])
-        else:
-            wrist += load*np.array([sign*(.055 if first else .02), -.12 if first else .015,
-                                     -.09*dz if first else .10*dz])
-        pole = np.array([sign*.30+dx*.045*load, .99-.055*load, .12])
-        p.arm(side, wrist, pole=pole, roll=8*sign)
+        # Hands must follow the lowering/leaning CHEST, not fixed world-Y
+        # targets. Previously the leading wrist approached its shoulder to
+        # ~4 cm: the IK folded almost 180 degrees, buried the fist in the
+        # shoulder and made even an intact sleeve look like an amputated arm.
+        reference = _guard_chest_inverse(rig)
+        chest = p.world('chest')
+        wrist = reference @ np.array([.145, 1.295, .265, 1] if side == 'L' else [-.145, 1.305, .205, 1])
+        wrist[:3] += load*np.array([dx*.035 if lateral else sign*.018,
+                                    -.025 if first else .010, .095 if first else .030])
+        pole = reference @ np.array([sign*.30, .99, .12, 1])
+        pole[:3] += load*np.array([dx*.025, -.015, .025])
+        p.arm(side, (chest @ wrist)[:3], pole=(chest @ pole)[:3], roll=8*sign)
     return p
 
 

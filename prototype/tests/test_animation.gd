@@ -59,6 +59,7 @@ func _run() -> void:
 	_test_relaxed_jump(character)
 	_test_directional_dodge(character)
 	_test_appearance(character)
+	_test_garment_surface(character)
 	_test_player_modes()
 	_test_combat()
 	_test_showcase()
@@ -461,6 +462,23 @@ func _test_directional_dodge(character: Node3D) -> void:
 		for b in pose["rotations"].size():
 			identical = identical and absf((pose["rotations"][b] as Quaternion).dot(expected["rotations"][b])) > .999999
 		check(identical, "direction chooses its own native dodge: "+entry[1])
+	for name in ["dodge", "dodge_back", "dodge_left", "dodge_right"]:
+		var minimum_distance := INF
+		var minimum_front := INF
+		var maximum_fold := 0.0
+		for i in 61:
+			character.seek_clip(name, .48*i/60)
+			var chest: Transform3D = character.skeleton.get_bone_global_pose(character.skeleton.find_bone("chest"))
+			for side in ["L", "R"]:
+				var shoulder := joint(character, "upper_arm."+side)
+				var elbow := joint(character, "forearm."+side)
+				var wrist := joint(character, "hand."+side)
+				var hand: Transform3D = character.skeleton.get_bone_global_pose(character.skeleton.find_bone("hand."+side))
+				minimum_distance = minf(minimum_distance, shoulder.distance_to(wrist))
+				maximum_fold = maxf(maximum_fold, rad_to_deg((elbow-shoulder).angle_to(wrist-elbow)))
+				minimum_front = minf(minimum_front, (chest.affine_inverse()*(hand*Vector3(0, .075, 0))).z)
+		check(minimum_distance > .185 and maximum_fold < 140, "native dodge elbow no longer folds its fist into its shoulder: "+name)
+		check(minimum_front > .18, "native dodge fists stay in front of the moving chest: "+name)
 	var diagonal: Dictionary = character.sample_dodge(.18, Vector3(1, 0, -1).normalized())
 	var expected_diagonal: Dictionary = character._blend_pose(character.sample_clip("dodge_back", .18),
 		character.sample_clip("dodge_left", .18), .5)
@@ -516,18 +534,19 @@ func _test_appearance(character: Node3D) -> void:
 	for i in character.skeleton.get_bone_count():
 		bind_order = bind_order and appearance.gown.skin.get_bind_name(i) == character.skeleton.get_bone_name(i)
 	check(bind_order, "garment joint indices use the original named Skin binds")
-	check(appearance._data["gown"]["armhole_edges"].size() == 52,
-		"the native garment includes sewn armhole/gusset topology")
+	check(appearance._data["gown"]["cuff_edges"].size() > 60
+		and appearance._data["gown"]["positions"].size() > 3000,
+		"native tailored shoulders/axilla and cuffs use continuous body-derived topology")
 	for side in ["L", "R"]:
-		var sleeve: Dictionary = appearance._data["coverage"]["sleeves"][0 if side == "L" else 1]
+		var sleeve: Dictionary = appearance._data["coverage"]["underarm_cores"][0 if side == "L" else 1]
 		var origin: Vector3 = appearance._vector(sleeve["origin"])
 		var axis: Vector3 = appearance._vector(sleeve["axis"])
 		var bones := PackedInt32Array([character.skeleton.find_bone("upper_arm."+side), 0, 0, 0])
 		var weights := PackedFloat32Array([1, 0, 0, 0])
-		check(appearance.covered(origin+axis*.08, bones, weights, 0, Array(character._bone_names)),
-			"skin inside the actual cap sleeve is occluded: "+side)
-		check(not appearance.covered(origin+axis*.25, bones, weights, 0, Array(character._bone_names)),
-			"sleeve coverage does not remove the bare arm below the cuff: "+side)
+		check(appearance.covered(origin+axis*.04, bones, weights, 0, Array(character._bone_names)),
+			"only the closed proximal axillary core is occluded: "+side)
+		check(not appearance.covered(origin+axis*.13, bones, weights, 0, Array(character._bone_names)),
+			"real skin continues well INSIDE the cuff, not an amputated edge: "+side)
 	var gown_arrays: Array = appearance.gown.mesh.surface_get_arrays(0)
 	check((gown_arrays[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 5000
 		and (gown_arrays[Mesh.ARRAY_INDEX] as PackedInt32Array)[3] != 0,
@@ -539,7 +558,7 @@ func _test_appearance(character: Node3D) -> void:
 		character.seek_clip(pose_name, character.clip_duration(pose_name)*.43)
 		var cloth: PackedVector3Array = appearance.cloth_vertices()
 		for i in int(appearance._data["gown"]["waist_vertices"]):
-			var at: float = float(i)/float(appearance._data["gown"]["waist_vertices"])*appearance._segments
+			var at: float = appearance._data["gown"]["waist_cloth_samples"][i]
 			var lo := floori(at)
 			var pinned := cloth[lo].lerp(cloth[(lo+1)%appearance._segments], at-lo)
 			var bind := gown_bones[i*4]
@@ -598,9 +617,9 @@ func _test_appearance(character: Node3D) -> void:
 				worst_gap = minf(worst_gap, appearance.collision_gap())
 				ordered = ordered and cloth_rings_ordered(appearance)
 	check(ordered, "sprint and all four dodges cannot invert or twist the skirt rings at 30/60/120 FPS")
-	check(finite and appearance.cloth_vertices().size() == 112, "cloth remains finite at 30/60/120 FPS")
+	check(finite and appearance.cloth_vertices().size() == 320, "cloth remains finite at 30/60/120 FPS")
 	check(worst_gap > -.00001, "free cloth points stay outside the analytic leg collision envelopes")
-	check(worst_secondary < .04501, "secondary motion stays within 4.5 cm AFTER collision, including sprint knees")
+	check(worst_secondary < .02501, "secondary motion stays within 2.5 cm AFTER collision, including sprint knees")
 	check(appearance.collision_count > 0, "body collision is actually exercised, not just declared")
 	character.position = Vector3(10, 0, -10)
 	character.update_motion(.016, Vector3.ZERO, "", 0, "R", {"combat": false})
@@ -608,10 +627,116 @@ func _test_appearance(character: Node3D) -> void:
 	for i in appearance._points.size():
 		after_teleport = maxf(after_teleport, (appearance._points[i] as Vector3).distance_to(appearance._goals[i]))
 	check(after_teleport < .10, "teleport resets cloth instead of dragging it across the room")
-	print("Clothing: 112 particles; actual imported hand matches %d; sampled capsule gap %.6f m; secondary max %.3f m" % [
+	print("Clothing: 320 surface nodes; actual imported hand matches %d; sampled capsule gap %.6f m; secondary max %.3f m" % [
 		appearance.body.mesh.get_meta("hand_vertices"), worst_gap, worst_secondary])
 	clone.free()
 	character.position = Vector3.ZERO
+	character.reset_motion(false)
+
+
+func _test_garment_surface(character: Node3D) -> void:
+	var app: Node3D = character.appearance
+	var body: MeshInstance3D = app.body
+	var arrays: Array = body.mesh.surface_get_arrays(0)
+	var points: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
+	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
+	var body_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var visible: Dictionary = {}
+	for i in body_indices:
+		visible[i] = true
+	var probes: Array[int] = []
+	for i in points.size():
+		if points[i].y > .77 or not visible.has(i):
+			continue
+		var largest := 0.0
+		var name := ""
+		for k in 4:
+			if weights[i*4+k] > largest:
+				largest = weights[i*4+k]
+				name = str(body.skin.get_bind_name(bones[i*4+k]))
+		if name.begins_with("thigh.") or name.begins_with("shin."):
+			probes.append(i)
+	var worst := INF
+	var sampled := 0
+	for entry in [["sprint_relaxed", .136], ["sprint_relaxed", .44], ["dodge", .166],
+			["dodge_left", .166], ["dodge_back", .232]]:
+		character.seek_clip(entry[0], entry[1])
+		var transforms: Array[Transform3D] = []
+		for i in body.skin.get_bind_count():
+			var bone: int = character.skeleton.find_bone(body.skin.get_bind_name(i))
+			transforms.append(app._hips_inverse*character.skeleton.global_transform*character.skeleton.get_bone_global_pose(bone)*body.skin.get_bind_pose(i))
+		var cloth := PackedVector3Array()
+		for point in app._points:
+			cloth.append(app._hips_inverse*point)
+		for i in probes:
+			var point := Vector3.ZERO
+			for k in 4:
+				point += weights[i*4+k]*(transforms[bones[i*4+k]]*points[i])
+			if point.y <= .545 or point.y >= 1.018:
+				continue
+			var origin := Vector3(0, point.y, .02)
+			var radial := point-origin
+			var radius := radial.length()
+			var hit_distance := INF
+			for row in app._rings-1:
+				if point.y > cloth[row*app._segments].y+.00001 or point.y < cloth[(row+1)*app._segments].y-.00001:
+					continue
+				for k in app._segments:
+					var a: int = row*app._segments+k
+					var b: int = row*app._segments+(k+1)%app._segments
+					for face in [[a, b, a+app._segments], [b, b+app._segments, a+app._segments]]:
+						var hit = Geometry3D.ray_intersects_triangle(origin, radial/radius, cloth[face[0]], cloth[face[1]], cloth[face[2]])
+						if hit != null:
+							hit_distance = minf(hit_distance, origin.distance_to(hit))
+			if hit_distance < INF:
+				sampled += 1
+				worst = minf(worst, hit_distance-radius)
+	check(probes.size() > 1000 and sampled > 1000, "native textile test skins the real dense visible thigh/knee mesh")
+	check(worst > .003, "displayed TRIANGLES, not just cloth particles, cover the sprint/dodge knee")
+	print("Native displayed-skirt/soft-skin radial gap: %.3f mm, %d eligible vertex/pose samples" % [worst*1000, sampled])
+
+	# Validate the actual native upload layout, including Godot's implicit
+	# tangents. The dummy renderer doesn't implement buffer readback/update;
+	# inspect the exact bytes sent to the real GLES/Vulkan upload instead.
+	var format: int = app.skirt.mesh.surface_get_format(0)
+	check(RenderingServer.mesh_surface_get_format_vertex_stride(format, app._points.size()) == 12
+		and app._normal_stride == 8, "dynamic mesh layout includes Godot's implicit tangent, not a 4-byte-only normal stream")
+	check(app._vertex_bytes.size() == app._normal_offset+app._normal_stride*app._points.size()
+		and (format & Mesh.ARRAY_FLAG_USE_DYNAMIC_UPDATE) != 0, "one reusable dynamic surface receives a complete position/normal/tangent buffer")
+	var byte_error := 0.0
+	var normal_length_error := 0.0
+	var normal_alignment := 1.0
+	var tangent_error := 0.0
+	var inverse: Transform3D = app.global_transform.affine_inverse()
+	for i in app._points.size():
+		var p := Vector3(app._vertex_bytes.decode_float(i*12), app._vertex_bytes.decode_float(i*12+4), app._vertex_bytes.decode_float(i*12+8))
+		byte_error = maxf(byte_error, p.distance_to(app.global_transform.affine_inverse()*app._points[i]))
+		var oct := Vector2(app._vertex_bytes.decode_u16(app._normal_offset+i*app._normal_stride), app._vertex_bytes.decode_u16(app._normal_offset+i*app._normal_stride+2))/65535.0
+		var n := Vector3.octahedron_decode(oct)
+		normal_length_error = maxf(normal_length_error, absf(n.length()-1.0))
+		var row: int = i/app._segments
+		var k: int = i%app._segments
+		var expected: Vector3
+		if row == 0:
+			expected = (inverse.basis*app._hips_transform.basis*app._waist_normals[k]).normalized()
+		else:
+			var around: Vector3 = app._points[row*app._segments+(k+1)%app._segments]-app._points[row*app._segments+(k+app._segments-1)%app._segments]
+			var vertical: Vector3 = app._points[mini(row+1, app._rings-1)*app._segments+k]-app._points[(row-1)*app._segments+k]
+			expected = (inverse.basis*vertical.cross(around)).normalized()
+		normal_alignment = minf(normal_alignment, n.dot(expected))
+		var tangent_oct := Vector2(app._vertex_bytes.decode_u16(app._tangent_offset+i*app._normal_stride), app._vertex_bytes.decode_u16(app._tangent_offset+i*app._normal_stride+2))/65535.0
+		tangent_oct.y = absf(tangent_oct.y*2.0-1.0)
+		tangent_error = maxf(tangent_error, absf(n.dot(Vector3.octahedron_decode(tangent_oct))))
+	check(byte_error < .000001 and normal_length_error < .00001, "native upload bytes match current cloth points and unit decoded normals")
+	check(normal_alignment > .99999 and tangent_error < .0003,
+		"every packed normal points outwards, the pinned seam lighting agrees, and tangents are orthogonal")
+	var data_indices: Array = app._data["gown"]["indices"]
+	var native_indices: PackedInt32Array = app.gown.mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX]
+	var winding := true
+	for i in range(0, native_indices.size(), 3):
+		winding = winding and native_indices[i] == int(data_indices[i]) and native_indices[i+1] == int(data_indices[i+2]) and native_indices[i+2] == int(data_indices[i+1])
+	check(winding, "GLTF/Three CCW converts to Godot CW without inverting outward textile normals")
 	character.reset_motion(false)
 
 

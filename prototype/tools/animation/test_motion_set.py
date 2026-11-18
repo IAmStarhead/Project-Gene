@@ -340,7 +340,7 @@ class MotionSetTests(unittest.TestCase):
                         # "carrying a handbag" silhouette the user rejected.
                         self.assertGreater(hand[0]*(1 if side == 'L' else -1), .06 if running else .17, (name, side))
                     else:
-                        self.assertGreater(hand[1], .95 if name in ('run', 'jump_down', 'land') else 1.10,
+                        self.assertGreater(hand[1], 1.0 if name.startswith('dodge') else .95 if name in ('run', 'jump_down', 'land') else 1.10,
                                            (name, side))
                         self.assertGreater(hand[2], .10, (name, side))
                     self.assertLess(flexion(*[self.joint(g, b + '.' + side)
