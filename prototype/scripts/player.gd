@@ -646,13 +646,14 @@ func _write_debug_label() -> void:
 	var shown_fps := _fps if _fps > 0.1 else engine_fps
 	var draws := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	var prims := int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
+	var phys_ms := Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 	var q_name: String = T.QUALITY_NAMES[clampi(T.QUALITY, 0, T.QUALITY_NAMES.size() - 1)]
 	var b_name: String = T.BRIGHTNESS_NAMES[clampi(T.BRIGHTNESS, 0, T.BRIGHTNESS_NAMES.size() - 1)]
 	var style_name := "селлшейдинг" if T.TOON_ENABLED else "полуреализм"
 	var lock_name := String(lock.target.name) if (lock != null and lock.active()) else "нет"
 
 	var lines := PackedStringArray([
-		"FPS: %.0f  ·  кадр: %.1f мс (пик %.1f мс)" % [shown_fps, _avg_ms, _worst_ms],
+		"FPS: %.0f  ·  кадр: %.1f мс (пик %.1f)  ·  физ: %.1f мс" % [shown_fps, _avg_ms, _worst_ms, phys_ms],
 		"Видеокарта: %s" % (_gpu_name if not _gpu_name.is_empty() else "—"),
 	])
 	if _gpu_is_integrated:

@@ -238,8 +238,20 @@ func _process(delta: float) -> void:
 				_playing = false
 	character.seek_clip(CLIPS[_selected][0], _time, delta*SPEEDS[_speed_index] if _playing else -1.0)
 	var orbit := Basis(Vector3.UP, deg_to_rad(_yaw)) * Basis(Vector3.RIGHT, deg_to_rad(_pitch))
-	var focus := Vector3(0, .85, 0)
-	cam.global_position = focus + orbit * Vector3(0, 0, _distance)
+	var focus := Vector3(0.0, 0.85, 0.0)
+	var desired: Vector3 = focus + orbit * Vector3(0.0, 0.0, _distance)
+	var w3d := get_world_3d()
+	if w3d != null and w3d.direct_space_state != null:
+		var query := PhysicsRayQueryParameters3D.create(focus, desired, 1)
+		var hit: Dictionary = w3d.direct_space_state.intersect_ray(query)
+		if not hit.is_empty():
+			var hit_pos: Vector3 = hit["position"] as Vector3
+			var dir: Vector3 = desired - focus
+			var hit_dist: float = maxf(focus.distance_to(hit_pos) - 0.14, 0.65)
+			if dir.length_squared() > 0.0001:
+				desired = focus + dir.normalized() * hit_dist
+	desired.y = maxf(desired.y, 0.14)
+	cam.global_position = desired
 	cam.look_at(focus, Vector3.UP)
 	_update_ui()
 
@@ -267,7 +279,7 @@ func _exit_showcase() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_yaw -= event.relative.x * .35
-		_pitch = clampf(_pitch - event.relative.y * .25, -65, 35)
+		_pitch = clampf(_pitch - event.relative.y * .25, -68.0, 12.0)
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_distance = maxf(1.8, _distance - .2)

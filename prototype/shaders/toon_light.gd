@@ -20,32 +20,34 @@
 extends RefCounted
 
 # Три уровня яркости (клавиша B): 0 = приглушённо, 1 = штатно, 2 = ярко.
-const AMBIENT := [0.34, 0.43, 0.50]
-const SUN := [0.085, 0.105, 0.115]
-const FILL := [0.14, 0.20, 0.25]
-const EXPOSURE := [0.96, 1.00, 1.03]
-const POST_BRIGHTNESS := [0.98, 1.02, 1.05]
+# Откалиброваны по реальным замерам кадров на GeForce 940MX (0% пересвета на всех трёх уровнях:
+# пол ~205 / ~222 / ~235, отчётливая мягкая тень ~182 / ~198 / ~212, читаемые швы плитки и черты лица).
+const AMBIENT := [0.21, 0.27, 0.33]
+const SUN := [0.075, 0.095, 0.115]
+const FILL := [0.045, 0.065, 0.085]
+const EXPOSURE := [0.91, 0.96, 1.01]
+const POST_BRIGHTNESS := [0.96, 0.99, 1.01]
 
-# Студийный свет витрины анимаций (клавиша H): спокойнее фон, максимальная читаемость поз и стоп.
-const SHOWCASE_AMBIENT := [0.28, 0.35, 0.42]
-const SHOWCASE_SUN := [0.10, 0.125, 0.145]
-const SHOWCASE_FILL := [0.10, 0.14, 0.18]
+# Студийный свет витрины анимаций (клавиша H): портретный ¾-свет, максимальная читаемость поз и стоп.
+const SHOWCASE_AMBIENT := [0.21, 0.27, 0.33]
+const SHOWCASE_SUN := [0.08, 0.10, 0.12]
+const SHOWCASE_FILL := [0.06, 0.085, 0.11]
 
 
 static func _make_sky(showcase: bool) -> Sky:
 	var mat := ProceduralSkyMaterial.new()
 	if showcase:
-		mat.sky_top_color = Color(0.86, 0.90, 0.95)
-		mat.sky_horizon_color = Color(0.78, 0.82, 0.88)
-		mat.ground_horizon_color = Color(0.68, 0.72, 0.78)
-		mat.ground_bottom_color = Color(0.56, 0.60, 0.66)
+		mat.sky_top_color = Color(0.86, 0.89, 0.93)
+		mat.sky_horizon_color = Color(0.79, 0.82, 0.86)
+		mat.ground_horizon_color = Color(0.69, 0.72, 0.76)
+		mat.ground_bottom_color = Color(0.57, 0.60, 0.65)
 	else:
-		# Полусферический свет белой лаборатории: прохладный светлый верх, нейтральный горизонт
-		# и мягкий отражённый свет от белого пола снизу (без чёрных провалов под подбородком).
-		mat.sky_top_color = Color(0.96, 0.975, 1.0)
-		mat.sky_horizon_color = Color(0.88, 0.905, 0.94)
-		mat.ground_horizon_color = Color(0.80, 0.83, 0.87)
-		mat.ground_bottom_color = Color(0.72, 0.75, 0.80)
+		# Полусферический свет белой лаборатории: нейтрально-чистый верх без синевы,
+		# спокойный горизонт и мягкий рефлекс от светлого пола снизу.
+		mat.sky_top_color = Color(0.88, 0.90, 0.93)
+		mat.sky_horizon_color = Color(0.81, 0.83, 0.86)
+		mat.ground_horizon_color = Color(0.72, 0.74, 0.78)
+		mat.ground_bottom_color = Color(0.60, 0.63, 0.67)
 	mat.sky_curve = 0.22
 	mat.ground_curve = 0.18
 	mat.use_debanding = true
@@ -106,13 +108,13 @@ static func apply_environment(
 	# В Compatibility нет HDR: glow размазывает белые стены в «молоко», держим выключенным.
 	env.glow_enabled = false
 
-	# Деликатный SSAO в стыках стен и ступеней — только на пресете «Высокое» (берегу GeForce 940MX).
+	# Деликатный SSAO в стыках стен, плинтусов и ступеней — только на пресете «Высокое».
 	env.ssao_enabled = (q >= 2)
 	if env.ssao_enabled:
-		env.ssao_radius = 0.65
-		env.ssao_intensity = 0.42
-		env.ssao_power = 1.25
-		env.ssao_detail = 0.35
+		env.ssao_radius = 0.72
+		env.ssao_intensity = 0.75
+		env.ssao_power = 1.35
+		env.ssao_detail = 0.40
 		env.ssao_horizon = 0.08
 		env.ssao_sharpness = 0.92
 
@@ -121,13 +123,13 @@ static func configure_sun(sun: DirectionalLight3D, level: int, showcase: bool = 
 	if sun == null:
 		return
 	var b := clampi(level, 0, SUN.size() - 1)
-	# Угол -56° в игре даёт естественную компактную тень от потолочного света лаборатории;
+	# Угол -48° в игре даёт читаемую тень под стопами и мягкий 3D-объём на лице и ступенях;
 	# -44° в витрине даёт классический портретный 3/4-свет для осмотра анимаций и стоп.
-	sun.rotation_degrees = Vector3(-44.0, -36.0, 0.0) if showcase else Vector3(-56.0, -36.0, 0.0)
-	sun.light_color = Color(1.0, 0.988, 0.965)
+	sun.rotation_degrees = Vector3(-44.0, -36.0, 0.0) if showcase else Vector3(-48.0, -38.0, 0.0)
+	sun.light_color = Color(1.0, 0.985, 0.96)
 	sun.light_energy = SHOWCASE_SUN[b] if showcase else SUN[b]
 	# Живой блик в глазах и на стекле колб, без огромного «солнечного пятна» на полу.
-	sun.light_specular = 0.24
+	sun.light_specular = 0.22
 	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
 
 	# Один ортогональный каскад (SHADOW_ORTHOGONAL) вместо 4 каскадов PSSM:
@@ -187,7 +189,7 @@ static func configure_probe(
 	probe.ambient_mode = ReflectionProbe.AMBIENT_DISABLED
 	# Слой 1 — только статичная архитектура; персонажи на слое 2 не застывают в отражении пола.
 	probe.cull_mask = 1
-	probe.intensity = 0.52
+	probe.intensity = 0.28
 	probe.size = room_size + Vector3(1.2, 1.2, 1.2)
 	probe.max_distance = 28.0
 

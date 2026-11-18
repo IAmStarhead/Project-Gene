@@ -9,6 +9,9 @@ extends Node3D
 
 const T := preload("res://scripts/tuning.gd")
 
+const HIDE_HERO_DIST := 0.54
+const SHOW_HERO_DIST := 0.64
+
 var target: Node3D
 var spring: SpringArm3D
 var camera: Camera3D
@@ -16,6 +19,7 @@ var camera: Camera3D
 var _pos_smooth := Vector3.ZERO
 var _initialized := false
 var _kick_deg := 0.0
+var _hero_hidden := false
 
 
 func setup(follow: Node3D, init_yaw: float, pitch_deg: float) -> void:
@@ -77,6 +81,35 @@ func _process(delta: float) -> void:
 	global_position = _pos_smooth
 	_kick_deg *= exp(-20.0 * delta)
 	_sync_angles()
+	_update_near_hide()
+
+
+func _exit_tree() -> void:
+	if _hero_hidden:
+		_set_hero_visible(true)
+
+
+func _update_near_hide() -> void:
+	# Если стена или колонна прижала камеру вплотную к голове, аккуратно скрываем меш героини,
+	# чтобы камера никогда не показывала череп, глазные яблоки и рот изнутри.
+	if camera == null or DisplayServer.get_name() == "headless":
+		return
+	var head_pos: Vector3 = target.global_position + Vector3(0.0, 1.48, 0.0)
+	var dist: float = camera.global_position.distance_to(head_pos)
+	if not _hero_hidden and dist < HIDE_HERO_DIST:
+		_hero_hidden = true
+		_set_hero_visible(false)
+	elif _hero_hidden and dist >= SHOW_HERO_DIST:
+		_hero_hidden = false
+		_set_hero_visible(true)
+
+
+func _set_hero_visible(vis: bool) -> void:
+	if not is_instance_valid(target):
+		return
+	var ch: Node3D = target.get_node_or_null("Character") as Node3D
+	if ch != null:
+		ch.visible = vis
 
 
 func _sync_angles() -> void:

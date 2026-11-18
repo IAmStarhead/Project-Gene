@@ -141,21 +141,21 @@ func _make_materials() -> void:
 	_dark_detail_mat.albedo_color = Color(0.28, 0.31, 0.36)
 	_dark_detail_mat.roughness = 0.48
 
-	# Белый медицинский композит корпусов криокапсул, пилястр и створок двери.
+	# Белый медицинский композит корпусов криокапсул, пилястр и створок двери (без пересвета в 255).
 	_housing_mat = StandardMaterial3D.new()
-	_housing_mat.albedo_color = Color(0.90, 0.918, 0.94)
-	_housing_mat.roughness = 0.34
-	_housing_mat.metallic_specular = 0.45
+	_housing_mat.albedo_color = Color(0.83, 0.85, 0.88)
+	_housing_mat.roughness = 0.36
+	_housing_mat.metallic_specular = 0.42
 
-	# Потолочные световые диффузоры — чистый ровный белый свет.
+	# Потолочные световые диффузоры — чистый ровный белый свет, ясно выделяющийся на потолке.
 	_panel_mat = StandardMaterial3D.new()
 	_panel_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_panel_mat.albedo_color = Color(0.99, 0.995, 1.0)
+	_panel_mat.albedo_color = Color(0.985, 0.992, 1.0)
 
 	# Прозрачное медицинское стекло капсул и осколков (без сплошной тени).
 	_glass_mat = StandardMaterial3D.new()
 	_glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_glass_mat.albedo_color = Color(0.74, 0.88, 0.93, 0.26)
+	_glass_mat.albedo_color = Color(0.68, 0.84, 0.90, 0.30)
 	_glass_mat.roughness = 0.08
 	_glass_mat.metallic = 0.05
 	_glass_mat.metallic_specular = 0.75
@@ -338,13 +338,15 @@ func _apply_surface_mood() -> void:
 	var headless := DisplayServer.get_name() == "headless"
 	if _is_showcase:
 		# В витрине фон чуть спокойнее, чтобы белый халат, руки и подошвы читались идеально.
-		_floor_mat.albedo_color = Color(0.74, 0.78, 0.83)
-		_wall_mat.albedo_color = Color(0.76, 0.80, 0.85)
-		_ceiling_mat.emission_energy_multiplier = 0.45
+		_floor_mat.albedo_color = Color(0.76, 0.785, 0.825)
+		_wall_mat.albedo_color = Color(0.78, 0.805, 0.845)
+		_ceiling_mat.emission_energy_multiplier = 0.34
 	else:
-		_floor_mat.albedo_color = Color(0.86, 0.878, 0.90) if headless else Color.WHITE
-		_wall_mat.albedo_color = Color(0.925, 0.938, 0.952) if headless else Color.WHITE
-		_ceiling_mat.emission_energy_multiplier = 1.0
+		# Реалистичный коэффициент отражения белого эпоксидного пола и панелей (как в Mirror's Edge):
+		# зал остаётся стерильно-белым, но швы плитки, ступени, тени и лицо не выбиваются в 255.
+		_floor_mat.albedo_color = Color(0.80, 0.82, 0.85) if not headless else Color(0.82, 0.84, 0.87)
+		_wall_mat.albedo_color = Color(0.82, 0.84, 0.87) if not headless else Color(0.85, 0.87, 0.90)
+		_ceiling_mat.emission_energy_multiplier = 0.42
 
 
 func _make_room() -> void:
@@ -419,9 +421,11 @@ func _make_props() -> void:
 	_make_pod(Vector3(5.8, 0.0, -2.2), true, -0.38)
 	_make_pod(Vector3(5.2, 0.0, -5.8), true, -0.55)
 
-	# Небольшой тёмно-алый след у разбитой капсулы (отсылка к концепт-арту 02-white-pod-chamber).
-	_floor_disc(0.34, Vector3(4.35, 0.004, -2.85), _blood_mat)
-	_floor_disc(0.16, Vector3(3.92, 0.004, -2.42), _blood_mat)
+	# Тёмно-алый биослед у вскрытой капсулы (отсылка к концепт-арту 02-white-pod-chamber).
+	_floor_disc(0.36, Vector3(4.58, 0.004, -2.55), _blood_mat)
+	_floor_disc(0.27, Vector3(4.32, 0.004, -2.78), _blood_mat)
+	_floor_disc(0.18, Vector3(4.12, 0.004, -2.52), _blood_mat)
+	_floor_disc(0.09, Vector3(3.86, 0.004, -2.34), _blood_mat)
 
 
 func _make_pod(origin: Vector3, broken: bool, yaw_rad: float) -> void:
@@ -432,24 +436,48 @@ func _make_pod(origin: Vector3, broken: bool, yaw_rad: float) -> void:
 	pod.collision_layer = WORLD_LAYER
 	pod.collision_mask = 0
 
-	# Честная цилиндрическая коллизия — ни героиня, ни клон не проходят сквозь колбу.
-	var col := CollisionShape3D.new()
-	var cshape := CylinderShape3D.new()
-	cshape.radius = 0.86
-	cshape.height = 2.80
-	col.shape = cshape
-	col.position = Vector3(0.0, 1.40, 0.0)
-	pod.add_child(col)
+	if not broken:
+		# Целая колба: сплошная цилиндрическая коллизия во всю высоту стекла.
+		var col := CollisionShape3D.new()
+		var cshape := CylinderShape3D.new()
+		cshape.radius = 0.86
+		cshape.height = 2.80
+		col.shape = cshape
+		col.position = Vector3(0.0, 1.40, 0.0)
+		pod.add_child(col)
+	else:
+		# Разбитая колба: коллизия строго по нижнему цоколю и заднему каркасу — без «невидимой
+		# стены» в пустом воздухе на высоте камеры (не вдавливает SpringArm3D в голову героини).
+		var base_col := CollisionShape3D.new()
+		var base_shape := CylinderShape3D.new()
+		base_shape.radius = 0.88
+		base_shape.height = 0.62
+		base_col.shape = base_shape
+		base_col.position = Vector3(0.0, 0.31, 0.0)
+		pod.add_child(base_col)
 
-	# Цоколь, металлические обручи, задняя несущая стойка и верхний купол отбрасывают честную тень.
+		var spine_col := CollisionShape3D.new()
+		var spine_shape := BoxShape3D.new()
+		spine_shape.size = Vector3(0.54, 2.56, 0.34)
+		spine_col.shape = spine_shape
+		spine_col.position = Vector3(0.0, 1.38, -0.66)
+		pod.add_child(spine_col)
+
+	# Цоколь, металлические обручи, три несущие стойки каркаса и верхний купол.
 	_pod_cyl(pod, 0.88, 0.94, 0.22, Vector3(0.0, 0.11, 0.0), _housing_mat, true)
-	_pod_cyl(pod, 0.76, 0.78, 0.08, Vector3(0.0, 0.26, 0.0), _trim_mat, true)
+	_pod_cyl(pod, 0.77, 0.80, 0.08, Vector3(0.0, 0.26, 0.0), _trim_mat, true)
 	_pod_cyl(pod, 0.86, 0.82, 0.24, Vector3(0.0, 2.66, 0.0), _housing_mat, true)
-	_pod_cyl(pod, 0.76, 0.76, 0.06, Vector3(0.0, 2.51, 0.0), _trim_mat, true)
-	_decor_box(Vector3(0.22, 2.34, 0.16), Vector3(0.0, 1.40, -0.72), _trim_mat, true, pod)
+	_pod_cyl(pod, 0.77, 0.77, 0.06, Vector3(0.0, 2.51, 0.0), _trim_mat, true)
+	# Задняя силовая колонна и две боковые дуги каркаса (капсула читается объёмной, не «столиком»).
+	_decor_box(Vector3(0.24, 2.34, 0.16), Vector3(0.0, 1.40, -0.73), _trim_mat, true, pod)
+	var side_l := _decor_box(Vector3(0.075, 2.30, 0.095), Vector3(-0.62, 1.40, -0.44), _trim_mat, false, pod)
+	side_l.rotation.y = 0.62
+	var side_r := _decor_box(Vector3(0.075, 2.30, 0.095), Vector3(0.62, 1.40, -0.44), _trim_mat, false, pod)
+	side_r.rotation.y = -0.62
+	# Индикатор состояния утоплен заподлицо в переднюю грань цоколя (не висит в воздухе).
 	_decor_box(
-		Vector3(0.34, 0.035, 0.04),
-		Vector3(0.0, 0.13, 0.90),
+		Vector3(0.30, 0.04, 0.06),
+		Vector3(0.0, 0.11, 0.875),
 		_status_lock_mat if broken else _status_cyan_mat,
 		false,
 		pod
@@ -459,7 +487,21 @@ func _make_pod(origin: Vector3, broken: bool, yaw_rad: float) -> void:
 		_pod_cyl(pod, 0.44, 0.44, 2.18, Vector3(0.0, 1.39, 0.0), _pod_core_mat, false)
 		_pod_cyl(pod, 0.72, 0.72, 2.22, Vector3(0.0, 1.39, 0.0), _glass_mat, false)
 	else:
-		_pod_cyl(pod, 0.72, 0.72, 0.42, Vector3(0.0, 0.50, 0.0), _glass_mat, false)
+		# Остатки разбитой стеклянной колбы снизу и под куполом + неровные зубцы и осколки на полу.
+		_pod_cyl(pod, 0.72, 0.72, 0.34, Vector3(0.0, 0.47, 0.0), _glass_mat, false)
+		_pod_cyl(pod, 0.72, 0.72, 0.22, Vector3(0.0, 2.37, 0.0), _glass_mat, false)
+		var rim_angles: Array[float] = [-2.2, -1.15, -0.35, 0.55, 1.45, 2.35]
+		for j in range(rim_angles.size()):
+			var ang: float = rim_angles[j]
+			var jh := 0.24 + float(j % 3) * 0.14
+			var tooth := _decor_box(
+				Vector3(0.18, jh, 0.025),
+				Vector3(sin(ang) * 0.71, 0.62 + jh * 0.45, cos(ang) * 0.71),
+				_glass_mat,
+				false,
+				pod
+			)
+			tooth.rotation.y = ang
 		var offsets := [
 			Vector3(0.95, 0.014, 0.72),
 			Vector3(-0.82, 0.014, 0.96),
@@ -590,9 +632,8 @@ func style_character(root: Node, use_toon: bool = false) -> void:
 		var mi := mesh as MeshInstance3D
 		var nm := mi.name.to_lower()
 
-		# Неиспользуемая полная копия тела face_blink в GLB (18 176 вершин): убираем двойной
-		# скиннинг, мерцание кожи, пробивание сквозь рукава халата и «вторые сжатые кулаки».
-		if nm == "face_blink" or nm == "fallback":
+		# Скрытая резервная капсула Fallback не участвует в отрисовке.
+		if nm == "fallback":
 			mi.visible = false
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			continue
@@ -612,7 +653,14 @@ func style_character(root: Node, use_toon: bool = false) -> void:
 
 		if mi.mesh == null:
 			continue
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		# face_blink содержит 774 треугольника верхних век (обязательно видим и окрашен той же кожей!),
+		# но тень от головы уже отбрасывает основной меш тела — экономим лишний теневой проход.
+		mi.visible = true
+		mi.cast_shadow = (
+			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			if nm == "face_blink"
+			else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		)
 		for i in range(mi.mesh.get_surface_count()):
 			var base := _original_surface_material(mi, i)
 			if base == null:
@@ -652,16 +700,16 @@ func _original_surface_material(mi: MeshInstance3D, surface: int) -> BaseMateria
 func _make_skin_pbr(base: BaseMaterial3D) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.resource_name = "heroine_skin_pbr"
-	# Сохраняем полную текстуру лица (брови, губы, румянец), добавляем мягкий переход света
-	# по коже (Lambert Wrap) и деликатный тёплый отклик на границе тени.
-	mat.albedo_color = Color(0.99, 0.968, 0.952)
+	# Сохраняем полную текстуру лица (брови, губы, румянец), защищаем красный канал от пересвета
+	# и даём мягкую полуреалистичную светотень по скулам, носу и подбородку.
+	mat.albedo_color = Color(0.95, 0.935, 0.925)
 	mat.albedo_texture = base.albedo_texture
 	mat.diffuse_mode = BaseMaterial3D.DIFFUSE_LAMBERT_WRAP
-	mat.roughness = 0.56
+	mat.roughness = 0.58
 	mat.metallic = 0.0
-	mat.metallic_specular = 0.28
+	mat.metallic_specular = 0.24
 	mat.backlight_enabled = true
-	mat.backlight = Color(0.055, 0.022, 0.016)
+	mat.backlight = Color(0.032, 0.013, 0.010)
 	mat.cull_mode = BaseMaterial3D.CULL_BACK
 	return mat
 

@@ -33,6 +33,7 @@ var _label: Label3D
 var _last_label_text := ""
 var _last_label_active := false
 var _last_deal: float = 0.0
+var _idle_awake: float = 0.8
 
 var _step_params := PhysicsTestMotionParameters3D.new()
 var _step_result := PhysicsTestMotionResult3D.new()
@@ -83,6 +84,7 @@ func cycle_mode() -> void:
 	_attack_hit_done = false
 	_recover = 0.0
 	_cooldown = 0.35
+	_idle_awake = 0.8
 	_update_label()
 
 
@@ -130,16 +132,27 @@ func _physics_process(delta: float) -> void:
 
 	if character != null and character.has_method("update_motion"):
 		var displacement := global_position - previous_position
-		var planar := Vector3(displacement.x, 0.0, displacement.z)
-		var local_velocity := character.global_basis.inverse() * (planar / maxf(delta, 0.001))
-		var action := "attack" if _attack_time >= 0.0 else ""
-		character.update_motion(delta, local_velocity, action, maxf(_attack_time, 0.0), _attack_side, {
-			"distance": planar.length(),
-			"grounded": is_on_floor(),
-			"vertical_speed": velocity.y,
-			"combat": mode == Mode.ON,
-			"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
-		})
+		var grounded_now := is_on_floor()
+		var need_anim := true
+		if mode == Mode.OFF and grounded_now and displacement.length_squared() < 0.000004:
+			if _idle_awake > 0.0:
+				_idle_awake = maxf(0.0, _idle_awake - delta)
+			else:
+				# Выключенный неподвижный клон не пересобирает меш ткани юбки 60 раз/с на i3-7100U.
+				need_anim = false
+		else:
+			_idle_awake = 0.8
+		if need_anim:
+			var planar := Vector3(displacement.x, 0.0, displacement.z)
+			var local_velocity := character.global_basis.inverse() * (planar / maxf(delta, 0.001))
+			var action := "attack" if _attack_time >= 0.0 else ""
+			character.update_motion(delta, local_velocity, action, maxf(_attack_time, 0.0), _attack_side, {
+				"distance": planar.length(),
+				"grounded": grounded_now,
+				"vertical_speed": velocity.y,
+				"combat": mode == Mode.ON,
+				"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
+			})
 
 	_update_label()
 
@@ -311,6 +324,7 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		_attack_time = -1.0
 		_attack_hit_done = false
 		_recover = 0.0
+		_idle_awake = 0.8
 		velocity = Vector3.ZERO
 		if character != null and character.has_method("reset_motion"):
 			character.reset_motion(false)
