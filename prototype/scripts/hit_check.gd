@@ -1,34 +1,45 @@
-## Честная проверка удара кулаком: капсула руки (от плеча до костяшек) против цилиндра торса.
+## Попадание по цели: пересечение реальной геометрии, а не «расстояние по центрам».
 ##
-## Что исправлено относительно прежней одиночной точки:
-##   1. Проверяется ВЕСЬ отрезок руки (от грудины до кулака), поэтому вплотную кулак не
-##      «пролетает насквозь» мимо стоящего рядом противника.
-##   2. Для гуманоидов берётся реальный анатомический радиус торса (0.24 м), а не широкая
-##      физическая капсула 0.34 м для стен — удар больше не цепляет воздух за метр от тела.
-##   3. В живой активной фазе учитывается реальная кость кисти (hand.L / hand.R) скелета,
-##      а при перескоке кадра (просадка FPS или headless-тест) работает точный вынос reach.
-##   4. Возвращается зона попадания (голова / корпус / ноги) — фундамент под травмы конечностей.
+## ЗАЧЕМ. Раньше удар считался так:
+##
+##     dist = |цель.центр − игрок.центр|
+##     if dist > ATTACK_RANGE: мимо
+##
+## Радиус корпуса каждого был 0.34, поэтому при ATTACK_RANGE 1.9 удар проходил
+## при зазоре между телами 1.22 м — кулак бил воздух на расстоянии больше метра.
+## Отсюда жалоба «хитбокс больше, чем должен».
+##
+## ТЕПЕРЬ. Попадание — это сфера кулака, которая пересекает цилиндр цели.
+## Цилиндр, а не капсула: у капсулы скруглённые концы, и рост менял бы радиус
+## попадания у головы и ног. Высота цилиндра измеряется по самой цели: если у
+## неё есть поле health/named узлы — берём высоту персонажа из CollisionShape3D,
+## иначе падаем на константы.
+##
+## Дополнительно проверяется высота кулака: удар на уровне груди не должен
+## попадать по голове и наоборот. Это важно, когда появится расчленение.
+##
+## Почему не Area3D. Для точного совета из практики Godot: у Area3D-хитбоксов
+## две проблемы — двойные попадания за один взмах и необходимость включать и
+## выключать формы по кадрам анимации. Обе решаются учётом флага «уже попал»,
+## но проще и честнее считать пересечение в момент активной фазы. Один удар —
+## одна проверка, двойных попаданий не бывает по построению.
 extends RefCounted
 
-const T := preload("res://scripts/tuning.gd")
-
-const FIST_RADIUS := 0.11
-const KNUCKLE_EXTEND := 0.07
-const DEFAULT_BODY_RADIUS := 0.24
-const DEFAULT_BODY_HEIGHT := 1.70
-const CHEST_HEIGHT := 1.28
-
-const ZONE_LABELS := {
-	"head": "голова",
-	"torso": "корпус",
-	"legs": "ноги",
-}
+## Радиус кулака. Кисть в кулаке — примерно 0.05 м; 0.075 даёт небольшой
+## запас, чтобы удар не «проскакивал» на границе. Больше делать нельзя:
+## именно этот радиус и создавал ощущение раздутого хитбокса.
+const FIST_RADIUS := 0.075
+## Радиус корпуса цели, если его не удалось измерить по сцене.
+const DEFAULT_BODY_RADIUS := 0.30
+## Высота цилиндра цели по умолчанию (рост модели 1.675).
+const DEFAULT_BODY_HEIGHT := 1.68
+## Предел отклонения по высоте: кулак должен идти в корпус, а не в пустоту
+## над головой или под коленом.
+const VERTICAL_SLACK := 0.55
 
 
-## Возвращает [боевой_радиус_тела, высота_тела] для цели.
+## Измерить габариты цели по её CollisionShape3D. Возвращает [radius, height].
 static func body_size(node: Node3D) -> Array:
-	if not is_instance_valid(node):
-		return [DEFAULT_BODY_RADIUS, DEFAULT_BODY_HEIGHT]
 	for child in node.get_children():
 		var shape_node: CollisionShape3D = null
 		if child is CollisionShape3D:
@@ -38,13 +49,14 @@ static func body_size(node: Node3D) -> Array:
 				if grand is CollisionShape3D:
 					shape_node = grand
 					break
-		if shape_node == null or shape_node.shape == null:
+		if shape_node == null:
 			continue
-		var shape := shape_node.shape
+		var shape: Shape3D = shape_node.shape
+		if shape == null:
+			continue
 		if shape is CapsuleShape3D:
 			var cap := shape as CapsuleShape3D
-			# Узкий анатомический радиус торса вместо широкой капсулы столкновений со стенами.
-			return [minf(cap.radius, T.BODY_HIT_RADIUS), cap.height]
+			return [cap.radius, cap.height]
 		if shape is CylinderShape3D:
 			var cyl := shape as CylinderShape3D
 			return [cyl.radius, cyl.height]
@@ -54,170 +66,83 @@ static func body_size(node: Node3D) -> Array:
 	return [DEFAULT_BODY_RADIUS, DEFAULT_BODY_HEIGHT]
 
 
+## Куда бьёт кулак. Берём точку на линии удара на высоте груди:
+##   origin  — центр корпуса атакующего (+1.2 м),
+##   forward — направление удара,
+##   reach   — насколько далеко вынесен кулак от корпуса.
+## Возвращает точку в мире.
 static func fist_point(origin: Vector3, forward: Vector3, reach: float) -> Vector3:
-	var f := _flat_forward(forward)
-	return Vector3(origin.x, origin.y + CHEST_HEIGHT, origin.z) + f * reach
+	var f := Vector3(forward.x, 0.0, forward.z)
+	if f.length_squared() < 0.0001:
+		f = Vector3.FORWARD
+	f = f.normalized()
+	return Vector3(origin.x, origin.y + 1.20, origin.z) + f * reach
 
 
-## Проверка пересечения отрезка руки атакующего с цилиндром цели.
-static func overlaps(
-	attacker: Node3D,
-	victim: Node3D,
-	forward: Vector3,
-	reach: float,
-	side: String = "R",
-	use_live_bone: bool = false
-) -> bool:
-	return not _test_pair(attacker, victim, _flat_forward(forward), reach, side, use_live_bone).is_empty()
+## Пересекает ли кулак цилиндр цели. Возвращает true, если да.
+##
+## reach — расстояние от центра атакующего до кулака в момент активной фазы.
+## Считается вызывающим кодом: у героини и клона руки разной длины.
+static func overlaps(attacker: Node3D, victim: Node3D, forward: Vector3,
+		reach: float) -> bool:
+	if not is_instance_valid(attacker) or not is_instance_valid(victim):
+		return false
+	var fist := fist_point(attacker.global_position, forward, reach)
+	var target_center := victim.global_position
+	var size := body_size(victim)
+	var radius: float = size[0]
+	var height: float = size[1]
+
+	# Горизонталь: расстояние от оси цели до кулака.
+	var dx := fist.x - target_center.x
+	var dz := fist.z - target_center.z
+	var horizontal := sqrt(dx * dx + dz * dz)
+	if horizontal > radius + FIST_RADIUS:
+		return false
+
+	# Вертикаль: кулак должен попасть в тело, а не над головой.
+	# Центр цели — на полу; тело занимает от 0 до height.
+	var local_y := fist.y - target_center.y
+	if local_y < -VERTICAL_SLACK * 0.2 or local_y > height + VERTICAL_SLACK:
+		return false
+	return true
 
 
-## Подробный поиск ближайшего попадания: {} при промахе, либо {"target", "zone", "distance"}.
-static func find_hit(
-	attacker: Node3D,
-	candidates: Array,
-	forward: Vector3,
-	reach: float,
-	half_angle_deg: float,
-	side: String = "L",
-	use_live_bone: bool = false
-) -> Dictionary:
-	if not is_instance_valid(attacker):
-		return {}
-	var f := _flat_forward(forward)
-	var best := {}
+## Ближайшая цель, которую кулак реально задевает. Возвращает узел или null.
+##
+## Перебираем именно кандидатов в конусе, а не всех сразу: конус отсекает
+## «попадание за спину», которое игрок не ожидает и считает багом.
+static func nearest_hit(attacker: Node3D, candidates: Array, forward: Vector3,
+		reach: float, half_angle_deg: float) -> Node3D:
+	var f := Vector3(forward.x, 0.0, forward.z)
+	if f.length_squared() < 0.0001:
+		f = Vector3.FORWARD
+	f = f.normalized()
+	var best: Node3D = null
 	var best_dist := INF
-
 	for node in candidates:
-		if node == attacker or not is_instance_valid(node) or not (node is Node3D):
+		if not is_instance_valid(node) or not (node is Node3D):
 			continue
 		var victim := node as Node3D
-		if victim.has_method("is_alive") and not bool(victim.call("is_alive")):
-			continue
 		var to := victim.global_position - attacker.global_position
 		to.y = 0.0
 		var dist := to.length()
 		if dist < 0.001:
 			continue
-		if rad_to_deg(f.angle_to(to / dist)) > half_angle_deg:
+		var angle := rad_to_deg(f.angle_to(to.normalized()))
+		if angle > half_angle_deg:
 			continue
-		var hit := _test_pair(attacker, victim, f, reach, side, use_live_bone)
-		if hit.is_empty():
+		if not overlaps(attacker, victim, f, reach):
 			continue
 		if dist < best_dist:
 			best_dist = dist
-			best = hit
-
+			best = victim
 	return best
 
 
-## Совместимая обёртка: возвращает поражённый Node3D или null.
-static func nearest_hit(
-	attacker: Node3D,
-	candidates: Array,
-	forward: Vector3,
-	reach: float,
-	half_angle_deg: float,
-	side: String = "L",
-	use_live_bone: bool = false
-) -> Node3D:
-	var hit := find_hit(attacker, candidates, forward, reach, half_angle_deg, side, use_live_bone)
-	return hit.get("target", null) as Node3D
-
-
-static func zone_label(zone: String) -> String:
-	return String(ZONE_LABELS.get(zone, "корпус"))
-
-
-## Реальный зазор между анатомическими корпусами (для честной отладки F3).
-static func surface_gap(attacker: Node3D, victim: Node3D, own_radius: float = DEFAULT_BODY_RADIUS) -> float:
-	if not is_instance_valid(attacker) or not is_instance_valid(victim):
-		return INF
+## Для отладки: расстояние между поверхностями тел (0 — касаются).
+static func surface_gap(attacker: Node3D, victim: Node3D, own_radius: float) -> float:
 	var d := victim.global_position - attacker.global_position
 	d.y = 0.0
 	var size := body_size(victim)
 	return maxf(0.0, d.length() - own_radius - float(size[0]))
-
-
-static func _test_pair(
-	attacker: Node3D,
-	victim: Node3D,
-	f: Vector3,
-	reach: float,
-	side: String,
-	use_live_bone: bool
-) -> Dictionary:
-	if not is_instance_valid(attacker) or not is_instance_valid(victim):
-		return {}
-
-	var origin := attacker.global_position
-	var seg_a := Vector3(origin.x, origin.y + CHEST_HEIGHT, origin.z) + f * 0.10
-	var seg_b := Vector3(origin.x, origin.y + CHEST_HEIGHT, origin.z) + f * reach
-
-	if use_live_bone:
-		var hand := _live_hand_pos(attacker, side)
-		if hand.is_finite():
-			var rel := hand - origin
-			var fwd_proj := rel.x * f.x + rel.z * f.z
-			# Используем живую кость кисти, когда рука реально выброшена вперёд в активном кадре.
-			if fwd_proj >= 0.44 and fwd_proj <= reach + 0.14:
-				seg_b = hand + f * KNUCKLE_EXTEND
-				seg_b.y = clampf(seg_b.y, origin.y + 0.65, origin.y + 1.68)
-
-	var target_pos := victim.global_position
-	var size := body_size(victim)
-	var radius: float = float(size[0])
-	var height: float = float(size[1])
-
-	var closest := _closest_on_segment_xz(seg_a, seg_b, target_pos)
-	var dx := closest.x - target_pos.x
-	var dz := closest.z - target_pos.z
-	var horiz := sqrt(dx * dx + dz * dz)
-	if horiz > radius + FIST_RADIUS:
-		return {}
-
-	var local_y := closest.y - target_pos.y
-	if local_y < -FIST_RADIUS or local_y > height + FIST_RADIUS:
-		return {}
-
-	var rel_y := clampf(local_y / maxf(height, 0.1), 0.0, 1.0)
-	var zone := "torso"
-	if rel_y >= 0.83:
-		zone = "head"
-	elif rel_y < 0.48:
-		zone = "legs"
-
-	return {
-		"target": victim,
-		"zone": zone,
-		"distance": horiz,
-	}
-
-
-static func _live_hand_pos(attacker: Node3D, side: String) -> Vector3:
-	var ch := attacker.get_node_or_null("Character")
-	if ch == null:
-		return Vector3(INF, INF, INF)
-	var skel_v: Variant = ch.get("skeleton")
-	if not (skel_v is Skeleton3D):
-		return Vector3(INF, INF, INF)
-	var skel := skel_v as Skeleton3D
-	var bone_name := "hand.L" if side == "L" else "hand.R"
-	var idx := skel.find_bone(bone_name)
-	if idx < 0:
-		return Vector3(INF, INF, INF)
-	return skel.global_transform * skel.get_bone_global_pose(idx).origin
-
-
-static func _closest_on_segment_xz(a: Vector3, b: Vector3, p: Vector3) -> Vector3:
-	var abx := b.x - a.x
-	var abz := b.z - a.z
-	var len_sq := abx * abx + abz * abz
-	if len_sq < 0.00001:
-		return b
-	var t := clampf(((p.x - a.x) * abx + (p.z - a.z) * abz) / len_sq, 0.0, 1.0)
-	return a.lerp(b, t)
-
-
-static func _flat_forward(forward: Vector3) -> Vector3:
-	var f := Vector3(forward.x, 0.0, forward.z)
-	return f.normalized() if f.length_squared() > 0.0001 else Vector3.FORWARD

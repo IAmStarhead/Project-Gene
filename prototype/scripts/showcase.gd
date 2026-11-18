@@ -274,7 +274,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_distance = minf(6.0, _distance + .2)
 	elif event is InputEventKey and event.pressed and not event.echo:
-		var key: Key = event.physical_keycode if event.physical_keycode != KEY_NONE else event.keycode
+		var key: int = event.physical_keycode if event.physical_keycode != KEY_NONE else event.keycode
 		match key:
 			KEY_SPACE: _toggle_play()
 			KEY_LEFT: _step_frame(-1)

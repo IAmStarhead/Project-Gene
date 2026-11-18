@@ -214,20 +214,22 @@ func _apply_lighting() -> void:
 
 
 func _apply_style_to_characters() -> void:
-	if not is_instance_valid(room):
+	_style_actor(player)
+	_style_actor(clone)
+
+
+func _style_actor(who: Node3D) -> void:
+	if not is_instance_valid(room) or not is_instance_valid(who):
 		return
-	for who in [player, clone]:
-		if not is_instance_valid(who):
-			continue
-		var ch := who.get_node_or_null("Character")
-		if ch == null:
-			continue
-		if room.has_method("style_character"):
-			room.style_character(ch, T.TOON_ENABLED)
-		elif T.TOON_ENABLED and room.has_method("apply_toon"):
-			room.apply_toon(ch)
-		elif room.has_method("clear_toon"):
-			room.clear_toon(ch)
+	var ch: Node = who.get_node_or_null("Character")
+	if ch == null:
+		return
+	if room.has_method("style_character"):
+		room.style_character(ch, T.TOON_ENABLED)
+	elif T.TOON_ENABLED and room.has_method("apply_toon"):
+		room.apply_toon(ch)
+	elif room.has_method("clear_toon"):
+		room.clear_toon(ch)
 
 
 func _refresh_debug_if_open() -> void:
