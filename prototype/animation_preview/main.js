@@ -9,7 +9,8 @@ const $ = (id) => document.getElementById(id);
 const CATALOG = [
   ['idle_relaxed', 'Спокойная стойка', 'Ровный корпус, мягкое дыхание, руки опущены.', 'locomotion', '○'],
   ['walk_relaxed', 'Обычная ходьба', 'Перекат с пятки на носок, свободный встречный мах рук.', 'locomotion', '↗'],
-  ['run_relaxed', 'Обычный бег', 'Новая работа ног и естественный темп, мягкие кисти.', 'locomotion', '»'],
+  ['run_relaxed', 'Лёгкий бег', 'Без модификаторов: лёгкий бег, подвижный корпус и мягкие кисти.', 'locomotion', '»'],
+  ['sprint_relaxed', 'Быстрый бег', 'Shift: активный толчок, наклон всего тела и работа плеч.', 'locomotion', '»»'],
   ['guard', 'Боевая стойка', 'Дыхание, мягкие колени и компактная защита.', 'locomotion', '◇'],
   ['walk', 'Ходьба · бой', 'Перенос ноги, опора и встречное движение корпуса.', 'locomotion', '↗'],
   ['run', 'Бег · бой', 'Опора под тазом, отталкивание и встречный мах от плеча.', 'locomotion', '»'],
@@ -120,7 +121,10 @@ function support(side) {
   const c = data.clips[selected];
   if (c.duty) return ((time / c.duration + (side ? .5 : 0)) % 1) <= c.duty;
   if (selected.startsWith('jump')) return false;
-  if (selected.startsWith('dodge')) return time < .05 || time > .37;
+  if (selected.startsWith('dodge')) {
+    const lead = c.lead === (side ? 'R' : 'L');
+    return time <= c[lead ? 'lead_lift' : 'trail_lift'] || time >= c[lead ? 'lead_land' : 'trail_land'];
+  }
   return true;
 }
 

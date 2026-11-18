@@ -213,6 +213,7 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			"vertical_speed": velocity.y, "jump_started": _jump_started,
 			"floor_distance": floor_distance, "combat": combat_mode,
 			"dodge_direction": _dodge_local_dir,
+			"walk_speed": T.WALK_SPEED, "jog_speed": T.JOG_SPEED, "sprint_speed": T.RUN_SPEED,
 			"attack_timing": Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
 		})
 
@@ -253,9 +254,9 @@ func _spend_stamina(amount: float) -> bool:
 
 func _process_move(delta: float) -> void:
 	var dir := _input_direction()
-	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED
-	if combat_mode:
-		speed = T.COMBAT_RUN_SPEED if Input.is_action_pressed("run") else T.COMBAT_WALK_SPEED
+	# Shift has priority if both modifiers are held. Stance R changes the
+	# pose/guard, not what the player's three movement modifiers mean.
+	var speed := T.RUN_SPEED if Input.is_action_pressed("run") else T.WALK_SPEED if Input.is_action_pressed("walk_slow") else T.JOG_SPEED
 	var target := dir * speed
 	var ac := _air_control()
 	var rate := (T.ACCELERATION if dir.length() > 0.0 else T.DECELERATION) * ac
@@ -288,6 +289,8 @@ func _try_start_actions() -> void:
 
 
 func _start_dodge() -> void:
+	velocity.x = 0.0
+	velocity.z = 0.0
 	_action = "dodge"
 	_action_time = 0.0
 	# Ввод задаёт перемещение, но НЕ разворачивает модель. Без ввода —
@@ -311,12 +314,15 @@ func _camera_forward() -> Vector3:
 
 
 func _process_dodge(delta: float) -> void:
+	var before := T.dodge_progress(_action_time/T.DODGE_DURATION)
 	_action_time += delta
 	_invulnerable = _action_time >= T.DODGE_IFRAMES_START and _action_time <= T.DODGE_IFRAMES_END
-	var t := _action_time / T.DODGE_DURATION
-	var speed_curve := 1.0 - pow(clampf(t, 0.0, 1.0), 1.6)  # быстро в начале, гаснет
-	velocity.x = _dodge_dir.x * T.DODGE_SPEED * speed_curve
-	velocity.z = _dodge_dir.z * T.DODGE_SPEED * speed_curve
+	var after := T.dodge_progress(_action_time/T.DODGE_DURATION)
+	# Integrating the displacement curve exactly avoids FPS-dependent travel
+	# and gives the animator the same root path as its foot contact anchors.
+	var speed := T.DODGE_DISTANCE*(after-before)/maxf(delta, .000001)
+	velocity.x = _dodge_dir.x * speed
+	velocity.z = _dodge_dir.z * speed
 
 	if _action_time >= T.DODGE_DURATION:
 		_action = ""

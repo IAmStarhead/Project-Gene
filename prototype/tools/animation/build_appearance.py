@@ -16,11 +16,11 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 from rig_math import Rig, accessor, read_glb
-from build_motion_set import ROOT, MODEL
+from build_motion_set import ROOT, MODEL, definitions
 
 OUTPUT = MODEL.parent / 'appearance' / 'lab_uniform.json'
-FABRIC = [.46, .65, .70]
-BINDING = [.018, .085, .115]
+FABRIC = [.82, .835, .85]
+BINDING = [.22, .25, .28]
 
 
 def hand_shape(rig):
@@ -46,6 +46,59 @@ def hand_shape(rig):
                  delta[affected], normals[affected], np.flatnonzero(affected)]
     return {'curl': q, 'rows': np.round(rows, 7).tolist(),
             'max_displacement': float(np.linalg.norm(delta, axis=1).max())}
+
+
+def floor_probes(rig):
+    """Small soft-skin support set for the RUNTIME pose blender.
+
+    SLERP of two floor-safe IK poses need not itself be floor-safe. Keep the
+    actual source sole vertices which support gait / stance / idle blends;
+    do not assume a rigid ankle-to-ground offset. Full-sole regression tests
+    independently check the reduced set, including between training phases.
+    """
+    source = rig.mesh_data()
+    ids = np.flatnonzero(source['POSITION'][:, 1] < .09)
+    mesh = {key: value[ids] for key, value in source.items() if key != 'indices'}
+    sides = [np.flatnonzero(mesh['POSITION'][:, 0]*sign > 0) for sign in [1, -1]]
+    authors = {name: (duration, author) for name, duration, _, author, _ in definitions()
+               if name in ['idle_relaxed', 'guard', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run']}
+    selected = set()
+
+    def blend(a, b, u):
+        q0, h0 = a
+        q1, h1 = b
+        q1 = q1*np.where(np.sum(q0*q1, axis=1, keepdims=True) < 0, -1, 1)
+        dot = np.clip(np.sum(q0*q1, axis=1), -1, 1)
+        angle = np.arccos(dot)
+        sine = np.maximum(np.sin(angle), 1e-10)
+        q = (np.sin((1-u)*angle)/sine)[:, None]*q0+(np.sin(u*angle)/sine)[:, None]*q1
+        q[dot > .9995] = (q0*(1-u)+q1*u)[dot > .9995]
+        q /= np.linalg.norm(q, axis=1, keepdims=True)
+        return q, h0*(1-u)+h1*u
+
+    def register(pose):
+        positions = rig.skin(*pose, mesh)
+        for side in sides:
+            selected.add(int(ids[side[np.argmin(positions[side, 1])]]))
+
+    pairs = [('walk_relaxed', 'run_relaxed'), ('run_relaxed', 'sprint_relaxed'),
+             ('walk_relaxed', 'sprint_relaxed'), ('walk_relaxed', 'walk'), ('run_relaxed', 'run'),
+             ('sprint_relaxed', 'run'), ('walk', 'run'),
+             *[('idle_relaxed', name) for name in ['walk_relaxed', 'run_relaxed', 'sprint_relaxed']],
+             ('guard', 'walk'), ('guard', 'run')]
+    for phase in np.linspace(0, 1, 49, endpoint=False):
+        poses = {name: author(rig, phase*duration).export() for name, (duration, author) in authors.items()}
+        for pose in poses.values():
+            register(pose)
+        for a, b in pairs:
+            for u in [.2, .5, .8]:
+                register(blend(poses[a], poses[b], u))
+        for u in [.25, .5, .75]:
+            register(blend(blend(poses['walk_relaxed'], poses['run_relaxed'], u), poses['sprint_relaxed'], u))
+    ids = np.array(sorted(selected))
+    return {'bones': rig.names, 'source_indices': ids.tolist(),
+            'positions': np.round(source['POSITION'][ids], 7).tolist(),
+            'joints': source['JOINTS_0'][ids].tolist(), 'weights': np.round(source['WEIGHTS_0'][ids], 8).tolist()}
 
 
 def build():
@@ -108,6 +161,10 @@ def build():
                (1.399, .170, .074, -.065), (1.415, .120, .060, -.051),
                (1.430, .064, .052, -.049), (1.438, .063, .050, -.048)]
     count = segments*3
+    # Rectangular holes in the torso chart, sewn to sleeves with SHARED
+    # boundary vertices. The former independent cap tubes left real gaps.
+    hole_bottom, hole_top, half_hole = 8, 13, 4
+    armhole_edges = []
     for row, (y, rx, front, back) in enumerate(profile):
         for k in range(count):
             theta = k/count*2*np.pi
@@ -127,35 +184,54 @@ def build():
     for row in range(len(profile)-1):
         y = (profile[row][0]+profile[row+1][0])/2
         for k in range(count):
-            angle = (k+.5)/count*2*np.pi
-            if 1.275 < y < 1.345 and abs(np.sin(angle)) > .88:
+            if hole_bottom <= row < hole_top and any(
+                    center-half_hole <= k < center+half_hole for center in [count//4, 3*count//4]):
                 continue
             a, b = row*count+k, row*count+(k+1)%count
             c, d = a+count, b+count
             indices += [a, c, b, b, c, d]
 
-    # Cap sleeves follow the upper arm, never pinning an arm to the chest.
-    for side in ['L', 'R']:
+    # A sewn, continuous gusset joins each real armhole to its sleeve.
+    # The terminal cuff remains open as clothing should; the armpit does not.
+    for side, sign, center in [('L', 1, count//4), ('R', -1, 3*count//4)]:
+        lo, hi = center-half_hole, center+half_hole
+        boundary = ([hole_bottom*count+k for k in range(lo, hi)]
+                    + [row*count+hi for row in range(hole_bottom, hole_top)]
+                    + [hole_top*count+k for k in range(hi, lo, -1)]
+                    + [row*count+lo for row in range(hole_top, hole_bottom, -1)])
+        n = len(boundary)
+        # Lower edges stay with the rib cage; nearest BODY skin weights
+        # rotated the cloth inside the real axilla when the arm was raised.
+        for index in boundary:
+            amount = np.clip((vertices[index][1]-1.28)/.12, 0, 1)
+            joints[index] = [rig.index['chest'], rig.index['shoulder.'+side], rig.index['upper_arm.'+side], 0]
+            weights[index] = [1-.45*amount, .35*amount, .10*amount, 0]
+        armhole_edges += [[boundary[k], boundary[(k+1)%n]] for k in range(n)]
+        original = np.asarray([vertices[i] for i in boundary])
+        cy = (profile[hole_bottom][0]+profile[hole_top][0])/2
+        angles = np.unwrap(np.arctan2((original[:, 2]-.010)/.095,
+                                      (original[:, 1]-cy)/((profile[hole_top][0]-profile[hole_bottom][0])/2)))
         root = rig.rest_world[rig.index['upper_arm.'+side]]
-        base = len(vertices)
-        rows = [(-.055, .024), (-.040, .050), (-.015, .071), (.015, .079),
-                (.055, .080), (.110, .074), (.145, .071), (.155, .071)]
-        n = 24
-        for row, (along, radius) in enumerate(rows):
+        axis = root[:3, 1]
+        lateral = np.array([1., 0., 0.]); lateral -= axis*np.dot(lateral, axis)
+        lateral /= np.linalg.norm(lateral)
+        forward = np.cross(axis, lateral)
+        previous = boundary
+        rows = [(.020, .092, .48), (.055, .087, 1), (.110, .081, 1),
+                (.150, .076, 1), (.160, .076, 1)]
+        for row, (along, radius, blend) in enumerate(rows):
+            ring = []
+            for k, angle in enumerate(angles):
+                circle = root[:3, 3]+axis*along+radius*(sign*np.cos(angle)*lateral+np.sin(angle)*forward*.93)
+                point = original[k]*(1-blend)+circle*blend
+                skin_weights = ({'chest': .55, 'shoulder.'+side: .15, 'upper_arm.'+side: .30} if row == 0 else
+                           {'shoulder.'+side: .15, 'upper_arm.'+side: .85} if row == 1 else 'upper_arm.'+side)
+                ring.append(add(point, BINDING if row == len(rows)-1 else FABRIC,
+                                (k/n, row/len(rows)), skin_weights))
             for k in range(n):
-                angle = k/n*2*np.pi
-                local = [radius*np.cos(angle), along, radius*np.sin(angle)*.93]
-                point = root[:3, 3]+root[:3, :3]@local
-                add(point, BINDING if row == len(rows)-1 else FABRIC,
-                    (k/n, row/len(rows)),
-                    {'chest': .45, 'shoulder.'+side: .55} if row == 0 else
-                    {'chest': .20, 'shoulder.'+side: .30, 'upper_arm.'+side: .50} if row == 1 else
-                    {'shoulder.'+side: .15, 'upper_arm.'+side: .85} if row == 2 else 'upper_arm.'+side)
-        for row in range(len(rows)-1):
-            for k in range(n):
-                a, b = base+row*n+k, base+row*n+(k+1)%n
-                c, d = a+n, b+n
-                indices += [a, b, c, b, d, c]
+                a, b, c, d = previous[k], previous[(k+1)%n], ring[k], ring[(k+1)%n]
+                indices += [a, c, b, b, c, d]
+            previous = ring
 
     # Geometric identification patch sits ON the fabric rather than floating
     # over the chest. No new image/texture/import dependency is required.
@@ -180,6 +256,9 @@ def build():
         np.add.at(normals, tri[:, k], face)
     normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-10)
     used, inverse = np.unique(tri, return_inverse=True)
+    remap = np.full(len(verts), -1, dtype=int)
+    remap[used] = np.arange(len(used))
+    armhole_edges = remap[np.asarray(armhole_edges)].tolist()
     verts, normals = verts[used], normals[used]
     weights, joints, colors, uv = [np.asarray(values)[used].tolist() for values in [weights, joints, colors, uv]]
     indices = inverse.ravel().tolist()
@@ -196,13 +275,18 @@ def build():
     hips_bind = rig.inverse_bind[rig.index['hips']]
     return {'version': 1, 'hips_inverse_bind': np.vstack([hips_bind[:3, :3], hips_bind[:3, 3]]).tolist(),
             'model_sha256': hashlib.sha256(MODEL.read_bytes()).hexdigest(),
-            'hands': hand_shape(rig),
-            'gown': {'waist_vertices': count, 'positions': np.round(verts, 7).tolist(), 'normals': np.round(normals, 7).tolist(),
+            'hands': hand_shape(rig), 'floor_probes': floor_probes(rig),
+            'coverage': {'sleeves': [
+                {'origin': rig.rest_world[rig.index['upper_arm.'+side], :3, 3].tolist(),
+                 'axis': rig.rest_world[rig.index['upper_arm.'+side], :3, 1].tolist(),
+                 'start': -.06, 'end': .14, 'radius': .12}
+                for side in ['L', 'R']]},
+            'gown': {'waist_vertices': count, 'armhole_edges': armhole_edges, 'positions': np.round(verts, 7).tolist(), 'normals': np.round(normals, 7).tolist(),
                      'joints': np.asarray(joints).tolist(), 'weights': np.round(weights, 7).tolist(),
                      'uv': np.round(uv, 6).tolist(), 'colors': colors, 'indices': indices},
             'cloth': {'positions': np.round(cloth, 7).tolist(), 'segments': segments,
                       'rings': len(levels), 'edges': edges, 'iterations': 2, 'step': 1/60,
-                      'thickness': .018, 'max_secondary_offset': .07,
+                      'thickness': .018, 'surface_margin': .018, 'max_secondary_offset': .045,
                       'fabric': FABRIC, 'binding': BINDING, 'capsules': [
                           ['thigh.L', 'shin.L', .122], ['thigh.R', 'shin.R', .122],
                           ['shin.L', 'foot.L', .076], ['shin.R', 'foot.R', .076]]}}

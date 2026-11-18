@@ -79,6 +79,75 @@ class AppearanceTests(unittest.TestCase):
         np.testing.assert_allclose(np.asarray(gown['weights'])[:n, 0], 1)
         self.assertTrue(np.all(np.asarray(gown['joints'])[:n, 0] == self.rig.index['hips']))
 
+    def test_armpits_are_sewn_not_overlapping_unconnected_sleeves(self):
+        from collections import Counter
+        gown = self.data['gown']
+        tri = np.asarray(gown['indices']).reshape(-1, 3)
+        edges = Counter(tuple(sorted((a, b))) for t in tri for a, b in zip(t, np.roll(t, -1)))
+        self.assertEqual(len(gown['armhole_edges']), 52)
+        self.assertTrue(all(edges[tuple(sorted(edge))] == 2 for edge in gown['armhole_edges']),
+                        'Each armhole edge must have a real sleeve face on the other side')
+        # Both sleeves and the torso are one connected garment surface, not
+        # three floating tubes. The remaining components are the badge layers.
+        from scipy.sparse import coo_matrix
+        from scipy.sparse.csgraph import connected_components
+        pairs = np.array(list(edges))
+        graph = coo_matrix((np.ones(len(pairs)), pairs.T), shape=(len(gown['positions']),)*2)
+        count, labels = connected_components(graph, directed=False)
+        sizes = np.bincount(labels)
+        self.assertEqual((sizes > 100).sum(), 1)
+        self.assertEqual(count, 4)
+        fabric = np.asarray(self.data['cloth']['fabric'])
+        self.assertGreater(fabric.min(), .75)
+        self.assertLess(np.ptp(fabric), .04, 'Requested white/light grey, not the former blue gown')
+
+    def test_underarm_occlusion_is_confined_inside_the_real_short_sleeves(self):
+        for sleeve in self.data['coverage']['sleeves']:
+            axis = np.asarray(sleeve['axis'])
+            self.assertAlmostEqual(np.linalg.norm(axis), 1)
+            self.assertLess(sleeve['start'], 0)
+            self.assertLess(sleeve['end'], .16, 'Bare arm must begin inside, not beyond, the cuff')
+            self.assertGreater(sleeve['end'], .12)
+            self.assertLess(sleeve['radius'], .13)
+            self.assertGreater(sleeve['radius'], .09)
+
+    def test_reduced_sole_probes_are_real_mesh_vertices_and_cover_blends(self):
+        from test_motion_set import sample
+        from build_motion_set import OUTPUT as MOTIONS
+        r = self.rig
+        mesh = r.mesh_data()
+        probes = self.data['floor_probes']
+        ids = np.asarray(probes['source_indices'])
+        self.assertGreater(len(ids), 20)
+        self.assertLess(len(ids), 120, 'Small per-frame native contact support set')
+        for source, key in [('POSITION', 'positions'), ('JOINTS_0', 'joints'), ('WEIGHTS_0', 'weights')]:
+            np.testing.assert_allclose(mesh[source][ids], probes[key], atol=1e-7)
+        floor = mesh['POSITION'][:, 1] < .09
+        full = {k: v[floor] for k, v in mesh.items() if k != 'indices'}
+        small = {k: v[ids] for k, v in mesh.items() if k != 'indices'}
+        clips = json.loads((MOTIONS/'motion_set.json').read_text())['clips']
+        largest_error = 0
+        for a, b in [('walk_relaxed', 'run_relaxed'), ('run_relaxed', 'sprint_relaxed'),
+                     ('walk_relaxed', 'sprint_relaxed'), ('walk_relaxed', 'walk'), ('run_relaxed', 'run')]:
+            # Different phases/weights than the training grid; use baked
+            # source keys, and check the WHOLE soft sole independently.
+            for phase in np.linspace(.003, .997, 57):
+                q0, h0 = sample(clips[a], phase*clips[a]['duration'])
+                q1, h1 = sample(clips[b], phase*clips[b]['duration'])
+                for u in [.31, .67]:
+                    q1 = q1*np.where(np.sum(q0*q1, axis=1, keepdims=True) < 0, -1, 1)
+                    angle = np.arccos(np.clip(np.sum(q0*q1, axis=1), -1, 1))
+                    sine = np.maximum(np.sin(angle), 1e-10)
+                    q = np.sin((1-u)*angle)[:, None]/sine[:, None]*q0+np.sin(u*angle)[:, None]/sine[:, None]*q1
+                    same = angle < .0001
+                    q[same] = (q0*(1-u)+q1*u)[same]
+                    q /= np.linalg.norm(q, axis=1, keepdims=True)
+                    hip = h0*(1-u)+h1*u
+                    actual = r.skin(q, hip, full)[:, 1].min()
+                    reduced = r.skin(q, hip, small)[:, 1].min()
+                    largest_error = max(largest_error, reduced-actual)
+        self.assertLess(largest_error, .0007, 'Runtime 1 mm lift must cover the full sole too')
+
     def test_cloth_is_small_finite_and_has_real_body_colliders(self):
         cloth = self.data['cloth']
         p = np.asarray(cloth['positions'])

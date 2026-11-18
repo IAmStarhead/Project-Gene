@@ -32,7 +32,8 @@ var _goals := PackedVector3Array()
 var _hips_transform: Transform3D
 var _hips_inverse: Transform3D
 var _thickness := .018
-var _max_secondary := .07
+var _surface_margin := .018
+var _max_secondary := .045
 var _capsules: Array = []
 var _capsule_world: Array = []
 var _segments := 16
@@ -44,6 +45,11 @@ var _material: StandardMaterial3D
 var _skirt_indices := PackedInt32Array()
 var _skirt_colors := PackedColorArray()
 var _skirt_mesh := ArrayMesh.new()
+var _floor_points := PackedVector3Array()
+var _floor_joints := PackedInt32Array()
+var _floor_weights := PackedFloat32Array()
+var _floor_binds: Dictionary = {}
+var _floor_bones: Dictionary = {}
 
 
 func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
@@ -60,6 +66,7 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	if not _body_cache.has(key):
 		_body_cache[key] = _body_with_relaxed_hands(body.mesh)
 	body.mesh = _body_cache[key]
+	_install_floor_probes()
 	body.custom_aabb = AABB(Vector3(-1, -.3, -1), Vector3(2, 2.6, 2.3))
 	if _gown_mesh == null:
 		_gown_mesh = _build_gown_mesh()
@@ -97,6 +104,7 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 		_edge_length.append(float(edge[2]))
 		_edge_strength.append(float(edge[3]))
 	_thickness = float(cloth["thickness"])
+	_surface_margin = float(cloth["surface_margin"])
 	_max_secondary = float(cloth["max_secondary_offset"])
 	for item in cloth["capsules"]:
 		_capsules.append([skeleton.find_bone(item[0]), skeleton.find_bone(item[1]), float(item[2])])
@@ -162,7 +170,16 @@ static func _hand_row(point: Vector3, normal: Vector3) -> Array:
 
 static func covered(point: Vector3, bones: PackedInt32Array, weights: PackedFloat32Array,
 		index: int, names: Array) -> bool:
-	if point.y < .78 or point.y > 1.355:
+	# Cull only skin actually inside the sewn cap sleeve. The old axial-only
+	# mask left mixed chest/arm axilla triangles drawing THROUGH the fabric.
+	for sleeve in _data["coverage"]["sleeves"]:
+		var relative := point-_vector(sleeve["origin"])
+		var axis := _vector(sleeve["axis"])
+		var along := relative.dot(axis)
+		if along >= float(sleeve["start"]) and along <= float(sleeve["end"]) \
+				and (relative-axis*along).length() < float(sleeve["radius"]):
+			return true
+	if point.y < .74 or point.y > 1.355:
 		return false
 	var axial := 0.0
 	for k in 4:
@@ -249,9 +266,50 @@ static func _build_gown_mesh() -> ArrayMesh:
 	return result
 
 
+func _install_floor_probes() -> void:
+	var source: Dictionary = _data["floor_probes"]
+	_floor_points.clear()
+	_floor_joints.clear()
+	_floor_weights.clear()
+	_floor_binds.clear()
+	_floor_bones.clear()
+	var binds: Dictionary = {}
+	for i in body.skin.get_bind_count():
+		binds[str(body.skin.get_bind_name(i))] = i
+	for i in source["positions"].size():
+		_floor_points.append(_vector(source["positions"][i]))
+		for k in 4:
+			var name: String = source["bones"][int(source["joints"][i][k])]
+			var weight: float = source["weights"][i][k]
+			var bind: int = binds[name]
+			_floor_joints.append(bind)
+			_floor_weights.append(weight)
+			if weight > 0.0:
+				_floor_binds[bind] = body.skin.get_bind_pose(bind)
+				_floor_bones[bind] = skeleton.find_bone(name)
+
+
+func sole_height() -> float:
+	# Native imported Skin binds, real soft-weighted heel / ball / toe points.
+	# Called after applying a BLENDED pose, before cloth and the next capture.
+	var transforms: Dictionary = {}
+	var to_actor := actor.global_transform.affine_inverse()*skeleton.global_transform
+	for bind in _floor_binds:
+		transforms[bind] = to_actor*skeleton.get_bone_global_pose(_floor_bones[bind])*(_floor_binds[bind] as Transform3D)
+	var lowest := INF
+	for i in _floor_points.size():
+		var y := 0.0
+		for k in 4:
+			var weight := _floor_weights[i*4+k]
+			if weight > 0.0:
+				y += weight*((transforms[_floor_joints[i*4+k]] as Transform3D)*_floor_points[i]).y
+		lowest = minf(lowest, y)
+	return lowest
+
+
 func set_variant(is_clone: bool) -> void:
 	clone_variant = is_clone
-	_material.albedo_color = Color(.78, .87, .93) if is_clone else Color.WHITE
+	_material.albedo_color = Color(.94, .96, 1.0) if is_clone else Color.WHITE
 
 
 func set_hands(amount: float) -> void:
@@ -278,7 +336,7 @@ func _update_colliders() -> void:
 		var a := actor.global_transform*skeleton.get_bone_global_pose(capsule[0]).origin
 		var b := actor.global_transform*skeleton.get_bone_global_pose(capsule[1]).origin
 		var axis := b-a
-		_capsule_world.append([a, b, axis, axis.length_squared(), capsule[2]+_thickness])
+		_capsule_world.append([a, b, axis, axis.length_squared(), capsule[2]+_thickness+_surface_margin])
 
 
 static func _sphere_far(origin: Vector3, direction: Vector3, center: Vector3, radius: float) -> float:
@@ -333,17 +391,37 @@ func _collide(point: Vector3) -> Vector3:
 		minimum = sqrt((1.0-dy*dy)/(radial.x*radial.x/(.202*.202)+radial.z*radial.z/(.137*.137)))
 	for capsule in _capsule_world:
 		minimum = maxf(minimum, _capsule_far(origin, direction, capsule))
-	if distance < minimum:
+	# Tiny contact slop survives world/hips round trips in native float32.
+	if distance < minimum+.0001:
 		collision_count += 1
-		return origin+direction*minimum
+		return origin+direction*(minimum+.0001)
 	return point
 
 
 func _fit_goals() -> void:
 	_goals.clear()
+	var radii := PackedFloat32Array()
 	for i in _rest.size():
 		var point := _hips_transform*_rest[i]
-		_goals.append(point if i < _segments else _collide(point))
+		point = point if i < _segments else _collide(point)
+		var local := _hips_inverse*point
+		radii.append(Vector2(local.x, local.z-.02).length())
+	# Conservative low-resolution surface: spread a knee's local bulge to
+	# neighbouring cells instead of a single spike between inverted rings.
+	for iteration in 2:
+		var source := radii.duplicate()
+		for row in range(1, _rings):
+			for k in _segments:
+				var i := row*_segments+k
+				var radius := maxf(source[i], maxf(source[row*_segments+(k+1)%_segments], source[row*_segments+(k+_segments-1)%_segments])-.045)
+				if row > 1:
+					radius = maxf(radius, source[i-_segments]-absf(_rest[i].y-_rest[i-_segments].y)*.9)
+				if row < _rings-1:
+					radius = maxf(radius, source[i+_segments]-absf(_rest[i].y-_rest[i+_segments].y)*.9)
+				radii[i] = radius
+	for i in _rest.size():
+		var radial := Vector3(_rest[i].x, 0, _rest[i].z-.02).normalized()
+		_goals.append(_hips_transform*Vector3(radial.x*radii[i], _rest[i].y, .02+radial.z*radii[i]))
 
 
 func update_pose(delta: float, grounded: bool = true) -> void:
@@ -392,12 +470,16 @@ func _project_points(grounded: bool) -> void:
 	for i in _segments:
 		_points[i] = _goals[i]
 		_previous[i] = _goals[i]
-	# Bound SECONDARY motion. Collision has priority when the body needs room.
+	# A small radial textile shell, NOT an unconstrained flying sheet.
+	# Preserve ring heights/angular order so a fast lateral quickstep cannot
+	# turn two rows inside-out or wrap the hem twice around the same knee.
 	for i in range(_segments, _points.size()):
-		var offset := _points[i]-_goals[i]
-		if offset.length_squared() > _max_secondary*_max_secondary:
-			_points[i] = _goals[i]+offset.normalized()*_max_secondary
-		_points[i] = _collide(_points[i])
+		var local := _hips_inverse*_points[i]
+		var radial := Vector3(_rest[i].x, 0, _rest[i].z-.02).normalized()
+		var goal := _hips_inverse*_goals[i]
+		var minimum := Vector2(goal.x, goal.z-.02).length()
+		var radius := clampf(Vector3(local.x, 0, local.z-.02).dot(radial), minimum, minimum+_max_secondary)
+		_points[i] = _hips_transform*Vector3(radial.x*radius, _rest[i].y, .02+radial.z*radius)
 		if grounded:
 			_points[i].y = maxf(_points[i].y, actor.global_position.y+.025)
 

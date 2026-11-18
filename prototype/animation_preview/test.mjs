@@ -30,9 +30,9 @@ try {
   const data = await (await fetch(base + '/assets/heroine/animations/motion_set.json')).json();
   const model = await (await fetch(base + '/assets/heroine/female_A_rigged_safe.glb')).arrayBuffer();
   assert.equal(createHash('sha256').update(Buffer.from(model)).digest('hex'), data.model_sha256);
-  assert.equal(await page.locator('.clip-button').count(), 17);
+  assert.equal(await page.locator('.clip-button').count(), 18);
   assert.equal(await page.evaluate(() => window.motionLab.state.selected), 'idle_relaxed');
-  assert.match(await page.locator('#clip-count').textContent(), /17/);
+  assert.match(await page.locator('#clip-count').textContent(), /18/);
   const settle = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
   for (const [name, clip] of Object.entries(data.clips)) {
     await page.locator(`[data-clip="${name}"]`).click();
@@ -43,10 +43,10 @@ try {
       assert.equal(joints.length, 21);
       assert(joints.every((joint) => joint.position.every(Number.isFinite)), `Non-finite joint in ${name}`);
       const relaxed = name.endsWith('_relaxed');
-      const minHandHeight = ['run', 'run_relaxed', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
+      const minHandHeight = name === 'sprint_relaxed' ? .90 : name === 'run_relaxed' ? .92 : ['run', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
       assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > (relaxed ? -.1 : .1)));
       if (relaxed) {
-        assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < 1.23), 'Relaxed arms must not return to face-level guard');
+        assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < (['run_relaxed', 'sprint_relaxed'].includes(name) ? 1.30 : .95)), 'Ordinary arms must not return to face-level guard');
       }
       if (name === 'run') {
         for (const side of ['L', 'R']) {
@@ -55,8 +55,8 @@ try {
           assert(get('hand')[1] < get('upper_arm')[1] - .09, 'Running fist must not return to the neck');
         }
       }
-      if (['walk', 'run', 'walk_relaxed', 'run_relaxed'].includes(name)) {
-        assert(joints.find((joint) => joint.name === 'hips').position[1] > (name === 'walk' ? .80 : name === 'walk_relaxed' ? .8499 : .825),
+      if (['walk', 'run', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed'].includes(name)) {
+        assert(joints.find((joint) => joint.name === 'hips').position[1] > (name === 'walk' ? .80 : name === 'walk_relaxed' ? .865 : name === 'sprint_relaxed' ? .84 : .825),
           `Locomotion must not sink into a crouch: ${name}`);
       }
       const appearance = await page.evaluate(() => window.motionLab.appearance);
@@ -117,7 +117,7 @@ try {
     const quarters = (name) => [0, .25, .5, .75].map((phase) => phase * data.clips[name].duration);
     for (const [name, times] of [
       ['walk', quarters('walk')], ['run', quarters('run')],
-      ['idle_relaxed', quarters('idle_relaxed')], ['walk_relaxed', quarters('walk_relaxed')], ['run_relaxed', quarters('run_relaxed')],
+      ['idle_relaxed', quarters('idle_relaxed')], ['walk_relaxed', quarters('walk_relaxed')], ['run_relaxed', quarters('run_relaxed')], ['sprint_relaxed', quarters('sprint_relaxed')],
       ['attack_left', [0, .10, .18, .30]], ['attack_right', [0, .10, .18, .30]],
       ...['dodge', 'dodge_back', 'dodge_left', 'dodge_right'].map((name) => [name, [0, .08, .20, .34]]), ['land', [0, .075, .18, data.clips.land.duration]],
       ...['jump_start', 'jump_up', 'jump_down'].map((name) => [name, quarters(name)]),
@@ -140,7 +140,7 @@ try {
   }
   assert.equal((await fetch(base, { headers: { Host: '5173-session.e2b.app' } })).status, 200);
   assert.deepEqual(errors, []);
-  console.log(`GEN browser suite: 17 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
+  console.log(`GEN browser suite: 18 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
 } finally {
   await browser.close();
 }

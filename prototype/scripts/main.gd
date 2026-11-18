@@ -66,7 +66,7 @@ func _ready() -> void:
 	_hint = Label.new()
 	_hint.add_theme_font_size_override("font_size", 13)
 	_hint.add_theme_color_override("font_color", Color(0.86, 0.90, 0.96))
-	_hint.text = "WASD — идти · Shift — бег · F — прыжок\n" \
+	_hint.text = "WASD — лёгкий бег · L Alt — шаг · Shift — быстрый бег\nF — прыжок\n" \
 		+ "ЛКМ — удар левой · ПКМ — удар правой · Пробел — уворот"
 	_hint.add_theme_constant_override("line_spacing", 3)
 	panel.add_child(_hint)

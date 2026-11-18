@@ -8,7 +8,7 @@ const CharacterScript := preload("res://scripts/character_anim.gd")
 const BuildScene := preload("res://scripts/build_scene.gd")
 const CLIPS := [
 	["idle_relaxed", "Спокойная стойка"], ["walk_relaxed", "Обычная ходьба"],
-	["run_relaxed", "Обычный бег"],
+	["run_relaxed", "Лёгкий бег"], ["sprint_relaxed", "Быстрый бег — Shift"],
 	["guard", "Боевая стойка"], ["walk", "Ходьба — бой"], ["run", "Бег — бой"],
 	["attack_left", "Джеб — левая"], ["attack_right", "Кросс — правая"],
 	["dodge", "Уворот вперёд"], ["dodge_back", "Уворот назад"],

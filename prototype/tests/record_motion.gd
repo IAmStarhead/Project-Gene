@@ -33,19 +33,30 @@ func actor_frame(character: Node3D) -> Dictionary:
 		"position": vector(character.global_position), "orientation": [q.x, q.y, q.z, q.w],
 		"hand_open": character.appearance.body.get_blend_shape_value(0), "cloth": cloth,
 		"cloth_gap": character.appearance.collision_gap(),
-		"state": character._state, "phase": character._phase, "gait_blend": character._gait_blend}
+		"state": character._state, "phase": character._phase, "gait_blend": character._gait_blend,
+		"sprint_blend": character._sprint_blend, "combat_blend": character._combat_blend}
 
 
 func frame(player: CharacterBody3D) -> Dictionary:
 	var result := actor_frame(player.get_node("Character"))
 	result.merge({"vertical_speed": player.velocity.y, "grounded": player.is_on_floor(),
 		"combat": player.combat_mode, "action": player._action,
-		"dodge_direction": vector(player._dodge_local_dir)})
+		"dodge_direction": vector(player._dodge_local_dir), "action_time": player._action_time,
+		"alt": Input.is_action_pressed("walk_slow"), "shift": Input.is_action_pressed("run")})
 	return result
 
 
+func set_gait(gait: String) -> void:
+	Input.action_release("run")
+	Input.action_release("walk_slow")
+	if gait in ["sprint", "both"]:
+		Input.action_press("run")
+	if gait in ["walk", "both"]:
+		Input.action_press("walk_slow")
+
+
 func take(moving: bool, jump_at: int, count: int, combat: bool = true,
-		sprint: bool = true, toggles: Array = []) -> Array:
+		gait: String = "sprint", toggles: Array = []) -> Array:
 	var player := PlayerScene.instantiate() as CharacterBody3D
 	player.position = Vector3(0, .1, 0)
 	player.combat_mode = combat
@@ -54,8 +65,7 @@ func take(moving: bool, jump_at: int, count: int, combat: bool = true,
 		await physics_frame
 	if moving:
 		Input.action_press("move_forward")
-		if sprint:
-			Input.action_press("run")
+		set_gait(gait)
 		for i in 45:
 			await physics_frame
 	var result: Array = []
@@ -67,7 +77,29 @@ func take(moving: bool, jump_at: int, count: int, combat: bool = true,
 		await physics_frame
 		result.append(frame(player))
 	Input.action_release("move_forward")
-	Input.action_release("run")
+	set_gait("jog")
+	player.free()
+	return result
+
+
+func take_modifiers() -> Array:
+	var player := PlayerScene.instantiate() as CharacterBody3D
+	player.position = Vector3(0, .1, 0)
+	world.add_child(player)
+	for i in 25:
+		await physics_frame
+	Input.action_press("move_forward")
+	set_gait("walk")
+	for i in 45:
+		await physics_frame
+	var result: Array = []
+	for i in 360:
+		if i % 60 == 0:
+			set_gait(["walk", "jog", "sprint", "both", "walk", "jog"][i/60])
+		await physics_frame
+		result.append(frame(player))
+	Input.action_release("move_forward")
+	set_gait("jog")
 	player.free()
 	return result
 
@@ -127,14 +159,16 @@ func _record() -> void:
 	var result := {"fps": FPS, "source": "Godot CharacterBody3D + character_anim.gd, actual physics frames",
 		"takes": {"run": await take(true, -1, 180),
 			"jump": await take(false, 18, 108), "run_jump": await take(true, 18, 108),
-			"walk": await take(true, -1, 180, true, false),
+			"walk": await take(true, -1, 180, true, "walk"),
 			"idle_relaxed": await take(false, -1, 96, false),
-			"walk_relaxed": await take(true, -1, 180, false, false),
-			"run_relaxed": await take(true, -1, 180, false),
+			"walk_relaxed": await take(true, -1, 180, false, "walk"),
+			"run_relaxed": await take(true, -1, 180, false, "jog"),
+			"sprint_relaxed": await take(true, -1, 186, false, "sprint"),
+			"modifiers": await take_modifiers(),
 			"jump_relaxed": await take(false, 18, 108, false),
-			"run_jump_relaxed": await take(true, 18, 108, false),
-			"walk_switch": await take(true, -1, 216, false, false, [60, 132]),
-			"run_switch": await take(true, -1, 216, false, true, [60, 132]),
+			"run_jump_relaxed": await take(true, 18, 108, false, "jog"),
+			"walk_switch": await take(true, -1, 216, false, "walk", [60, 132]),
+			"run_switch": await take(true, -1, 216, false, "jog", [60, 132]),
 			"dodge": await take_dodge(Vector3(0, 0, 1)),
 			"dodge_back": await take_dodge(Vector3(0, 0, -1)),
 			"dodge_left": await take_dodge(Vector3(1, 0, 0)),
@@ -142,6 +176,7 @@ func _record() -> void:
 			"dodge_front_left": await take_dodge(Vector3(1, 0, 1)),
 			"dodge_back_right": await take_dodge(Vector3(-1, 0, -1)),
 			"clone_uniform": await take_clone()}}
+
 	var path := OS.get_environment("GEN_TRACE_OUTPUT")
 	if path.is_empty():
 		path = "user://motion-trace.json"

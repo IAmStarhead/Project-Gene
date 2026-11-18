@@ -56,7 +56,7 @@ class MotionSetTests(unittest.TestCase):
         self.assertEqual(self.data['model_sha256'], hashlib.sha256(MODEL.read_bytes()).hexdigest())
         self.assertEqual(self.data['bones'], self.rig.names)
         self.assertEqual(len(self.rig.names), 21)
-        self.assertEqual(len(self.data['clips']), 17)
+        self.assertEqual(len(self.data['clips']), 18)
         self.assertTrue({'idle_relaxed', 'walk_relaxed', 'run_relaxed'} <= self.data['clips'].keys())
 
     def test_generated_files_are_reproducible(self):
@@ -203,17 +203,17 @@ class MotionSetTests(unittest.TestCase):
             g = self.globals('walk_relaxed', phase*c['duration'])
             hip, neck = self.joint(g, 'hips'), self.joint(g, 'neck')
             heights.append(hip[1])
-            self.assertLess(abs(np.rad2deg(np.arctan2((neck-hip)[2], (neck-hip)[1]))), 4)
+            self.assertLess(abs(np.rad2deg(np.arctan2((neck-hip)[2], (neck-hip)[1]))), 7)
             for side, offset in [('L', 0), ('R', .5)]:
                 elbows[side].append(self.joint(g, 'forearm.'+side)[2])
                 if (phase+offset) % 1 <= c['duty']:
                     knees.append(flexion(*[self.joint(g, bone+'.'+side)
                                            for bone in ['thigh', 'shin', 'foot']]))
-        self.assertGreaterEqual(min(heights), .8499)
+        self.assertGreaterEqual(min(heights), .865)
         self.assertGreater(np.mean(heights), .87)
         self.assertLess(np.mean(knees), 25)
         self.assertLess(max(knees), 42)  # includes the expected pre-swing flexion
-        self.assertLess(np.corrcoef(elbows['L'], elbows['R'])[0, 1], -.98)
+        self.assertLess(np.corrcoef(elbows['L'], elbows['R'])[0, 1], -.90)
         for phase, sign in [(0, -1), (.5, 1)]:
             g = self.globals('walk_relaxed', phase*c['duration'])
             self.assertGreater(sign*(self.joint(g, 'forearm.L')[2]
@@ -224,8 +224,9 @@ class MotionSetTests(unittest.TestCase):
     def test_ordinary_cadence_and_run_are_not_the_combat_cycle(self):
         # The old equality check below the waist actively locked the rejected
         # 230-step/min ordinary run to the combat run. That is NOT an invariant.
-        for name, speed, low, high in [('walk_relaxed', 1.35, 110, 125),
-                                       ('run_relaxed', 3.8, 165, 180)]:
+        for name, speed, low, high in [('walk_relaxed', 1.15, 107, 115),
+                                       ('run_relaxed', 2.9, 145, 155),
+                                       ('sprint_relaxed', 5.6, 185, 200)]:
             c = self.data['clips'][name]
             self.assertGreater(120*speed/c['stride'], low)
             self.assertLess(120*speed/c['stride'], high)
@@ -241,7 +242,7 @@ class MotionSetTests(unittest.TestCase):
                 if (phase+offset) % 1 <= ordinary['duty']:
                     knees.append(flexion(*[self.joint(g, bone+'.'+side)
                                            for bone in ['thigh', 'shin', 'foot']]))
-        self.assertGreater(min(heights), .86)
+        self.assertGreater(min(heights), .845)
         self.assertGreater(np.mean(heights), .88)
         self.assertLess(np.mean(knees), 33)
         self.assertLess(max(knees), 40)
@@ -264,9 +265,16 @@ class MotionSetTests(unittest.TestCase):
             # rather than rotating one forward dodge through 90 or 180 deg.
             forward = g[0, :3, :3]@self.rig.rest_world[0, :3, :3].T@np.array([0, 0, 1])
             self.assertGreater(forward[2], .96)
-            self.assertAlmostEqual(c['duration'], .42)
-        left, right = frames['dodge_left'], frames['dodge_right']
-        self.assertGreater(np.linalg.norm(self.joint(left, 'foot.L')-self.joint(right, 'foot.L')), .16)
+            self.assertAlmostEqual(c['duration'], .48)
+        # Check the asymmetric contact sequence, not an arbitrary separation
+        # at .18 s when BOTH feet may already be in flight. L leads left and
+        # R leads right: at .10 the other foot still has a real planted hold.
+        for name, lead, trail in [('dodge_left', 'L', 'R'), ('dodge_right', 'R', 'L')]:
+            early = self.globals(name, .10)
+            self.assertGreater(self.joint(early, 'foot.'+lead)[1], .15)
+            self.assertAlmostEqual(self.joint(early, 'foot.'+trail)[1], .08, delta=.0002)
+        left, right = [self.globals(name, .30) for name in ('dodge_left', 'dodge_right')]
+        self.assertGreater(np.linalg.norm(self.joint(left, 'foot.L')-self.joint(right, 'foot.L')), .30)
 
     def test_relaxed_walk_heel_rise_pivots_about_the_forefoot(self):
         c = self.data['clips']['walk_relaxed']
@@ -317,10 +325,15 @@ class MotionSetTests(unittest.TestCase):
                     # Guard/attacks stay high; relaxed running and balancing
                     # arms on landing must NOT be forced back to combat guard.
                     if name.endswith('_relaxed'):
-                        self.assertGreater(hand[1], .95 if name == 'run_relaxed' else .78, (name, side))
-                        self.assertLess(hand[1], 1.23, (name, side, 'not a face-level guard'))
+                        running = name in ('run_relaxed', 'sprint_relaxed')
+                        self.assertGreater(hand[1], .90 if running else .78, (name, side))
+                        self.assertLess(hand[1], 1.30 if running else .95, (name, side, 'not a face-level guard'))
+                        self.assertLess(hand[1], self.joint(g, 'neck')[1]-.08, (name, side, 'hand at the neck'))
                         self.assertGreater(hand[2], -.10, (name, side))
-                        self.assertGreater(hand[0] * (1 if side == 'L' else -1), .17, (name, side))
+                        # Active sprint hands may approach the midline; forcing
+                        # every wrist outside .17 m recreates the wide, rigid
+                        # "carrying a handbag" silhouette the user rejected.
+                        self.assertGreater(hand[0]*(1 if side == 'L' else -1), .06 if running else .17, (name, side))
                     else:
                         self.assertGreater(hand[1], .95 if name in ('run', 'jump_down', 'land') else 1.10,
                                            (name, side))

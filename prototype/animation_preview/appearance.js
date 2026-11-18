@@ -37,7 +37,12 @@ export class Appearance {
         const name = boneNames[g.attributes.skinIndex.getComponent(i, j)];
         if (['hips', 'spine', 'chest', 'neck'].includes(name) || name.startsWith('thigh.')) axial += g.attributes.skinWeight.getComponent(i, j);
       }
-      hide.push(pos.getY(i) > .78 && pos.getY(i) < 1.355 && axial > .8);
+      const insideSleeve = (data.coverage?.sleeves ?? []).some((sleeve) => {
+        const relative = new THREE.Vector3().fromBufferAttribute(pos, i).sub(vector(sleeve.origin));
+        const axis = vector(sleeve.axis), along = relative.dot(axis);
+        return along >= sleeve.start && along <= sleeve.end && relative.addScaledVector(axis, -along).length() < sleeve.radius;
+      });
+      hide.push(insideSleeve || (pos.getY(i) > .74 && pos.getY(i) < 1.355 && axial > .8));
     }
     const kept = [];
     for (let i = 0; i < g.index.count; i += 3) {
@@ -75,11 +80,11 @@ export class Appearance {
     this.skirt.castShadow = true; this.skirt.frustumCulled = false; body.parent.add(this.skirt);
     this.hipsInverseBind = new THREE.Matrix4().set(
       ...[0, 1, 2].flatMap((i) => [...data.hips_inverse_bind[i], data.hips_inverse_bind[3][i]]), 0, 0, 0, 1);
-    this.capsules = cloth.capsules.map(([a, b, radius]) => [body.skeleton.bones[boneNames.indexOf(a)], body.skeleton.bones[boneNames.indexOf(b)], radius+cloth.thickness]);
+    this.capsules = cloth.capsules.map(([a, b, radius]) => [body.skeleton.bones[boneNames.indexOf(a)], body.skeleton.bones[boneNames.indexOf(b)], radius+cloth.thickness+(cloth.surface_margin ?? 0)]);
     this.points = []; this.previous = []; this.accumulator = 0; this.reset();
   }
   setHands(amount) { this.handOpen = THREE.MathUtils.clamp(amount, 0, 1); this.body.morphTargetInfluences[0] = this.handOpen; }
-  setVariant(clone) { this.material.color.setRGB(...(clone ? [.78, .87, .93] : [1, 1, 1])); }
+  setVariant(clone) { this.material.color.setRGB(...(clone ? [.94, .96, 1.0] : [1, 1, 1])); }
   setVisible(visible) {
     this.gown.visible = this.skirt.visible = visible;
     this.body.geometry.setIndex(visible ? this.coveredIndex : this.fullIndex);
@@ -115,11 +120,30 @@ export class Appearance {
     const dy = (local.y-.89)/.145;
     let minimum = Math.abs(dy) < 1 ? Math.sqrt((1-dy*dy)/(radial.x**2/.202**2+radial.z**2/.137**2)) : 0;
     for (const collider of this.colliders) minimum = Math.max(minimum, this.capsuleFar(origin, direction, collider));
-    if (distance < minimum) p.copy(origin.addScaledVector(direction, minimum));
+    if (distance < minimum+.0001) p.copy(origin.addScaledVector(direction, minimum+.0001));
     return p;
   }
   fitGoals() {
-    this.goals = this.rest.map((p, i) => { const goal = p.clone().applyMatrix4(this.hips); return i < this.segments ? goal : this.collide(goal); });
+    let radii = this.rest.map((p, i) => {
+      const point = p.clone().applyMatrix4(this.hips);
+      if (i >= this.segments) this.collide(point);
+      point.applyMatrix4(this.hipsInverse);
+      return Math.hypot(point.x, point.z-.02);
+    });
+    for (let iteration = 0; iteration < 2; iteration++) {
+      const source = radii.slice();
+      for (let row = 1; row < this.data.cloth.rings; row++) for (let k = 0; k < this.segments; k++) {
+        const i = row*this.segments+k;
+        let radius = Math.max(source[i], Math.max(source[row*this.segments+(k+1)%this.segments], source[row*this.segments+(k+this.segments-1)%this.segments])-.045);
+        if (row > 1) radius = Math.max(radius, source[i-this.segments]-Math.abs(this.rest[i].y-this.rest[i-this.segments].y)*.9);
+        if (row < this.data.cloth.rings-1) radius = Math.max(radius, source[i+this.segments]-Math.abs(this.rest[i].y-this.rest[i+this.segments].y)*.9);
+        radii[i] = radius;
+      }
+    }
+    this.goals = this.rest.map((p, i) => {
+      const radial = new THREE.Vector3(p.x, 0, p.z-.02).normalize();
+      return new THREE.Vector3(radial.x*radii[i], p.y, .02+radial.z*radii[i]).applyMatrix4(this.hips);
+    });
   }
   reset() {
     this.transforms(); this.accumulator = 0; this.fitGoals();
@@ -155,9 +179,12 @@ export class Appearance {
   projectPoints() {
     for (let i = 0; i < this.segments; i++) { this.points[i].copy(this.goals[i]); this.previous[i].copy(this.goals[i]); }
     for (let i = this.segments; i < this.points.length; i++) {
-      const offset = this.points[i].clone().sub(this.goals[i]), maximum = this.data.cloth.max_secondary_offset;
-      if (offset.lengthSq() > maximum**2) this.points[i].copy(this.goals[i]).add(offset.normalize().multiplyScalar(maximum));
-      this.collide(this.points[i]);
+      const local = this.points[i].clone().applyMatrix4(this.hipsInverse);
+      const radial = new THREE.Vector3(this.rest[i].x, 0, this.rest[i].z-.02).normalize();
+      const goal = this.goals[i].clone().applyMatrix4(this.hipsInverse);
+      const minimum = Math.hypot(goal.x, goal.z-.02);
+      const radius = THREE.MathUtils.clamp(new THREE.Vector3(local.x, 0, local.z-.02).dot(radial), minimum, minimum+this.data.cloth.max_secondary_offset);
+      this.points[i].set(radial.x*radius, this.rest[i].y, .02+radial.z*radius).applyMatrix4(this.hips);
     }
   }
   upload() {

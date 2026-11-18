@@ -7,9 +7,10 @@ class_name Tuning
 
 
 # ─────────────────────────────────────────────── ДВИЖЕНИЕ
-const WALK_SPEED := 1.35         ## м/с: именно шаг, не ускоренный бег на месте
-const RUN_SPEED := 3.8           ## м/с, бег на Shift; фаза следует дистанции
-const COMBAT_WALK_SPEED := 1.65  ## боевую локомоцию не замедляем
+const WALK_SPEED := 1.15         ## L Alt: спокойный шаг
+const JOG_SPEED := 2.9           ## без модификаторов: лёгкий бег
+const RUN_SPEED := 5.6           ## Shift: быстрый динамичный бег
+const COMBAT_WALK_SPEED := 1.65  ## калибровка боевых клипов/клона, не модификатор игрока
 const COMBAT_RUN_SPEED := 4.6
 const ACCELERATION := 16.0       ## как быстро набирается скорость
 const DECELERATION := 20.0       ## как быстро гасится скорость
@@ -30,8 +31,8 @@ const CAMERA_HEIGHT := 1.45
 const CAMERA_FOLLOW_SPEED := 12.0
 
 # ─────────────────────────────────────────────── УВОРОТ
-const DODGE_SPEED := 5.6
-const DODGE_DURATION := 0.42     ## длительность направленного уворота
+const DODGE_DISTANCE := 1.10     ## метры на свободном полу, независимо от FPS
+const DODGE_DURATION := 0.48     ## загрузка → толчок → ловля веса
 const DODGE_IFRAMES_START := 0.04  ## с какого момента включается неуязвимость
 const DODGE_IFRAMES_END := 0.30    ## до какого момента действует неуязвимость
 const DODGE_STAMINA := 22.0
@@ -98,3 +99,9 @@ const BRIGHTNESS_NAMES := ["сумрачно", "средне", "ярко"]
 const ROOM_WIDTH := 18.0
 const ROOM_DEPTH := 18.0
 const ROOM_HEIGHT := 5.0
+
+
+## Та же кривая пройденного пути, что при авторинге уворота.
+static func dodge_progress(value: float) -> float:
+	var u := clampf(value, 0, 1)
+	return u*u*u*(10.0-15.0*u+6.0*u*u)

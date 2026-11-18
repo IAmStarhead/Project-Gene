@@ -29,6 +29,7 @@ var _hips_index := -1
 var _clock := 0.0
 var _phase := 0.0
 var _gait_blend := 0.0
+var _sprint_blend := 0.0
 var _move_weight := 0.0
 var _combat_mode := true
 var _combat_blend := 1.0
@@ -219,12 +220,20 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	var walk_speed := lerpf(float(relaxed_walk.get_meta("speed")), float(walk.get_meta("speed")), stance)
 	var run_stride := lerpf(float(relaxed_run.get_meta("stride")), float(run.get_meta("stride")), stance)
 	var run_speed := lerpf(float(relaxed_run.get_meta("speed")), float(run.get_meta("speed")), stance)
-	var want_gait := smoothstep(walk_speed + 0.3, run_speed, planar)
+	# Player has explicit walk/jog/sprint controls; the clone retains its own
+	# slower combat walk/run calibration and doesn't inherit Shift/Alt input.
+	walk_speed = float(context.get("walk_speed", walk_speed))
+	run_speed = float(context.get("jog_speed", run_speed))
+	var sprint_speed: float = context.get("sprint_speed", T.RUN_SPEED)
+	var want_gait := smoothstep(walk_speed + .20, run_speed, planar)
+	var want_sprint := smoothstep(run_speed + .30, sprint_speed, planar)
 	_gait_blend = move_toward(_gait_blend, want_gait, delta * 4.0)
+	_sprint_blend = move_toward(_sprint_blend, want_sprint, delta * 4.0)
 	_move_weight = move_toward(_move_weight, smoothstep(0.03, 0.6, planar), delta * 7.5)
 	if grounded and action != "attack" and action != "dodge":
 		var distance: float = context.get("distance", planar * delta)
-		var stride := lerpf(walk_stride, run_stride, _gait_blend)
+		var stride := lerpf(lerpf(walk_stride, run_stride, _gait_blend),
+			float(MOTIONS.get_animation("sprint_relaxed").get_meta("stride")), _sprint_blend)
 		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
 		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
@@ -240,7 +249,7 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		state = "dodge"
 		pose = sample_dodge(action_time, context.get("dodge_direction", Vector3(0, 0, 1)))
 		if not _combat_mode:
-			pose = _blend_pose(pose, _locomotion_pose(), smoothstep(.30, T.DODGE_DURATION, action_time))
+			pose = _blend_pose(pose, _locomotion_pose(), smoothstep(.38, T.DODGE_DURATION, action_time))
 	elif not grounded:
 		state = "air"
 		pose = _air_pose(context)
@@ -258,7 +267,7 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	if state != _state or (state == "air" and context.get("jump_started", false)):
 		_transition_from = _last_pose
 		_transition_elapsed = 0.0
-		_transition_length = .055 if state in ["air", "land"] else .075 if state.begins_with("attack") else .12
+		_transition_length = .055 if state in ["air", "land", "dodge"] else .075 if state.begins_with("attack") else .12
 		_state = state
 	_transition_elapsed += delta
 	if not _transition_from.is_empty() and _transition_elapsed < _transition_length:
@@ -266,8 +275,16 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 
 	if _hit_time < clip_duration("hit"):
 		pose = _add_hit(pose, .35 if action == "attack" else 1.0)
-	_last_pose = pose
 	_apply_pose(pose)
+	if appearance != null and grounded and state in ["ground", "dodge"]:
+		# Floor-safe clips can still penetrate when SLERP-blended: the foot
+		# describes an arc, not the IK target line. Stabilise the resulting
+		# actual sole, not the Character node or a guessed ankle height.
+		var lift := maxf(0.0, .001-appearance.sole_height())
+		if lift > 0.0:
+			pose["hips"] += Vector3.UP*lift
+			skeleton.set_bone_pose_position(_hips_index, pose["hips"])
+	_last_pose = pose
 	if appearance != null:
 		var open_hand := 0.0 if action == "attack" else 1.0-_combat_blend
 		appearance.set_hands(move_toward(appearance.hand_open, open_hand, delta*12.0))
@@ -300,6 +317,7 @@ func _locomotion_set(combat: bool) -> Dictionary:
 	var idle := sample_clip(idle_name, fposmod(_clock, clip_duration(idle_name)))
 	var gait := _blend_pose(sample_clip(walk_name, _phase * clip_duration(walk_name)),
 		sample_clip(run_name, _phase * clip_duration(run_name)), _gait_blend)
+	gait = _blend_pose(gait, sample_clip("sprint_relaxed", _phase*clip_duration("sprint_relaxed")), _sprint_blend)
 	return _blend_pose(idle, gait, _move_weight)
 
 
@@ -342,6 +360,7 @@ func reset_motion(combat: bool = true) -> void:
 	_phase = 0.0
 	_clock = 0.0
 	_gait_blend = 0.0
+	_sprint_blend = 0.0
 	_move_weight = 0.0
 	_air_time = 0.0
 	_air_launched = false

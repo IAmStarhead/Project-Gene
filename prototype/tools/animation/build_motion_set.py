@@ -22,6 +22,7 @@ from scipy.interpolate import PchipInterpolator, CubicHermiteSpline
 import numpy as np
 
 from rig_math import Rig, unit
+import locomotion
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / 'prototype/assets/heroine/female_A_rigged_safe.glb'
@@ -208,96 +209,32 @@ def trajectory(t, keys, endpoint_speed=None):
     return float(_trajectory(tuple(keys), endpoint_speed)(t))
 
 
-# These are full left-to-left cycles, NOT steps. Runtime cadence is
-# 120 * actual_speed / stride, regardless of the authoring sample duration.
-RELAXED_WALK = {'duration': 1.04, 'stride': 1.34, 'duty': .57, 'clearance': .10}
-RELAXED_RUN = {'duration': .70, 'stride': 2.65, 'duty': .25, 'clearance': .26}
+# Three authored tiers; the runtime still advances their common contact phase
+# by real travelled distance, not a faster wall-clock animation player.
+RELAXED_WALK = locomotion.GAITS['walk']
+RELAXED_RUN = locomotion.GAITS['jog']
+SPRINT = locomotion.GAITS['sprint']
 
 
 def relaxed_idle(rig, t):
-    breath = np.sin(t / 3.2 * np.pi * 2)
-    p = body(rig, hip=(.002 * breath, .894 + .0007 * breath, .012),
-             yaw=(0, 0, 0), lean=(.5, .3), roll=.15 * breath, breath=.25 * breath)
-    for side, sign in [('L', 1), ('R', -1)]:
-        swing_arm(p, side, 1 + .3 * breath, 10 + .4 * breath, spread=.18, roll=5, carrying=.23)
-        p.foot(side, [sign * .100, .08, .018 if side == 'L' else -.012], yaw=sign * 4)
-    return p
+    return locomotion.idle(rig, t)
 
 
 def relaxed_walk_path(phase):
-    # CMU 16_31: heel recovery behind the pelvis, then the shin unfolds.
-    # The previous 0.76 s / 1.24 m at 1.65 m/s meant ~160 steps/minute!
-    # Reducing height alone cannot fix that hurried, heavy-looking gait.
-    gait = RELAXED_WALK
-    stride, duty, touchdown = gait['stride'], gait['duty'], .272
-    if phase <= duty:
-        pitch = curve(phase / duty, [(0, -6), (.12, 0), (.42, 0),
-                                    (.66, 24), (.86, 44), (1, 59)])
-        return .08 + max(0, -np.sin(np.deg2rad(pitch)))*.045, touchdown - stride * phase, pitch
-    v = (phase - duty) / (1 - duty)
-    start = touchdown - stride*duty + .12 + .06*np.sin(np.deg2rad(59)) - .12*np.cos(np.deg2rad(59))
-    end = touchdown
-    m = -stride * (1 - duty)
-    z = trajectory(v, [(0, start), (.10, start-.012), (.28, -.33),
-                       (.50, -.08), (.74, .19), (.90, .297), (1, end)], m)
-    # Ankle heights, not an ankle lift PLUS an airborne toe-pivot lift.
-    y = trajectory(v, [(0, .154), (.10, .205), (.28, .21), (.50, .163),
-                       (.72, .120), (.90, .107), (1, .085)])
-    pitch = curve(v, [(0, 59), (.22, 26), (.48, 3), (.75, -6), (1, -6)])
-    return y, z, pitch
+    point, pitch, _, _ = locomotion.foot_path('walk', phase)
+    return point[1], point[2], pitch
 
 
 def relaxed_walk(rig, t):
-    phase = (t / RELAXED_WALK['duration']) % 1
-    drive, sway = np.cos(phase * np.pi * 2), np.sin(phase * np.pi * 2)
-    height = trajectory(phase % .5, [(0, .850), (.07, .869), (.16, .887),
-                                    (.25, .894), (.34, .894), (.40, .883), (.45, .867), (.50, .850)], 0.0)
-    p = body(rig, hip=(.009 * sway, height, .016), yaw=(2.5*sway, -sway, -3*sway),
-             lean=(.8, .5), roll=.8 * sway)
-    for side, sign, offset in [('L', 1, 0), ('R', -1, .5)]:
-        # Elbow stays soft; the hand is opened separately by the shared
-        # appearance rig, including in Godot, not merely in the browser.
-        swing_arm(p, side, 1 - sign*13*drive, 15 - sign*5*drive, spread=.18, roll=5, carrying=.23)
-        fp = (phase + offset) % 1
-        y, z, pitch = relaxed_walk_path(fp)
-        contact = fp <= RELAXED_WALK['duty']
-        angle = np.deg2rad(max(pitch, 0))
-        pivot_x = np.sin(np.deg2rad(sign*3)) * (.12 + .06*np.sin(angle) - .12*np.cos(angle)) if contact else 0
-        p.foot(side, [sign * .095 + pivot_x, y, z], pitch=pitch, yaw=sign * 3, pivot=contact)
-    return p
-
-
-def relaxed_run_path(phase):
-    gait = RELAXED_RUN
-    stride, duty, touchdown = gait['stride'], gait['duty'], .230
-    if phase <= duty:
-        pitch = curve(phase / duty, [(0, -2), (.15, 0), (.45, 0), (.75, 31), (1, 60)])
-        return .081, touchdown-stride*phase, pitch
-    v = (phase-duty)/(1-duty)
-    start = touchdown-stride*duty + .12 + .06*np.sin(np.deg2rad(60)) - .12*np.cos(np.deg2rad(60))
-    end, m = touchdown, -stride*(1-duty)
-    z = trajectory(v, [(0, start), (.16, start-.032), (.34, -.33),
-                       (.52, -.13), (.74, .12), (.90, .25), (1, end)], m)
-    y = trajectory(v, [(0, .155), (.06, .219), (.17, .29), (.34, .34), (.48, .325),
-                       (.66, .23), (.82, .15), (.94, .11), (1, .081)])
-    pitch = curve(v, [(0, 60), (.20, 35), (.44, 6), (.70, -6), (1, -2)])
-    return y, z, pitch
+    return locomotion.gait(rig, t, 'walk')
 
 
 def relaxed_run(rig, t):
-    phase = (t / RELAXED_RUN['duration']) % 1
-    drive, sway = np.cos(phase*np.pi*2), np.sin(phase*np.pi*2)
-    height = trajectory(phase % .5, [(0, .870), (.07, .864), (.16, .881),
-                                    (.25, .891), (.37, .929), (.46, .889), (.50, .870)], 0.0)
-    p = body(rig, hip=(.006*sway, height, .025), yaw=(2*sway, -1.5*sway, -3*sway),
-             lean=(3.2, 1.6), roll=.65*sway)
-    for side, sign, offset in [('L', 1, 0), ('R', -1, .5)]:
-        swing_arm(p, side, 3-sign*22*drive, 83+sign*6*drive, spread=.075, roll=5)
-        fp = (phase+offset) % 1
-        y, z, pitch = relaxed_run_path(fp)
-        p.foot(side, [sign*.095, y, z], pitch=pitch, yaw=0,
-               pivot=fp <= RELAXED_RUN['duty'])
-    return p
+    return locomotion.gait(rig, t, 'jog')
+
+
+def sprint(rig, t):
+    return locomotion.gait(rig, t, 'sprint')
 
 
 def attack(rig, t, side):
@@ -329,26 +266,52 @@ def attack(rig, t, side):
     return p
 
 
+DODGE_DURATION = .48
+DODGE_DISTANCE = 1.10
+
+
+def dodge_progress(value):
+    u = float(np.clip(value, 0, 1))
+    return u**3*(10-15*u+6*u*u)
+
+
 def dodge(rig, t, direction=(0, 1)):
-    # A directional quickstep, with a leading foot and a trailing recovery.
-    # Keep the facing; a sideways dodge is NOT a forward pose rotated 90 deg.
+    # Game-reference quickstep: load -> push -> short flight -> catch ->
+    # recover. The old 26 cm shuffle was unrelated to a 1.4 m root slide.
+    # Here each planted foot is stationary in WORLD space at the shared
+    # analytic root curve; leading and recovery contacts have separate times.
     dx, dz = direction
-    load = curve(t, [(0, 0), (.055, .7), (.13, 1), (.25, .55), (.42, 0)])
-    stride = trajectory(t, [(0, 0), (.07, .12), (.18, 1), (.29, .72), (.42, 0)])
-    p = body(rig, hip=(dx*.025*load, .835-.060*load, .02+dz*.025*load),
-             yaw=(-6+dx*3*load, -4-dx*2*load, -7-dx*4*load),
-             lean=(3+dz*8*load, 2+max(dz, 0)*3*load), roll=-dx*6*load)
-    guard_hands(p, -.065*load, .012*load)
+    load = trajectory(t, [(0, 0), (.055, .55), (.13, 1), (.23, .83),
+                          (.32, .58), (.40, .18), (DODGE_DURATION, 0)], 0.0)
+    lateral = abs(dx) > .5
+    p = body(rig, hip=(dx*.055*load, .835-.115*load, .02+dz*.045*load),
+             yaw=(-6+dx*8*load, -4-dx*5*load, -7-dx*9*load),
+             lean=(3+(12 if dz > 0 else -8 if dz < 0 else 2)*load,
+                   2+(6 if dz > 0 else -3 if dz < 0 else 2)*load),
+             roll=-dx*16*load)
+    p.bend('head', x=-(5+(18 if dz > 0 else -11 if dz < 0 else 4)*load)*.65,
+           y=-(-17-6*dx*load)*.85, z=dx*4*load)
     leading = 'L' if dx > 0 or dz > 0 else 'R'
+    root_travel = DODGE_DISTANCE*dodge_progress(t/DODGE_DURATION)
     for side, sign, z in [('L', 1, .155), ('R', -1, -.135)]:
         first = side == leading
-        lift = trajectory(t, [(0, 0), (.06, 0 if first else .015),
-                              (.15, .10 if first else .035), (.24, .015 if first else .08),
-                              (.34, 0 if first else .035), (.42, 0)])
-        shift = (.26 if first else -.08)*stride
-        p.foot(side, [sign*(.125 if side == 'L' else .135)+dx*shift,
-                      .08+lift, z+dz*shift], pitch=(8 if first else 15)*load,
-               yaw=(6 if side == 'L' else -10)+dx*6*load)
+        start, land_at = (.035, .32 if dz < 0 else .30) if first else (.12, .40)
+        u = np.clip((t-start)/(land_at-start), 0, 1)
+        travel = DODGE_DISTANCE*dodge_progress(u)-root_travel
+        lift = (.15 if first else .18)*np.sin(np.pi*u)**1.6
+        pitch = (12 if first else 26)*np.sin(np.pi*u)**2
+        yaw = (6 if side == 'L' else -10)+dx*(10 if first else -4)*load
+        p.foot(side, [sign*(.125 if side == 'L' else .135)+dx*travel,
+                      .08+lift, z+dz*travel], pitch=pitch, yaw=yaw,
+               pivot=False, toe_pitch=pitch if 0 < u < 1 else min(pitch, 0))
+        wrist = np.array([.145, 1.295, .265] if side == 'L' else [-.145, 1.305, .205])
+        if lateral:
+            wrist += load*np.array([dx*(.09 if first else .025), -.13 if first else .025, -.05 if first else .13])
+        else:
+            wrist += load*np.array([sign*(.055 if first else .02), -.12 if first else .015,
+                                     -.09*dz if first else .10*dz])
+        pole = np.array([sign*.30+dx*.045*load, .99-.055*load, .12])
+        p.arm(side, wrist, pole=pole, roll=8*sign)
     return p
 
 
@@ -434,10 +397,12 @@ def definitions():
         ('idle_relaxed', 3.2, True, relaxed_idle, {}),
         ('walk_relaxed', RELAXED_WALK['duration'], True, relaxed_walk,
          {'stride': RELAXED_WALK['stride'],
-          'speed': RELAXED_WALK['stride'] / RELAXED_WALK['duration'], 'duty': RELAXED_WALK['duty']}),
+          'speed': RELAXED_WALK['stride'] / RELAXED_WALK['duration'], 'duty': RELAXED_WALK['duty'], 'sample_fps': 120}),
         ('run_relaxed', RELAXED_RUN['duration'], True, relaxed_run,
          {'stride': RELAXED_RUN['stride'], 'speed': RELAXED_RUN['stride'] / RELAXED_RUN['duration'],
-          'duty': RELAXED_RUN['duty']}),
+          'duty': RELAXED_RUN['duty'], 'sample_fps': 120}),
+        ('sprint_relaxed', SPRINT['duration'], True, sprint,
+         {'stride': SPRINT['stride'], 'speed': SPRINT['stride'] / SPRINT['duration'], 'duty': SPRINT['duty'], 'sample_fps': 120}),
         *[(name, g['duration'], True, lambda r, t, n=name: gait_pose(r, t, n),
            {'stride': g['stride'], 'speed': g['stride'] / g['duration'], 'duty': g['duty']})
           for name, g in GAITS.items()],
@@ -445,10 +410,10 @@ def definitions():
          {'windup': .18, 'active_end': .30, 'impact': .18, 'side': 'L'}),
         ('attack_right', .56, False, lambda r, t: attack(r, t, 'R'),
          {'windup': .18, 'active_end': .30, 'impact': .18, 'side': 'R'}),
-        ('dodge', .42, False, dodge, {'direction': 'forward'}),
-        ('dodge_back', .42, False, lambda r, t: dodge(r, t, (0, -1)), {'direction': 'back'}),
-        ('dodge_left', .42, False, lambda r, t: dodge(r, t, (1, 0)), {'direction': 'left'}),
-        ('dodge_right', .42, False, lambda r, t: dodge(r, t, (-1, 0)), {'direction': 'right'}),
+        ('dodge', DODGE_DURATION, False, dodge, {'direction': 'forward', 'lead': 'L', 'lead_lift': .035, 'lead_land': .30, 'trail_lift': .12, 'trail_land': .40}),
+        ('dodge_back', DODGE_DURATION, False, lambda r, t: dodge(r, t, (0, -1)), {'direction': 'back', 'lead': 'R', 'lead_lift': .035, 'lead_land': 0.32, 'trail_lift': .12, 'trail_land': .40}),
+        ('dodge_left', DODGE_DURATION, False, lambda r, t: dodge(r, t, (1, 0)), {'direction': 'left', 'lead': 'L', 'lead_lift': .035, 'lead_land': 0.3, 'trail_lift': .12, 'trail_land': .40}),
+        ('dodge_right', DODGE_DURATION, False, lambda r, t: dodge(r, t, (-1, 0)), {'direction': 'right', 'lead': 'R', 'lead_lift': .035, 'lead_land': 0.3, 'trail_lift': .12, 'trail_land': .40}),
         ('jump_start', JUMP_START, False, jump_start, {}),
         ('jump_up', JUMP_UP, False, lambda r, t: air_pose(r, t), {}),
         ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
@@ -465,13 +430,15 @@ def bake():
     for name, duration, loop, author, meta in definitions():
         # Include BOTH endpoints and authored timing/contact events exactly.
         events = [v for k, v in meta.items() if k in ('impact', 'active_end')]
-        if name in ('run', 'run_relaxed'):
+        if name == 'run':
             events += [duration * (offset + u * meta['duty'])
                        for offset in (0, .5) for u in (.12, .52, .8, 1)]
-        elif name == 'walk_relaxed':
+        elif name in ('walk_relaxed', 'run_relaxed', 'sprint_relaxed'):
             events += [duration * ((offset + u * meta['duty']) % 1)
-                       for offset in (0, .5) for u in (.12, .50, .70, .88, 1)]
-        times = np.unique(np.round(np.r_[np.arange(0, duration, 1 / FPS), duration, events], 9))
+                       for offset in (0, .5) for u in (.14, .57, .80, 1)]
+        elif name.startswith('dodge'):
+            events += [meta[k] for k in ['lead_lift', 'lead_land', 'trail_lift', 'trail_land']]
+        times = np.unique(np.round(np.r_[np.arange(0, duration, 1 / meta.get('sample_fps', FPS)), duration, events], 9))
         quats, hips = [], []
         before = len(rig.unreachable)
         for t in times:
@@ -504,8 +471,8 @@ def tres(data):
     for name, clip in clips.items():
         lines += [f'[sub_resource type="Animation" id="Animation_{name}"]',
                   f'resource_name = "{name}"', f'length = {clip["duration"]}',
-                  f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / FPS:.10f}']
-        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction'):
+                  f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / clip.get("sample_fps", FPS):.10f}']
+        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps'):
             if key in clip:
                 lines.append(f'metadata/{key} = {json.dumps(clip[key])}')
         q = np.asarray(clip['rotations'])

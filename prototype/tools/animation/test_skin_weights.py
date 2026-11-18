@@ -111,13 +111,18 @@ class SkinWeightTests(unittest.TestCase):
         print(f'\n  Inner upper-arm edge stretch: {minimum:.3f}–{maximum:.3f}x (all authored clips)')
 
     def test_relaxed_hands_do_not_cut_through_the_hips(self):
-        m, r = self.mesh, self.rig
+        import json
+        r = self.rig
+        m = {**self.mesh, 'POSITION': self.mesh['POSITION'].copy()}
+        appearance = json.loads((MODEL.parent/'appearance/lab_uniform.json').read_text())
+        rows = np.asarray(appearance['hands']['rows'])
+        m['POSITION'][rows[:, 12].astype(int)] += rows[:, 6:9]
         dominant = m['JOINTS_0'][np.arange(len(m['POSITION'])), m['WEIGHTS_0'].argmax(axis=1)]
         hand = np.isin(dominant, [r.index['hand.L'], r.index['hand.R']])
         torso = np.isin(dominant, [r.index[name] for name in ('hips', 'spine', 'chest', 'thigh.L', 'thigh.R')]) \
             & (m['POSITION'][:, 1] < 1.24)
         smallest_gap = 1.0
-        for name in ('idle_relaxed', 'walk_relaxed', 'run_relaxed'):
+        for name in ('idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed'):
             clip = self.data['clips'][name]
             for time in np.linspace(0, clip['duration'], 61):
                 q, h = sample(clip, time)

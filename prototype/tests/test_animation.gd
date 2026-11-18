@@ -53,6 +53,8 @@ func _run() -> void:
 	_test_locomotion_posture(character)
 	_test_air_progress(character)
 	_test_stance_blending(character)
+	_test_three_tiers(character)
+	_test_native_blended_soles(character)
 	_test_relaxed_jump(character)
 	_test_directional_dodge(character)
 	_test_appearance(character)
@@ -61,6 +63,7 @@ func _run() -> void:
 	_test_showcase()
 	character.free()
 	await _test_actual_physics()
+	await _test_modifier_and_dodge_physics()
 	world.free()
 	print("GEN native animation suite: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
@@ -69,7 +72,7 @@ func _run() -> void:
 func _test_native_tracks(character: Node3D) -> void:
 	var mirror: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
 		"res://assets/heroine/animations/motion_set.json"))
-	check(Character.MOTIONS.get_animation_list().size() == 17, "all 17 native clips loaded")
+	check(Character.MOTIONS.get_animation_list().size() == 18, "all 18 native clips loaded")
 	check(character.skeleton.get_bone_count() == 21, "the original 21-bone rig is retained")
 	var max_rotation_error := 0.0
 	var max_position_error := 0.0
@@ -265,6 +268,98 @@ func _test_stance_blending(character: Node3D) -> void:
 		check(character._phase == phase, "ordinary gait also stops at a wall")
 
 
+func _test_three_tiers(character: Node3D) -> void:
+	for fps in [30, 60, 120]:
+		var dt: float = 1.0/fps
+		for entry in [[T.WALK_SPEED, "walk_relaxed", 0.0, 0.0],
+				[T.JOG_SPEED, "run_relaxed", 1.0, 0.0], [T.RUN_SPEED, "sprint_relaxed", 1.0, 1.0]]:
+			character.reset_motion(false)
+			var speed: float = entry[0]
+			var context := {"combat": false, "grounded": true, "distance": speed*dt,
+				"walk_speed": T.WALK_SPEED, "jog_speed": T.JOG_SPEED, "sprint_speed": T.RUN_SPEED}
+			for i in fps:
+				character.update_motion(dt, Vector3(0, 0, speed), "", 0, "R", context)
+			check(is_equal_approx(character._gait_blend, entry[2]) and is_equal_approx(character._sprint_blend, entry[3]),
+				"player tier settles to its own clip at %d FPS: %s" % [fps, entry[1]])
+			var expected: Dictionary = character.sample_clip(entry[1], character._phase*character.clip_duration(entry[1]))
+			var difference: Vector3 = joint(character, "hips")-(expected["hips"] as Vector3)
+			check(Vector2(difference.x, difference.z).length() < .000001 and difference.y >= -.000001 and difference.y < .003,
+				"actual runtime samples its own tier with only a sub-3mm sole lift: "+entry[1])
+			var phase: float = character._phase
+			context["distance"] = float(Character.MOTIONS.get_animation(entry[1]).get_meta("stride"))/fps
+			for i in fps:
+				character.update_motion(dt, Vector3(0, 0, speed), "", 0, "R", context)
+			check(absf(wrapf(character._phase-phase+.5, 0, 1)-.5) < .00001,
+				"walk/jog/sprint each make one cycle per real authored stride at %d FPS" % fps)
+		# Going down the speed tiers must not leave a stale sprint blend or
+		# reset phase on a modifier / stance change.
+		var previous := joint(character, "hand.L")
+		var max_hand_step := 0.0
+		for speed in [T.JOG_SPEED, T.WALK_SPEED]:
+			for i in fps:
+				character.update_motion(dt, Vector3(0, 0, speed), "", 0, "R",
+					{"combat": false, "grounded": true, "distance": speed*dt,
+					"walk_speed": T.WALK_SPEED, "jog_speed": T.JOG_SPEED, "sprint_speed": T.RUN_SPEED})
+				max_hand_step = maxf(max_hand_step, joint(character, "hand.L").distance_to(previous))
+				previous = joint(character, "hand.L")
+		check(character._gait_blend == 0.0 and character._sprint_blend == 0.0,
+			"releasing Shift and holding Alt really restores walking at %d FPS" % fps)
+		check(max_hand_step < .16, "no wrist teleport across sprint/jog/walk transitions at %d FPS" % fps)
+		character._sprint_blend = 1.0
+		character.reset_motion(false)
+		check(character._sprint_blend == 0.0, "respawn/reset clears sprint history")
+	# The clone supplies no player speed context. Retain its existing
+	# combat calibration instead of interpreting 3.4 m/s as a full sprint.
+	character.reset_motion(true)
+	for i in 60:
+		character.update_motion(1.0/60, Vector3(0, 0, T.CLONE_RUN), "", 0, "R",
+			{"combat": true, "grounded": true, "distance": T.CLONE_RUN/60})
+	check(character._gait_blend > .5 and character._gait_blend < .9 and character._sprint_blend == 0.0,
+		"clone 3.4 m/s still uses the previous combat walk/run mix, not player sprint")
+
+
+func _test_native_blended_soles(character: Node3D) -> void:
+	# Use ALL low-foot vertices and weights in the ACTUAL post-import body,
+	# not merely the reduced runtime probes or the authoring ankle targets.
+	var body: MeshInstance3D = character.appearance.body
+	var arrays: Array = body.mesh.surface_get_arrays(0)
+	var points: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
+	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
+	var feet: Array[int] = []
+	for i in points.size():
+		if points[i].y < .09:
+			feet.append(i)
+	var minimum := INF
+	var overestimate := 0.0
+	character.reset_motion(false)
+	for speed in [T.WALK_SPEED, T.JOG_SPEED, T.RUN_SPEED, T.WALK_SPEED]:
+		for step in 36:
+			character.update_motion(1.0/60, Vector3(0, 0, speed), "", 0, "R",
+				{"combat": false, "grounded": true, "distance": speed/60,
+				"walk_speed": T.WALK_SPEED, "jog_speed": T.JOG_SPEED, "sprint_speed": T.RUN_SPEED})
+			if step % 3 != 0:
+				continue
+			var transforms: Array[Transform3D] = []
+			var to_character: Transform3D = character.global_transform.affine_inverse()*character.skeleton.global_transform
+			for i in body.skin.get_bind_count():
+				var bone: int = character.skeleton.find_bone(body.skin.get_bind_name(i))
+				transforms.append(to_character*character.skeleton.get_bone_global_pose(bone)*body.skin.get_bind_pose(i))
+			var floor_y := INF
+			for i in feet:
+				var y := 0.0
+				for k in 4:
+					y += weights[i*4+k]*(transforms[bones[i*4+k]]*points[i]).y
+				floor_y = minf(floor_y, y)
+			minimum = minf(minimum, floor_y)
+			overestimate = maxf(overestimate, character.appearance.sole_height()-floor_y)
+	check(feet.size() > 2000, "native sole test uses the real dense soft-skinned feet")
+	check(minimum > -.001, "walk/jog/sprint and their transitions keep the imported skin above the floor")
+	check(overestimate < .001, "small runtime support set agrees with the full native sole")
+	print("Native soft soles: %d vertices, 48 blended poses; minimum %.3f mm; support-set error %.3f mm" % [
+		feet.size(), minimum*1000, overestimate*1000])
+
+
 func _test_relaxed_jump(character: Node3D) -> void:
 	character.reset_motion(false)
 	var wrist := joint(character, "hand.L")
@@ -331,6 +426,19 @@ func _test_directional_dodge(character: Node3D) -> void:
 	player.free()
 
 
+func cloth_rings_ordered(appearance: Node3D) -> bool:
+	for i in range(appearance._segments, appearance._points.size()):
+		var point: Vector3 = appearance._hips_inverse*appearance._points[i]
+		var rest: Vector3 = appearance._rest[i]
+		if absf(point.y-rest.y) > .00002:
+			return false
+		var a := Vector2(point.x, point.z-.02).normalized()
+		var b := Vector2(rest.x, rest.z-.02).normalized()
+		if a.dot(b) < .99999:
+			return false
+	return true
+
+
 func _test_appearance(character: Node3D) -> void:
 	var appearance: Node3D = character.appearance
 	check(appearance != null and appearance.gown != null and appearance.skirt != null,
@@ -341,6 +449,18 @@ func _test_appearance(character: Node3D) -> void:
 	for i in character.skeleton.get_bone_count():
 		bind_order = bind_order and appearance.gown.skin.get_bind_name(i) == character.skeleton.get_bone_name(i)
 	check(bind_order, "garment joint indices use the original named Skin binds")
+	check(appearance._data["gown"]["armhole_edges"].size() == 52,
+		"the native garment includes sewn armhole/gusset topology")
+	for side in ["L", "R"]:
+		var sleeve: Dictionary = appearance._data["coverage"]["sleeves"][0 if side == "L" else 1]
+		var origin: Vector3 = appearance._vector(sleeve["origin"])
+		var axis: Vector3 = appearance._vector(sleeve["axis"])
+		var bones := PackedInt32Array([character.skeleton.find_bone("upper_arm."+side), 0, 0, 0])
+		var weights := PackedFloat32Array([1, 0, 0, 0])
+		check(appearance.covered(origin+axis*.08, bones, weights, 0, Array(character._bone_names)),
+			"skin inside the actual cap sleeve is occluded: "+side)
+		check(not appearance.covered(origin+axis*.25, bones, weights, 0, Array(character._bone_names)),
+			"sleeve coverage does not remove the bare arm below the cuff: "+side)
 	var gown_arrays: Array = appearance.gown.mesh.surface_get_arrays(0)
 	check((gown_arrays[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 5000
 		and (gown_arrays[Mesh.ARRAY_INDEX] as PackedInt32Array)[3] != 0,
@@ -348,7 +468,7 @@ func _test_appearance(character: Node3D) -> void:
 	var seam_gap := 0.0
 	var gown_points: PackedVector3Array = gown_arrays[Mesh.ARRAY_VERTEX]
 	var gown_bones: PackedInt32Array = gown_arrays[Mesh.ARRAY_BONES]
-	for pose_name in ["idle_relaxed", "walk_relaxed", "run_relaxed", "dodge_left", "guard"]:
+	for pose_name in ["idle_relaxed", "walk_relaxed", "run_relaxed", "sprint_relaxed", "dodge_left", "guard"]:
 		character.seek_clip(pose_name, character.clip_duration(pose_name)*.43)
 		var cloth: PackedVector3Array = appearance.cloth_vertices()
 		for i in int(appearance._data["gown"]["waist_vertices"]):
@@ -385,6 +505,7 @@ func _test_appearance(character: Node3D) -> void:
 	var worst_gap := INF
 	var finite := true
 	var worst_secondary := 0.0
+	var ordered := true
 	for fps in [30, 60, 120]:
 		character.reset_motion(false)
 		var dt: float = 1.0/fps
@@ -393,6 +514,7 @@ func _test_appearance(character: Node3D) -> void:
 			character.update_motion(dt, Vector3(0, 0, T.RUN_SPEED), "", 0, "L",
 				{"combat": false, "grounded": true, "distance": T.RUN_SPEED*dt})
 			worst_gap = minf(worst_gap, appearance.collision_gap())
+			ordered = ordered and cloth_rings_ordered(appearance)
 			for k in appearance._points.size():
 				finite = finite and (appearance._points[k] as Vector3).is_finite()
 				worst_secondary = maxf(worst_secondary, (appearance._points[k] as Vector3).distance_to(appearance._goals[k]))
@@ -400,9 +522,18 @@ func _test_appearance(character: Node3D) -> void:
 		character.update_motion(.10, Vector3.ZERO, "attack", .10, "L", {"combat": false})
 		check(appearance.body.get_blend_shape_value(0) == 0.0,
 			"even an ordinary-mode punch closes the actual fingers before contact")
+	for fps in [30, 60, 120]:
+		for direction in [Vector3(0, 0, 1), Vector3(0, 0, -1), Vector3(1, 0, 0), Vector3(-1, 0, 0)]:
+			character.reset_motion(true)
+			for i in ceili(T.DODGE_DURATION*fps):
+				character.update_motion(1.0/fps, Vector3.ZERO, "dodge", minf(T.DODGE_DURATION, (i+1.0)/fps), "R",
+					{"combat": true, "grounded": true, "dodge_direction": direction, "distance": 0.0})
+				worst_gap = minf(worst_gap, appearance.collision_gap())
+				ordered = ordered and cloth_rings_ordered(appearance)
+	check(ordered, "sprint and all four dodges cannot invert or twist the skirt rings at 30/60/120 FPS")
 	check(finite and appearance.cloth_vertices().size() == 112, "cloth remains finite at 30/60/120 FPS")
 	check(worst_gap > -.00001, "free cloth points stay outside the analytic leg collision envelopes")
-	check(worst_secondary < .15, "bounded secondary motion even after body-collision priority")
+	check(worst_secondary < .04501, "secondary motion stays within 4.5 cm AFTER collision, including sprint knees")
 	check(appearance.collision_count > 0, "body collision is actually exercised, not just declared")
 	character.position = Vector3(10, 0, -10)
 	character.update_motion(.016, Vector3.ZERO, "", 0, "R", {"combat": false})
@@ -430,19 +561,29 @@ func _test_player_modes() -> void:
 		"R is a physical-key binding for player stance")
 	check(InputMap.action_get_events("toggle_clone")[0].physical_keycode == KEY_T,
 		"T remains the separate clone-combat binding")
+	var alt := InputEventKey.new()
+	alt.physical_keycode = KEY_ALT
+	alt.location = KEY_LOCATION_LEFT
+	check(InputMap.event_is_action(alt, "walk_slow"), "Left Alt is the walking modifier")
+	alt.location = KEY_LOCATION_RIGHT
+	check(not InputMap.event_is_action(alt, "walk_slow"), "Right Alt / AltGr is not the Left Alt control")
 	Input.action_press("move_forward")
-	for entry in [[false, false, T.WALK_SPEED], [false, true, T.RUN_SPEED],
-			[true, false, T.COMBAT_WALK_SPEED], [true, true, T.COMBAT_RUN_SPEED]]:
-		player.combat_mode = entry[0]
-		player.velocity = Vector3.ZERO
-		if entry[1]:
-			Input.action_press("run")
-		else:
+	for combat in [false, true]:
+		for entry in [[false, false, T.JOG_SPEED], [true, false, T.WALK_SPEED],
+				[false, true, T.RUN_SPEED], [true, true, T.RUN_SPEED]]:
+			player.combat_mode = combat
+			player.velocity = Vector3.ZERO
 			Input.action_release("run")
-		player._process_move(1.0)
-		check(absf(Vector2(player.velocity.x, player.velocity.z).length()-float(entry[2])) < .00001,
-			"actual player speed distinguishes ordinary/combat walking/running")
+			Input.action_release("walk_slow")
+			if entry[0]:
+				Input.action_press("walk_slow")
+			if entry[1]:
+				Input.action_press("run")
+			player._process_move(1.0)
+			check(absf(Vector2(player.velocity.x, player.velocity.z).length()-float(entry[2])) < .00001,
+				"Alt/default/Shift speeds and Shift priority are identical in either player stance")
 	Input.action_release("run")
+	Input.action_release("walk_slow")
 	Input.action_release("move_forward")
 	player.combat_mode = false
 	var toggle := InputEventAction.new()
@@ -658,3 +799,80 @@ func _test_actual_physics() -> void:
 	check(braced_early, "real floor-distance ray unfolds legs for early platform contact")
 	check(landed_high, "real running jump lands on a raised platform")
 	player.free()
+
+
+func _test_modifier_and_dodge_physics() -> void:
+	var original_ticks := Engine.physics_ticks_per_second
+	var directions := [Vector3(0, 0, 1), Vector3(0, 0, -1), Vector3(1, 0, 0),
+		Vector3(-1, 0, 0), Vector3(1, 0, 1).normalized(), Vector3(-1, 0, -1).normalized()]
+	var min_distance := INF
+	var max_distance := 0.0
+	for fps in [30, 60, 120]:
+		Engine.physics_ticks_per_second = fps
+		var player := PlayerScene.instantiate()
+		player.position = Vector3(-4, .1, 3)
+		world.add_child(player)
+		for i in 10:
+			await physics_frame
+		# Actual modifier -> CharacterBody displacement -> animator, not a
+		# direct call to _process_move or a synthetic speed fed to the blender.
+		Input.action_press("move_forward")
+		for entry in [[true, false, T.WALK_SPEED, 0.0, 0.0],
+				[false, false, T.JOG_SPEED, 1.0, 0.0], [true, true, T.RUN_SPEED, 1.0, 1.0]]:
+			player.position = Vector3(-4, .01, 3)
+			player.velocity = Vector3.ZERO
+			Input.action_release("run")
+			Input.action_release("walk_slow")
+			if entry[0]:
+				Input.action_press("walk_slow")
+			if entry[1]:
+				Input.action_press("run")
+			for i in fps:
+				await physics_frame
+			var character: Node3D = player.character
+			check(absf(Vector2(player.velocity.x, player.velocity.z).length()-float(entry[2])) < .0001,
+				"real modifier-controlled speed %.2f at %d physics FPS" % [entry[2], fps])
+			check(is_equal_approx(character._gait_blend, entry[3]) and is_equal_approx(character._sprint_blend, entry[4]),
+				"real player displacement selects correct gait at %d physics FPS" % fps)
+		Input.action_release("run")
+		Input.action_release("walk_slow")
+		Input.action_release("move_forward")
+		for direction in directions:
+			player.position = Vector3(-4, .01, 3)
+			player.velocity = Vector3.ZERO
+			player.rotation.y = .71
+			player.stamina = T.MAX_STAMINA
+			for i in 3:
+				await physics_frame
+			var start: Vector3 = player.position
+			var facing: Basis = player.global_basis
+			var world_direction: Vector3 = player.character.global_basis*direction
+			player._buf_dir = world_direction
+			player._buf_dodge = 0.0
+			var saw_iframes := false
+			for i in ceili(T.DODGE_DURATION*fps)+4:
+				await physics_frame
+				saw_iframes = saw_iframes or player._invulnerable
+			var displacement: Vector3 = player.position-start
+			displacement.y = 0
+			min_distance = minf(min_distance, displacement.length())
+			max_distance = maxf(max_distance, displacement.length())
+			check(displacement.distance_to(world_direction*T.DODGE_DISTANCE) < .001,
+				"actual dodge travels authored 1.10 m in cardinal/diagonal directions at %d FPS" % fps)
+			check(player.global_basis.is_equal_approx(facing), "actual physics dodge does not turn facing")
+			check(saw_iframes and not player._invulnerable and player._action == "",
+				"dodge iframes/recovery finish at %d FPS" % fps)
+		player.position = Vector3(0, .01, -1.2)
+		player.velocity = Vector3.ZERO
+		player.stamina = T.MAX_STAMINA
+		for i in 3:
+			await physics_frame
+		player._buf_dir = Vector3(0, 0, -1)
+		player._buf_dodge = 0.0
+		for i in ceili(T.DODGE_DURATION*fps)+4:
+			await physics_frame
+		check(player.position.z > -1.57 and player.position.z < -1.45,
+			"real wall collision clips dodge travel without tunnelling at %d FPS" % fps)
+		player.free()
+	Engine.physics_ticks_per_second = original_ticks
+	print("Dodge physics 30/60/120 Hz: %.6f–%.6f m; wall stops all three" % [min_distance, max_distance])
