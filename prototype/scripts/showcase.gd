@@ -52,11 +52,12 @@ func _ready() -> void:
 	add_child(character)
 	cam = Camera3D.new()
 	cam.fov = 36.0
+	cam.near = .08
+	cam.far = 64.0
 	cam.current = true
 	add_child(cam)
 	_make_ui()
-	if T.TOON_ENABLED:
-		_world.apply_toon(character)
+	_world.style_character(character, T.TOON_ENABLED)
 	_select_clip(0)
 
 
@@ -139,7 +140,21 @@ func _process(delta: float) -> void:
 	var orbit := Basis(Vector3.UP, deg_to_rad(_yaw)) * Basis(Vector3.RIGHT, deg_to_rad(_pitch))
 	var frame: Dictionary = _controls.camera_frame(orbit, _distance)
 	var focus: Vector3 = frame["focus"]
-	cam.global_position = frame["position"]
+	# Keep repair 41's UI-safe framing AND the upstream wall/floor guard.
+	# Raycast from the actual off-centre focus, not the old fixed origin.
+	var desired: Vector3 = frame["position"]
+	var w3d := get_world_3d()
+	if w3d != null and w3d.direct_space_state != null:
+		var query := PhysicsRayQueryParameters3D.create(focus, desired, 1)
+		var hit := w3d.direct_space_state.intersect_ray(query)
+		if not hit.is_empty():
+			var hit_pos: Vector3 = hit["position"]
+			var direction := desired-focus
+			var distance := maxf(focus.distance_to(hit_pos)-.14, .65)
+			if direction.length_squared() > .0001:
+				desired = focus+direction.normalized()*distance
+	desired.y = maxf(desired.y, .14)
+	cam.global_position = desired
 	cam.look_at(focus, Vector3.UP)
 	_update_ui()
 
@@ -167,7 +182,7 @@ func _exit_showcase() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		_yaw -= event.relative.x * .35
-		_pitch = clampf(_pitch - event.relative.y * .25, -65, 35)
+		_pitch = clampf(_pitch - event.relative.y * .25, -68.0, 12.0)
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_controls.fit_full_body = false
@@ -189,16 +204,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_L:
 				_speed_index = (_speed_index + 1) % SPEEDS.size()
 				_speed_picker.select(_speed_index)
+			KEY_F4:
+				T.QUALITY = (T.QUALITY + 1) % T.QUALITY_NAMES.size()
+				_world.showcase_lighting()
 			KEY_B:
-				T.BRIGHTNESS = (T.BRIGHTNESS + 1) % 3
-				_world.rebuild_lighting(T.TOON_ENABLED)
+				T.BRIGHTNESS = (T.BRIGHTNESS + 1) % T.BRIGHTNESS_NAMES.size()
+				_world.showcase_lighting()
 			KEY_G:
 				T.TOON_ENABLED = not T.TOON_ENABLED
-				_world.rebuild_lighting(T.TOON_ENABLED)
-				if T.TOON_ENABLED:
-					_world.apply_toon(character)
-				else:
-					_world.clear_toon(character)
+				_world.showcase_lighting()
+				_world.style_character(character, T.TOON_ENABLED)
 			_:
 				if key >= KEY_1 and key <= KEY_9:
 					_select_clip(key - KEY_1)

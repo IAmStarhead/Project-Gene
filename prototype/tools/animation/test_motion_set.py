@@ -98,6 +98,42 @@ class MotionSetTests(unittest.TestCase):
             np.testing.assert_allclose(self.globals(a, at), self.globals(b, 0),
                                        atol=2e-7, err_msg=f'{a} -> {b}')
 
+    def test_repair42_preserves_all_non_upper_arm_keys_and_ordinary_clips(self):
+        # Frozen from 1d5d20b / the integrated pre-repair-42 motion set.
+        # Only the guarding humerus plane is edited. Keep EVERY hip key,
+        # timing/meta field, other bone and the entire four ordinary clips.
+        protected = {}
+        for name, clip in self.data['clips'].items():
+            ordinary = name in ('idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed')
+            keep = [i for i, bone in enumerate(self.data['bones'])
+                    if ordinary or bone not in ('upper_arm.L', 'upper_arm.R')]
+            protected[name] = {key: value for key, value in clip.items() if key != 'rotations'} | {
+                'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
+
+        def canonical_zero(value):
+            if isinstance(value, list):
+                return [canonical_zero(v) for v in value]
+            if isinstance(value, dict):
+                return {k: canonical_zero(v) for k, v in value.items()}
+            # Canonicalise ONLY exact IEEE signed zero, not small deviations.
+            return 0.0 if isinstance(value, float) and value == 0 else value
+
+        stamp = hashlib.sha256(json.dumps(canonical_zero(protected), sort_keys=True,
+                                          separators=(',', ':')).encode()).hexdigest()
+        self.assertEqual(stamp, 'b50941126c60ae8f6212c5cac6608ecc513572d0e3b02f1e02d9420c0e06098a')
+
+    def test_guard_elbows_clear_the_bodice_without_moving_the_fists(self):
+        guard = self.globals('guard', 0)
+        for side, sign, target in [('L', 1, [.145, 1.295, .265]),
+                                   ('R', -1, [-.145, 1.305, .205])]:
+            np.testing.assert_allclose(self.joint(guard, 'hand.'+side), target, atol=1e-7)
+            elbow = self.joint(guard, 'forearm.'+side)
+            self.assertGreater(sign*elbow[0], .27, 'Guard elbow is pinned against the upper bodice')
+            self.assertLess(sign*elbow[0], .30, 'Do not solve contact by flaring arms into a T pose')
+        for name, other in [('attack_right', 'L'), ('attack_left', 'R')]:
+            g = self.globals(name, .19)
+            self.assertGreater((1 if other == 'L' else -1)*self.joint(g, 'forearm.'+other)[0], .27)
+
     def test_punches_extend_forward_and_free_hand_covers(self):
         for name in ['attack_left', 'attack_right']:
             c = self.data['clips'][name]

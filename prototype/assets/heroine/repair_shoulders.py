@@ -93,9 +93,12 @@ def shoulder_weights(positions, triangles, joints, weights, names):
     u = (u*u*(3 - 2*u))[:, None]
     fixed = base*(1 - u) + fixed*u
 
-    # Positive inverse-edge-length graph conductance. Keep the torso centre
-    # and upper shoulder anchors fixed; fit a smooth derivative at the join.
-    unknown = (p[:, 1] >= 1.24) & (p[:, 1] < 1.433) & (np.abs(p[:, 0]) > .055)
+    # Positive inverse-edge-length graph conductance. Include the collar /
+    # lower trapezius in the SAME solve: the old 1.433 m / 55 mm anchors lay
+    # across that moving transition and left a ridge at the neck in a cross.
+    # Anchor the central neck and the upper neck instead; do not touch the
+    # head, elbow or lower body, or change a rest vertex to hide the ridge.
+    unknown = (p[:, 1] >= 1.24) & (p[:, 1] < 1.49) & (np.abs(p[:, 0]) > .035)
     active = np.bincount(directed[:, 0], minlength=len(p)) > 0
     unknown &= active
     vertices = np.flatnonzero(unknown)

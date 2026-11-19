@@ -586,13 +586,13 @@ func _fit_goals() -> void:
 	# A small one-sided fairing of the SUPPORT curve. It never moves the
 	# surface inward through a collider. Unlike the old projection it does
 	# not stretch material rows: the next stage spends meridian length.
-	for pass_index in 2:
+	for pass_index in 4:
 		var source := radii.duplicate()
 		for row in range(1, rows):
 			for k in _segments:
 				var i := row*_segments+k
-				var angular := source[row*_segments+(k+_segments-1)%_segments]*.18+source[i]*.64+source[row*_segments+(k+1)%_segments]*.18
-				var vertical := source[(row-1)*_segments+k]*.16+source[i]*.68+source[mini(row+1,rows-1)*_segments+k]*.16
+				var angular := source[row*_segments+(k+_segments-1)%_segments]*.25+source[i]*.50+source[row*_segments+(k+1)%_segments]*.25
+				var vertical := source[(row-1)*_segments+k]*.20+source[i]*.60+source[mini(row+1,rows-1)*_segments+k]*.20
 				radii[i] = maxf(source[i], maxf(angular, vertical))
 	_curve_points.resize(rows*_segments)
 	_curve_distances.resize(rows*_segments)
@@ -834,11 +834,19 @@ func collision_gap() -> float:
 	return gap
 
 
+## Actually DISPLAYED vertices in actor-local space, not the solver's world
+## history. A passive clone can sleep its animator/cloth while its parent keeps
+## facing the player. Re-inverting cached _points by that NEW parent transform
+## then invented rotated triangles that were never uploaded to the renderer.
+## This query is diagnostic only; do not wake the clone or resimulate the cloth.
 func cloth_vertices() -> PackedVector3Array:
 	var result := PackedVector3Array()
-	var inverse := actor.global_transform.affine_inverse()
-	for point in _points:
-		result.append(inverse*point)
+	# _upload_skirt writes this uncompressed float32 position prefix before
+	# the normal/tangent stream. It is the exact buffer sent to the renderer.
+	var displayed := _vertex_bytes.slice(0, _points.size()*12).to_float32_array()
+	var to_actor := actor.global_transform.affine_inverse()*skirt.global_transform
+	for i in _points.size():
+		result.append(to_actor*Vector3(displayed[i*3], displayed[i*3+1], displayed[i*3+2]))
 	return result
 
 

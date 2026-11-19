@@ -106,7 +106,14 @@ def bodice(rig, waist, next_row):
         # anatomical mounds (and a hard inward projection made that worse).
         chest_ease = np.clip((y-1.10)/.075, 0, 1)*np.clip((1.35-y)/.05, 0, 1)
         exponent = 2+2*chest_ease
-        eased = np.array([rx*np.sign(sn)*abs(sn)**(2/exponent), y,
+        # Keep the broad flat front BELOW the axilla, but fade its lateral
+        # squaring out across the upper chest. Extending exponent=4 all the
+        # way to the clavicle moved that panel 40–50 mm into a guarding arm.
+        # A smooth taper, not an oversized sleeve or a new skin mask.
+        upper = np.clip((y-1.23)/.10, 0, 1)
+        upper = upper*upper*(3-2*upper)
+        width_exponent = 2+2*chest_ease*(1-upper)
+        eased = np.array([rx*np.sign(sn)*abs(sn)**(2/width_exponent), y,
                           center+(front-back)/2*np.sign(cs)*abs(cs)**(2/exponent)])
         blend = np.clip((1.39-y)/.085, 0, 1)
         blend = blend*blend*(3-2*blend)
@@ -198,7 +205,10 @@ def bodice(rig, waist, next_row):
             else:
                 side = 'L' if center[0] > 0 else 'R'
                 label = cuff_edges
-                inward = -roots[side][:3, 1]*.022
+                # 14 mm turned hem, not a 22 mm straight inner tube driven
+                # back into the thicker proximal upper arm. Outer cuff and
+                # skin coverage remain exactly where they were.
+                inward = -roots[side][:3, 1]*.014
                 for i in loop:
                     v = np.asarray(vertices[i])
                     vertices[i] = (v+roots[side][:3, 1]*(.158-np.dot(v-roots[side][:3, 3], roots[side][:3, 1]))).tolist()

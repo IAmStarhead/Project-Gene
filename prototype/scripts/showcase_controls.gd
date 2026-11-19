@@ -116,7 +116,7 @@ func build() -> void:
 	stack.add_child(owner_scene._timeline)
 	var help := Label.new()
 	# These ASCII key names do not depend on an OS fallback arrow font.
-	help.text = "Space пауза · Left/Right кадр · Up/Down клип · L скорость · B свет · G стиль · V скрыть UI\nЛКМ + мышь — орбита · колесо — зум (кадрирование вручную)"
+	help.text = "Space пауза · Left/Right кадр · Up/Down клип · L скорость · B свет · F4 графика · G стиль · V скрыть UI\nЛКМ + мышь — орбита · колесо — зум (кадрирование вручную)"
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	help.add_theme_font_size_override("font_size", 12)
 	stack.add_child(help)

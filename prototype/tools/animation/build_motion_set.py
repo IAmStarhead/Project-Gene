@@ -62,9 +62,21 @@ def body(rig, hip=(0, .835, .02), yaw=(-6, -4, -7), lean=(3, 2), roll=0, breath=
     return p
 
 
+# Guard elbow plane: authored wrist targets, times, lower-body keys and
+# gameplay hit-volume parameters stay fixed. The old 0.30 m pole pinned the
+# upper arm into the bodice; 0.38 moves the elbow ~35–40 mm out. Wrist origins
+# agree AT KEYS; interpolated wrist paths and world fist orientation can
+# change slightly (measured separately in report 43), not collision-driven IK.
+GUARD_ELBOW_SPREAD = .38
+
+
+def guard_pole(side):
+    return [GUARD_ELBOW_SPREAD*(1 if side == 'L' else -1), .99, .12]
+
+
 def guard_hands(p, y_offset=0, sway=0):
-    p.arm('L', [.145, 1.295 + y_offset, .265 + sway], roll=8)
-    p.arm('R', [-.145, 1.305 + y_offset, .205 - sway], roll=-8)
+    p.arm('L', [.145, 1.295 + y_offset, .265 + sway], pole=guard_pole('L'), roll=8)
+    p.arm('R', [-.145, 1.305 + y_offset, .205 - sway], pole=guard_pole('R'), roll=-8)
 
 
 def guard_feet(p):
@@ -270,13 +282,13 @@ def attack(rig, t, side):
                  for name in ['forearm', 'hand'])-.0025
     end[2] = root[2]+np.sqrt(max(0, length*length-np.sum((end[:2]-root[:2])**2)))
     wrist = mix(start, end, reach)
-    pole = mix([.30 if side == 'L' else -.30, .99, .12],
+    pole = mix(guard_pole(side),
                [.23 if side == 'L' else -.23, 1.15, .38], twist)
     p.arm(side, wrist, pole=pole, roll=(8 + 30 * twist) * (1 if side == 'L' else -1))
     other = 'L' if right else 'R'
     covered = [.145, 1.295, .265] if other == 'L' else [-.145, 1.305, .205]
     p.arm(other, np.asarray(covered) + [0, .008 * twist, .012 * twist],
-          roll=8 if other == 'L' else -8)
+          pole=guard_pole(other), roll=8 if other == 'L' else -8)
     p.foot('L', [.125, .08, .155], yaw=6 + (-6 if not right else 3) * twist)
     p.foot('R', [-.135, .08, -.135], pitch=(24 if right else 8) * twist,
            yaw=-10 + (16 if right else 2) * twist)
@@ -335,7 +347,7 @@ def dodge(rig, t, direction=(0, 1)):
         wrist = reference @ np.array([.145, 1.295, .265, 1] if side == 'L' else [-.145, 1.305, .205, 1])
         wrist[:3] += load*np.array([dx*.035 if lateral else sign*.018,
                                     -.025 if first else .010, .095 if first else .030])
-        pole = reference @ np.array([sign*.30, .99, .12, 1])
+        pole = reference @ np.r_[guard_pole(side), 1]
         pole[:3] += load*np.array([dx*.025, -.015, .025])
         p.arm(side, (chest @ wrist)[:3], pole=(chest @ pole)[:3], roll=8*sign)
     return p
@@ -357,7 +369,7 @@ def jump_start(rig, t):
                               ('R', -1, [-.145, 1.305, .205])]:
         wrist, elbow = swing_targets(p, side, 38, 72, .16)
         p.arm(side, mix(start, wrist, u),
-              pole=mix([sign*.30, .99, .12], elbow, u),
+              pole=mix(guard_pole(side), elbow, u),
               roll=(8 - 3*u) * sign)
     p.foot('L', [.125 - .005*u, .08 + .01*u, .155 - .035*u], pitch=28*u, yaw=6 - 3*u)
     p.foot('R', [-.135 + .005*u, .08 + .01*u, -.135 + .035*u], pitch=26*u, yaw=-10 + 5*u)
@@ -401,7 +413,7 @@ def land(rig, t):
                             ('R', -1, [-.145, 1.305, .205])]:
         wrist, elbow = swing_targets(p, side, 18 + 6*compress, 65 + 10*compress, .20)
         p.arm(side, mix(wrist, end, recover),
-              pole=mix(elbow, [sign*.30, .99, .12], recover),
+              pole=mix(elbow, guard_pole(side), recover),
               roll=(5 + 3*recover) * sign)
     guard_feet(p)
     return p

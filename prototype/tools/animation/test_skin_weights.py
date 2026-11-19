@@ -114,6 +114,28 @@ class SkinWeightTests(unittest.TestCase):
                 self.assertGreater(ratio.min(), .75, name)
         print(f'\n  Inner upper-arm edge stretch: {minimum:.3f}–{maximum:.3f}x (all authored clips)')
 
+    def test_collar_transition_does_not_keep_the_old_fixed_anchor_ridge(self):
+        # Local geometric fairing diagnostic, NOT an anatomical quality score.
+        # Use the FULL original-index skin, not the covered runtime body.
+        # 1d5d20b reached 3.889 mm on this collar graph at cross .19 s.
+        p, first, inverse = np.unique(self.mesh['POSITION'].round(6), axis=0,
+                                      return_index=True, return_inverse=True)
+        triangles = inverse[self.mesh['indices']]
+        edges = np.unique(np.sort(np.concatenate([triangles[:, [0, 1]],
+            triangles[:, [1, 2]], triangles[:, [2, 0]]]), axis=1), axis=0)
+        edges = edges[edges[:, 0] != edges[:, 1]]
+        directed = np.concatenate([edges, edges[:, ::-1]])
+        conductance = 1/np.maximum(np.linalg.norm(p[directed[:, 0]]-p[directed[:, 1]], axis=1), .001)
+        conductance /= np.bincount(directed[:, 0], weights=conductance,
+                                   minlength=len(p))[directed[:, 0]]
+        graph = coo_matrix((conductance, directed.T), shape=(len(p), len(p))).tocsr()
+        collar = (p[:, 1] > 1.40) & (p[:, 1] < 1.49) & (abs(p[:, 0]) > .035) & (abs(p[:, 0]) < .16)
+        self.assertGreater(collar.sum(), 100)
+        for clip, time in [('attack_right', .19), ('attack_left', .18), ('guard', 0), ('sprint_relaxed', .31)]:
+            v = self.rig.skin(*sample(self.data['clips'][clip], time), self.mesh)[first]
+            residual = np.linalg.norm((graph@v-v)[collar], axis=1)
+            self.assertLess(residual.max(), .0037, (clip, 'collar graph residual'))
+
     def test_relaxed_hands_do_not_cut_through_the_hips(self):
         import json
         r = self.rig

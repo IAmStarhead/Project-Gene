@@ -185,12 +185,12 @@ export class Appearance {
         if(row>0&&along>0)radii[row*segments+k]=Math.max(radii[row*segments+k],along+.0015);
       }
     }
-    for(let pass=0;pass<2;pass++){
+    for(let pass=0;pass<4;pass++){
       const source=radii.slice();
       for(let row=1;row<rows;row++)for(let k=0;k<segments;k++){
         const i=row*segments+k;
-        const angular=source[row*segments+(k+segments-1)%segments]*.18+source[i]*.64+source[row*segments+(k+1)%segments]*.18;
-        const vertical=source[(row-1)*segments+k]*.16+source[i]*.68+source[Math.min(row+1,rows-1)*segments+k]*.16;
+        const angular=source[row*segments+(k+segments-1)%segments]*.25+source[i]*.50+source[row*segments+(k+1)%segments]*.25;
+        const vertical=source[(row-1)*segments+k]*.20+source[i]*.60+source[Math.min(row+1,rows-1)*segments+k]*.20;
         radii[i]=Math.max(source[i],angular,vertical);
       }
     }
