@@ -1,0 +1,203 @@
+
+===== native-final.log =====
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_animation.gd
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+Native/source error: quaternion 1-|dot|=0.000000119; hips=0.000000002 m
+Native soft soles: 2410 vertices, 48 blended poses; minimum 1.000 mm; support-set error 0.003 mm
+Cloth LOCAL meridian/circumferential edge max ratio: 1.2294 / 1.9653
+Cloth material length/perimeter max ratio: 1.0181 / 1.7765 (not inextensible woven cloth)
+Clothing: 320 surface nodes; actual imported hand matches 3404; sampled capsule gap -0.000001 m; secondary max 0.012 m
+Native displayed-skirt/soft-skin radial gap: 33.450 mm, 1135 eligible vertex/pose samples
+Dodge physics 30/60/120 Hz: 1.099999–1.100002 m; wall stops all three
+GEN native animation suite: 606 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_integration.gd
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+GEN combined integration suite: 55 checks, 0 failures
+
+
+===== python-final.log =====
+...........................................
+----------------------------------------------------------------------
+Ran 43 tests in 35.252s
+
+OK
+
+  Skin: floor -4.31 mm; seam 0.00000 mm
+
+  walk: hips 0.812–0.885 m; support knee mean 26.4°, max 42.2°
+
+  run: hips 0.863–0.937 m; support knee mean 27.7°, max 33.9°
+
+  Ordinary run: hips 0.850–0.913 m; support knee mean 25.5°, max 35.8°
+
+  Ordinary walk: hips 0.869–0.894 m; support knee mean 14.7°, max 25.5°
+
+  Relaxed hand/hip sampled surface gap: 61.83 mm
+
+  Inner upper-arm edge stretch: 0.849–1.165x (all authored clips)
+
+===== generators-final.log =====
+checked prototype/assets/heroine/appearance/lab_uniform.json 1135922 characters
+checked prototype/assets/heroine/animations/motion_set.json (971,677 chars)
+checked prototype/assets/heroine/animations/motion_set.tres (1,317,162 chars)
+
+===== parity-final.log =====
+
+> gen-motion-lab@1.0.0 test:garment
+> node test_garment.mjs
+
+attack_left: 34 frames, live solver max difference 0.0017 mm
+attack_right: 34 frames, live solver max difference 0.0023 mm
+dodge: 29 frames, live solver max difference 0.0027 mm
+dodge_back: 29 frames, live solver max difference 0.0039 mm
+dodge_left: 29 frames, live solver max difference 0.0033 mm
+dodge_right: 29 frames, live solver max difference 0.0023 mm
+guard: 168 frames, live solver max difference 0.0028 mm
+hit: 20 frames, live solver max difference 0.0032 mm
+idle_relaxed: 192 frames, live solver max difference 0.0014 mm
+jump_down: 16 frames, live solver max difference 0.0071 mm
+jump_start: 6 frames, live solver max difference 0.0011 mm
+jump_up: 14 frames, live solver max difference 0.0027 mm
+land: 18 frames, live solver max difference 0.0083 mm
+run: 33 frames, live solver max difference 0.0032 mm
+run_relaxed: 48 frames, live solver max difference 0.0029 mm
+sprint_relaxed: 38 frames, live solver max difference 0.0014 mm
+walk: 46 frames, live solver max difference 0.0020 mm
+walk_relaxed: 65 frames, live solver max difference 0.0066 mm
+back-024: exact seek difference 0.0013 mm
+cross-016: exact seek difference 0.0002 mm
+cross-018: exact seek difference 0.0002 mm
+cross-019: exact seek difference 0.0002 mm
+cross-020: exact seek difference 0.0002 mm
+cross-frame10: exact seek difference 0.0002 mm
+dodge-frame5: exact seek difference 0.0002 mm
+guard-000: exact seek difference 0.0002 mm
+jab-018: exact seek difference 0.0002 mm
+jog-frame23: exact seek difference 0.0002 mm
+left-024: exact seek difference 0.0003 mm
+right-024: exact seek difference 0.0003 mm
+sprint-031: exact seek difference 0.0002 mm
+sprint-frame8: exact seek difference 0.0003 mm
+GEN live garment parity: 848 frames + 14 seeks; maximum 0.0083 mm.
+
+===== browser-final.log =====
+
+> gen-motion-lab@1.0.0 test
+> node test.mjs
+
+GEN browser suite: 18 clips, 90 sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.
+
+===== profile-before.log =====
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+Garment clip attack_left: 34 native frames
+Garment clip attack_right: 34 native frames
+Garment clip dodge: 29 native frames
+Garment clip dodge_back: 29 native frames
+Garment clip dodge_left: 29 native frames
+Garment clip dodge_right: 29 native frames
+Garment clip guard: 168 native frames
+Garment clip hit: 20 native frames
+Garment clip idle_relaxed: 192 native frames
+Garment clip jump_down: 16 native frames
+Garment clip jump_start: 6 native frames
+Garment clip jump_up: 14 native frames
+Garment clip land: 18 native frames
+Garment clip run: 33 native frames
+Garment clip run_relaxed: 48 native frames
+Garment clip sprint_relaxed: 38 native frames
+Garment clip walk: 46 native frames
+Garment clip walk_relaxed: 65 native frames
+Garment update profile (sandbox CPU, not GPU FPS): { "samples": 848, "median_us": 19357, "p95_us": 21728, "max_us": 35026, "note": "headless sandbox CPU only, no GPU/FPS claim" }
+GEN recorded 18 clips and 14 exact feedback seeks: /home/user/Project-Gene/.local/review/repair-42/profile-before-trace.json
+
+===== profile-after.log =====
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+Garment clip attack_left: 34 native frames
+Garment clip attack_right: 34 native frames
+Garment clip dodge: 29 native frames
+Garment clip dodge_back: 29 native frames
+Garment clip dodge_left: 29 native frames
+Garment clip dodge_right: 29 native frames
+Garment clip guard: 168 native frames
+Garment clip hit: 20 native frames
+Garment clip idle_relaxed: 192 native frames
+Garment clip jump_down: 16 native frames
+Garment clip jump_start: 6 native frames
+Garment clip jump_up: 14 native frames
+Garment clip land: 18 native frames
+Garment clip run: 33 native frames
+Garment clip run_relaxed: 48 native frames
+Garment clip sprint_relaxed: 38 native frames
+Garment clip walk: 46 native frames
+Garment clip walk_relaxed: 65 native frames
+Garment update profile (sandbox CPU, not GPU FPS): { "samples": 848, "median_us": 19761, "p95_us": 22939, "max_us": 38403, "note": "headless sandbox CPU only, no GPU/FPS claim" }
+GEN recorded 18 clips and 14 exact feedback seeks: /home/user/Project-Gene/.local/review/repair-42/profile-after-trace.json
+
+===== native-main-final.log =====
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+
+===== native-showcase-final.log =====
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+
+===== production-roundtrip-final.log =====
+Production roundtrip PASS: 7 screenshots; 2 H round trips; PBR/toon cache, B/F4, Tab/F3, 800/1280 canvas; no engine/page errors.
+Browser closed cleanly.
+
+===== Expected negative control (old readback; isolated copy only) =====
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Screen-space AA is only available when using the Forward+ or Mobile renderer.
+     at: viewport_set_screen_space_aa (servers/rendering/renderer_viewport.cpp:1435)
+ERROR: FAIL: sleeping/turning clone readback remains the same ACTUALLY DISPLAYED local skirt
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/test_integration.gd:29)
+       [1] _test_combined_game (res://tests/test_integration.gd:154)
+       [2] _run (res://tests/test_integration.gd:52)
+GEN combined integration suite: 55 checks, 1 failures
+
+===== Strict fresh import: FAILED; resource generation completed but 10 engine-build fontconfig errors =====
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Godot was compiled without fontconfig, system font support is disabled.
+Strict runner rejected the import, as intended. No error filter was weakened.

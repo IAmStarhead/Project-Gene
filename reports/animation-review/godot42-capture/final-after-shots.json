@@ -1,0 +1,295 @@
+{
+  "pack": "review-42-after.pck",
+  "out": ".local/review/repair-42/final-after-shots",
+  "expected": {
+    "model_sha256": "fbb8c7dfb98693ea5fe8682dcd4b6f4a4ef32bc61326de432aa0e26ed39e22ed",
+    "appearance_sha256": "a311a0dcffbeab5430af89db53a79a0a0143525a5979e914a8863ebf94ed8397",
+    "motion_set_sha256": "0979a30ecd5df4f4bf23b14da5bc6ae8d83bcd6c6ac5955cedb4b3f153ceca1a",
+    "runtime_sha256": "ea48147dba435d3d021f565376adc91d34dd3a51172e74d08ac12da163467b87",
+    "controller_sha256": "369e706b77396e8b23307630a56550ca268fd081318bf53c63dec1590f1e0ef7"
+  },
+  "shots": [
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "front",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.190-both-front"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "front",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.190-skin-front"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "back",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.190-both-back"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "back",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.190-skin-back"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "side",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.190-both-side"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "side",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.190-skin-side"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "opposite",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.190-both-opposite"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "opposite",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.190-skin-opposite"
+    },
+    {
+      "clip": "guard",
+      "time": 0,
+      "view": "front",
+      "layer": "both",
+      "close": true,
+      "file": "guard-0.000-both-front"
+    },
+    {
+      "clip": "guard",
+      "time": 0,
+      "view": "side",
+      "layer": "both",
+      "close": true,
+      "file": "guard-0.000-both-side"
+    },
+    {
+      "clip": "guard",
+      "time": 0,
+      "view": "back",
+      "layer": "skin",
+      "close": true,
+      "file": "guard-0.000-skin-back"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.16,
+      "view": "back",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.160-skin-back"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.16,
+      "view": "opposite",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.160-both-opposite"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.18,
+      "view": "back",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.180-skin-back"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.18,
+      "view": "opposite",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.180-both-opposite"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.2,
+      "view": "back",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_right-0.200-skin-back"
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.2,
+      "view": "opposite",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.200-both-opposite"
+    },
+    {
+      "clip": "attack_left",
+      "time": 0.18,
+      "view": "side",
+      "layer": "both",
+      "close": true,
+      "file": "attack_left-0.180-both-side"
+    },
+    {
+      "clip": "attack_left",
+      "time": 0.18,
+      "view": "back",
+      "layer": "both",
+      "close": true,
+      "file": "attack_left-0.180-both-back"
+    },
+    {
+      "clip": "attack_left",
+      "time": 0.18,
+      "view": "back",
+      "layer": "skin",
+      "close": true,
+      "file": "attack_left-0.180-skin-back"
+    },
+    {
+      "clip": "run",
+      "time": 0.17,
+      "view": "back",
+      "layer": "both",
+      "close": true,
+      "file": "run-0.170-both-back"
+    },
+    {
+      "clip": "jump_up",
+      "time": 0.11,
+      "view": "side",
+      "layer": "both",
+      "close": true,
+      "file": "jump_up-0.110-both-side"
+    },
+    {
+      "clip": "dodge_back",
+      "time": 0.24,
+      "view": "side",
+      "layer": "both",
+      "close": false,
+      "file": "dodge_back-0.240-both-side",
+      "simulate": true,
+      "warm": false
+    },
+    {
+      "clip": "dodge_back",
+      "time": 0.24,
+      "view": "back",
+      "layer": "both",
+      "close": false,
+      "file": "dodge_back-0.240-both-back",
+      "simulate": true,
+      "warm": false
+    },
+    {
+      "clip": "dodge_left",
+      "time": 0.24,
+      "view": "side",
+      "layer": "both",
+      "close": false,
+      "file": "dodge_left-0.240-both-side",
+      "simulate": true,
+      "warm": false
+    },
+    {
+      "clip": "dodge_left",
+      "time": 0.24,
+      "view": "back",
+      "layer": "both",
+      "close": false,
+      "file": "dodge_left-0.240-both-back",
+      "simulate": true,
+      "warm": false
+    },
+    {
+      "clip": "dodge_right",
+      "time": 0.24,
+      "view": "side",
+      "layer": "both",
+      "close": false,
+      "file": "dodge_right-0.240-both-side",
+      "simulate": true,
+      "warm": false
+    },
+    {
+      "clip": "dodge_right",
+      "time": 0.24,
+      "view": "back",
+      "layer": "both",
+      "close": false,
+      "file": "dodge_right-0.240-both-back",
+      "simulate": true,
+      "warm": false
+    },
+    {
+      "clip": "sprint_relaxed",
+      "time": 0.31,
+      "view": "side",
+      "layer": "both",
+      "close": false,
+      "file": "sprint_relaxed-0.310-both-side",
+      "simulate": true,
+      "warm": true
+    },
+    {
+      "clip": "sprint_relaxed",
+      "time": 0.31,
+      "view": "back",
+      "layer": "both",
+      "close": false,
+      "file": "sprint_relaxed-0.310-both-back",
+      "simulate": true,
+      "warm": true
+    },
+    {
+      "clip": "hit",
+      "time": 0.1,
+      "view": "front",
+      "layer": "both",
+      "close": true,
+      "file": "hit-0.100-both-front"
+    },
+    {
+      "clip": "guard",
+      "time": 0,
+      "view": "front",
+      "layer": "both",
+      "close": true,
+      "file": "guard-0.000-both-front-magenta",
+      "magenta": true
+    },
+    {
+      "clip": "attack_right",
+      "time": 0.19,
+      "view": "side",
+      "layer": "both",
+      "close": true,
+      "file": "attack_right-0.190-both-side-magenta",
+      "magenta": true
+    }
+  ]
+}
