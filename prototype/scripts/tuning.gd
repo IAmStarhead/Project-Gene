@@ -25,8 +25,10 @@ const STEP_UP := 0.30             ## м, плавный автоподъём н�
 const MOUSE_SENSITIVITY := 0.0022
 const CAMERA_PITCH_MIN := -60.0   ## градусы, вниз
 const CAMERA_PITCH_MAX := 45.0    ## градусы, вверх
-const CAMERA_DISTANCE := 3.6
-const CAMERA_HEIGHT := 1.48
+const CAMERA_DISTANCE := 2.75
+const CAMERA_HEIGHT := 1.42
+static var CAMERA_DYNAMIC := true    ## Esc: динамика/отклик камеры можно выключить
+static var FOLEY_ENABLED := true     ## Esc: звуки эффектов
 const CAMERA_FOLLOW_SPEED := 15.0 ## плавность следования по горизонтали
 const CAMERA_FOLLOW_SPEED_Y := 11.0 ## плавность следования по высоте (ступеньки, прыжок)
 
@@ -92,7 +94,7 @@ const BRIGHTNESS_NAMES := ["приглушённо", "штатно", "ярко"]
 
 ## Пресет качества графики (клавиша F4 или Esc → Качество графики):
 ##   0 — низкое: 85% 3D-разрешения, без сглаживания/SSAO/отражений (макс. FPS, даже на iGPU)
-##   1 — среднее (940MX): 1280x720, лёгкий FXAA, мягкие тени 1 каскад, статичные отражения зала
+##   1 — среднее (940MX): 1280x720, без AA, мягкие тени 1 каскад, статичные отражения зала
 ##   2 — высокое: 1280x720, 2x MSAA, мягкий SSAO в углах, тени и отражения зала
 static var QUALITY := 1
 const QUALITY_NAMES := ["низкое", "среднее (940MX)", "высокое"]

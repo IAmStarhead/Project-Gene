@@ -18,7 +18,7 @@ ANSI = re.compile(r'\x1b\[[0-9;]*m')
 ERROR = re.compile(r'^(?:SCRIPT ERROR:|ERROR:)', re.MULTILINE)
 
 
-def run(engine, args, expect_suite=False):
+def run(engine, args, expect_suite=False, expected_pattern=None):
     command = [engine, '--headless', '--path', str(PROJECT), *args]
     print('Running:', ' '.join(command), flush=True)
     try:
@@ -33,6 +33,8 @@ def run(engine, args, expect_suite=False):
         raise SystemExit('Godot reported an error (see log above)')
     if expect_suite and not re.search(r'GEN native animation suite: \d+ checks, 0 failures', text):
         raise SystemExit('The integration suite did not finish')
+    if expected_pattern and not re.search(expected_pattern, text):
+        raise SystemExit('The presentation suite did not finish')
 
 
 def main():
@@ -48,6 +50,8 @@ def main():
     if not args.skip_import:
         run(engine, ['--editor', '--import'])
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_animation.gd'], expect_suite=True)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_presentation.gd'],
+        expected_pattern=r'Presentation suite: \d+ checks, 0 failures')
 
 
 if __name__ == '__main__':

@@ -12,6 +12,7 @@ var player: CharacterBody3D
 var clone: CharacterBody3D
 var _hint_panel: PanelContainer
 var _hint: Label
+var _bar_panel: PanelContainer
 var _hint_age := 0.0
 var menu: Control
 
@@ -70,6 +71,7 @@ func _build_overlay() -> void:
 	# Компактная тёмная плашка горячих клавиш справа сверху: GROW_DIRECTION_BEGIN не даёт ей
 	# уходить за правый край окна, а тёмная подложка читается на фоне светлого потолка.
 	var bar_panel := PanelContainer.new()
+	_bar_panel = bar_panel
 	bar_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar_panel.add_theme_stylebox_override("panel", _make_card_style())
 	bar_panel.anchor_left = 1.0
@@ -107,8 +109,8 @@ func _build_overlay() -> void:
 
 func _make_card_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.11, 0.76)
-	style.border_color = Color(0.55, 0.64, 0.76, 0.48)
+	style.bg_color = Color(0.025, 0.055, 0.075, 0.88)
+	style.border_color = Color(0.36, 0.70, 0.76, 0.55)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
 	style.content_margin_left = 10.0
@@ -119,6 +121,9 @@ func _make_card_style() -> StyleBoxFlat:
 
 
 func _process(delta: float) -> void:
+	if _bar_panel != null and _hint_panel != null:
+		# On smaller windows the two top cards otherwise overlap.
+		_bar_panel.visible = not _hint_panel.visible or get_viewport().get_visible_rect().size.x >= 1000.0
 	if _hint_panel == null or not _hint_panel.visible:
 		return
 	_hint_age += delta
@@ -201,6 +206,16 @@ func _on_menu_action(id: String) -> void:
 		"clone":
 			if is_instance_valid(clone) and clone.has_method("cycle_mode"):
 				clone.cycle_mode()
+		"camera":
+			T.CAMERA_DYNAMIC = not T.CAMERA_DYNAMIC
+		"sound":
+			T.FOLEY_ENABLED = not T.FOLEY_ENABLED
+			if not T.FOLEY_ENABLED:
+				for actor in [player, clone]:
+					if is_instance_valid(actor):
+						var foley: Node = actor.get("foley")
+						if is_instance_valid(foley):
+							foley.call("silence")
 
 
 func _apply_quality() -> void:

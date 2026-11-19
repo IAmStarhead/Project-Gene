@@ -344,9 +344,9 @@ func _apply_surface_mood() -> void:
 	else:
 		# Реалистичный коэффициент отражения белого эпоксидного пола и панелей (как в Mirror's Edge):
 		# зал остаётся стерильно-белым, но швы плитки, ступени, тени и лицо не выбиваются в 255.
-		_floor_mat.albedo_color = Color(0.80, 0.82, 0.85) if not headless else Color(0.82, 0.84, 0.87)
-		_wall_mat.albedo_color = Color(0.82, 0.84, 0.87) if not headless else Color(0.85, 0.87, 0.90)
-		_ceiling_mat.emission_energy_multiplier = 0.42
+		_floor_mat.albedo_color = Color(0.75, 0.78, 0.82) if not headless else Color(0.82, 0.84, 0.87)
+		_wall_mat.albedo_color = Color(0.78, 0.81, 0.85) if not headless else Color(0.85, 0.87, 0.90)
+		_ceiling_mat.emission_energy_multiplier = 0.30
 
 
 func _make_room() -> void:

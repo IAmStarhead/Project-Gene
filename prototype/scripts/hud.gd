@@ -3,6 +3,7 @@
 extends CanvasLayer
 
 const T := preload("res://scripts/tuning.gd")
+const Reticle := preload("res://scripts/target_reticle.gd")
 
 const BAR_WIDTH := 248.0
 const HP_HEIGHT := 11.0
@@ -16,7 +17,8 @@ var _health_fill: ColorRect
 var _health_lag: ColorRect
 var _stamina_fill: ColorRect
 var _stance_label: Label
-var _target_mark: Label
+var _values_label: Label
+var _target_mark: Control
 var _health_lag_value := 1.0
 var _last_combat_state := -1
 
@@ -40,10 +42,10 @@ func _build_bars() -> void:
 
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.11, 0.76)
-	style.border_color = Color(0.56, 0.65, 0.78, 0.45)
+	style.bg_color = Color(0.025, 0.055, 0.075, 0.88)
+	style.border_color = Color(0.36, 0.70, 0.76, 0.55)
 	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
+	style.set_corner_radius_all(4)
 	style.content_margin_left = 10.0
 	style.content_margin_right = 10.0
 	style.content_margin_top = 7.0
@@ -71,10 +73,17 @@ func _build_bars() -> void:
 
 	_stance_label = Label.new()
 	_stance_label.text = "СТОЙКА: ОБЫЧНАЯ  [R]"
-	_stance_label.add_theme_font_size_override("font_size", 11)
+	_stance_label.add_theme_font_size_override("font_size", 13)
 	_stance_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.92, 0.92))
 	_stance_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_stance_label)
+
+	_values_label = Label.new()
+	_values_label.text = "ЗДОРОВЬЕ  100   /   ВЫНОСЛИВОСТЬ  100"
+	_values_label.add_theme_font_size_override("font_size", 12)
+	_values_label.add_theme_color_override("font_color", Color(0.85, 0.93, 0.94))
+	_values_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(_values_label)
 
 	var health_row := _bar_row(HP_HEIGHT, true)
 	column.add_child(health_row["root"])
@@ -126,16 +135,9 @@ func _bar_row(bar_h: float, with_ticks: bool) -> Dictionary:
 
 func _build_target_mark() -> void:
 	# Контрастная метка захвата с тёмным контуром: не теряется на фоне белого халата и стен.
-	_target_mark = Label.new()
-	_target_mark.text = "◈"
-	_target_mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_target_mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_target_mark = Reticle.new()
 	_target_mark.size = Vector2(28.0, 28.0)
 	_target_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_target_mark.add_theme_font_size_override("font_size", 20)
-	_target_mark.add_theme_color_override("font_color", Color(1.0, 0.86, 0.42, 0.96))
-	_target_mark.add_theme_color_override("font_outline_color", Color(0.05, 0.07, 0.12, 0.92))
-	_target_mark.add_theme_constant_override("outline_size", 5)
 	_target_mark.visible = false
 	add_child(_target_mark)
 
@@ -156,6 +158,7 @@ func _process(delta: float) -> void:
 
 	var st_val: Variant = player.get("stamina")
 	var st := float(st_val) if st_val != null else T.MAX_STAMINA
+	_values_label.text = "ЗДОРОВЬЕ  %d   /   ВЫНОСЛИВОСТЬ  %d" % [roundi(hp), roundi(st)]
 	var s_ratio := clampf(st / maxf(T.MAX_STAMINA, 1.0), 0.0, 1.0)
 	_stamina_fill.size.x = BAR_WIDTH * s_ratio
 	_stamina_fill.color = (

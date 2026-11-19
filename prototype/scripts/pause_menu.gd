@@ -32,21 +32,21 @@ func _ready() -> void:
 
 	_panel = PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.07, 0.09, 0.13, 0.96)
-	style.border_color = Color(0.55, 0.64, 0.76, 0.65)
+	style.bg_color = Color(0.025, 0.055, 0.075, 0.98)
+	style.border_color = Color(0.36, 0.70, 0.76, 0.65)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(8)
 	style.content_margin_left = 26.0
 	style.content_margin_right = 26.0
-	style.content_margin_top = 20.0
-	style.content_margin_bottom = 20.0
+	style.content_margin_top = 12.0
+	style.content_margin_bottom = 12.0
 	style.shadow_size = 8
 	style.shadow_color = Color(0.0, 0.0, 0.0, 0.35)
 	_panel.add_theme_stylebox_override("panel", style)
 	center.add_child(_panel)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 9)
+	col.add_theme_constant_override("separation", 4)
 	_panel.add_child(col)
 
 	var title := Label.new()
@@ -70,6 +70,8 @@ func _ready() -> void:
 	_add_item(col, "toon", "Стиль персонажей", "G")
 	_add_item(col, "stance", "Режим игрока", "R")
 	_add_item(col, "clone", "Бой клона", "T")
+	_add_item(col, "camera", "Динамика камеры", "")
+	_add_item(col, "sound", "Звуки", "")
 	_add_item(col, "quit", "Выйти из игры", "")
 
 	refresh()
@@ -86,7 +88,7 @@ func _ready() -> void:
 func _add_item(parent: VBoxContainer, id: String, caption: String, key: String) -> void:
 	var row := Button.new()
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	row.custom_minimum_size = Vector2(460.0, 34.0)
+	row.custom_minimum_size = Vector2(460.0, 28.0)
 	row.add_theme_font_size_override("font_size", 15)
 	row.focus_mode = Control.FOCUS_ALL
 	row.pressed.connect(_activate.bind(id))
@@ -107,6 +109,8 @@ func refresh() -> void:
 	_items["brightness"]["button"].text = _row_text("brightness", T.BRIGHTNESS_NAMES[b_idx])
 	_items["toon"]["button"].text = _row_text("toon", "селлшейдинг" if T.TOON_ENABLED else "полуреализм")
 	_items["clone"]["button"].text = _row_text("clone", _clone_label())
+	_items["camera"]["button"].text = _row_text("camera", "вкл" if T.CAMERA_DYNAMIC else "выкл")
+	_items["sound"]["button"].text = _row_text("sound", "вкл" if T.FOLEY_ENABLED else "выкл")
 	var player := get_tree().get_first_node_in_group("player")
 	_items["stance"]["button"].text = _row_text(
 		"stance",
@@ -193,12 +197,12 @@ func _input(event: InputEvent) -> void:
 func _make_theme() -> Theme:
 	var th := Theme.new()
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.13, 0.16, 0.22, 0.92)
+	normal.bg_color = Color(0.09, 0.15, 0.18, 0.96)
 	normal.set_corner_radius_all(5)
 	normal.content_margin_left = 10.0
 	normal.content_margin_right = 10.0
 	var hover := StyleBoxFlat.new()
-	hover.bg_color = Color(0.22, 0.28, 0.37, 0.96)
+	hover.bg_color = Color(0.15, 0.29, 0.31, 0.98)
 	hover.set_corner_radius_all(5)
 	hover.content_margin_left = 10.0
 	hover.content_margin_right = 10.0

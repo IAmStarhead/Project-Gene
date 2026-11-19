@@ -7,6 +7,7 @@ extends CharacterBody3D
 
 const T := preload("res://scripts/tuning.gd")
 const HitCheck := preload("res://scripts/hit_check.gd")
+const Foley := preload("res://scripts/actor_foley.gd")
 
 enum Mode { OFF, ON }
 
@@ -28,6 +29,7 @@ var _attack_side := "R"
 var _cooldown: float = 0.0
 var _recover: float = 0.0
 var _flash: float = 0.0
+var foley: Node3D
 var _player: Node3D
 var _label: Label3D
 var _last_label_text := ""
@@ -42,6 +44,9 @@ var _step_result := PhysicsTestMotionResult3D.new()
 func _ready() -> void:
 	add_to_group("damageable")
 	add_to_group("clone")
+	foley = Foley.new()
+	foley.name = "Foley"
+	add_child(foley)
 	_player = get_tree().get_first_node_in_group("player") as Node3D
 	_make_label()
 	if character != null and character.has_method("reset_motion"):
@@ -154,6 +159,11 @@ func _physics_process(delta: float) -> void:
 				"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
 			})
 
+	if character != null and foley != null:
+		var phase: Variant = character.get("_phase")
+		var displacement := global_position - previous_position
+		if phase != null:
+			foley.update_motion(delta, float(phase), is_on_floor(), Vector2(displacement.x, displacement.z).length(), "attack" if _attack_time >= 0.0 else "")
 	_update_label()
 
 
@@ -239,6 +249,8 @@ func _fight(delta: float) -> void:
 	if _attack_time >= 0.0:
 		var prev := _attack_time
 		_attack_time += delta
+		if prev < T.CLONE_WINDUP and _attack_time >= T.CLONE_WINDUP and foley != null:
+			foley.swing()
 		_slow_down(delta, 26.0)
 		var active_end := T.CLONE_WINDUP + T.CLONE_ACTIVE
 		var total := active_end + T.CLONE_RECOVER
@@ -289,6 +301,8 @@ func _deal_damage(_dist: float) -> bool:
 		_last_deal = 0.0
 		return false
 	_last_deal = 1.2
+	if foley != null and not bool(_player.get("_invulnerable")):
+		foley.impact()
 	if _player.has_method("take_damage"):
 		_player.take_damage(T.CLONE_DAMAGE, dir)
 	return true
@@ -314,6 +328,8 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		_flash = 0.65
 		return
 	health = maxf(0.0, health - amount)
+	if foley != null:
+		foley.hurt()
 	_flash = 1.0
 	if character != null and character.has_method("play_hit"):
 		character.play_hit()

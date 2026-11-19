@@ -27,6 +27,7 @@ func setup(follow: Node3D, init_yaw: float, pitch_deg: float) -> void:
 
 	spring = SpringArm3D.new()
 	spring.spring_length = T.CAMERA_DISTANCE
+	spring.position.x = 0.22
 	spring.collision_mask = 1
 	spring.margin = 0.08
 	var probe := SphereShape3D.new()
@@ -39,7 +40,7 @@ func setup(follow: Node3D, init_yaw: float, pitch_deg: float) -> void:
 	camera = Camera3D.new()
 	camera.name = "Camera3D"
 	camera.current = true
-	camera.fov = 72.0
+	camera.fov = 68.0
 	camera.near = 0.08
 	camera.far = 64.0
 	spring.add_child(camera)
@@ -60,7 +61,8 @@ func snap_now() -> void:
 
 func add_kick(deg_amount: float) -> void:
 	## Короткий тактильный отклик камеры на удар (гаснет за ~0.12 с, не укачивает).
-	_kick_deg = clampf(_kick_deg + deg_amount, -2.4, 2.4)
+	if T.CAMERA_DYNAMIC:
+		_kick_deg = clampf(_kick_deg + deg_amount, -1.2, 1.2)
 
 
 func _process(delta: float) -> void:
@@ -79,6 +81,18 @@ func _process(delta: float) -> void:
 		_pos_smooth.y = lerpf(_pos_smooth.y, want.y, ky)
 
 	global_position = _pos_smooth
+	# A small speed-dependent pullback and FOV keep a close idle framing while
+	# showing more of the room in a sprint. Mouse input is never delayed.
+	var speed := 0.0
+	if target is CharacterBody3D:
+		var v: Vector3 = (target as CharacterBody3D).velocity
+		speed = Vector2(v.x, v.z).length()
+	var motion := clampf(speed / T.RUN_SPEED, 0.0, 1.0) if T.CAMERA_DYNAMIC else 0.0
+	var smoothing := 1.0 - exp(-3.5 * delta)
+	spring.spring_length = lerpf(spring.spring_length, T.CAMERA_DISTANCE + 0.30 * motion, smoothing)
+	camera.fov = lerpf(camera.fov, 68.0 + 4.0 * motion, smoothing)
+	if not T.CAMERA_DYNAMIC:
+		_kick_deg = 0.0
 	_kick_deg *= exp(-20.0 * delta)
 	_sync_angles()
 	_update_near_hide()

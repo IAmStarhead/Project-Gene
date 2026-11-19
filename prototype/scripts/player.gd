@@ -7,6 +7,7 @@ const T := preload("res://scripts/tuning.gd")
 const CameraRigScene := preload("res://scenes/camera_rig.tscn")
 const LockOn := preload("res://scripts/lock_on.gd")
 const HitCheck := preload("res://scripts/hit_check.gd")
+const Foley := preload("res://scripts/actor_foley.gd")
 
 @onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
@@ -14,6 +15,7 @@ const HitCheck := preload("res://scripts/hit_check.gd")
 
 ## Отдельная камера в корне сцены: не наследует поворот тела героини.
 var rig: Node3D
+var foley: Node3D
 var yaw: float = 0.0        ## рыскание камеры, радианы
 var pitch: float = -13.0    ## наклон камеры, градусы
 
@@ -89,6 +91,9 @@ func _ready() -> void:
 	if host != null:
 		host.add_child(rig)
 
+	foley = Foley.new()
+	foley.name = "Foley"
+	add_child(foley)
 	_refresh_targets()
 	lock.setup(self)
 	if hud != null and hud.has_method("setup"):
@@ -245,7 +250,12 @@ func _physics_process(delta: float) -> void:
 	if stepped_up:
 		apply_floor_snap()
 
-	_update_character_anim(delta, global_position - previous_position)
+	var displacement := global_position - previous_position
+	_update_character_anim(delta, displacement)
+	if character != null and foley != null:
+		var phase: Variant = character.get("_phase")
+		if phase != null:
+			foley.update_motion(delta, float(phase), is_on_floor(), Vector2(displacement.x, displacement.z).length(), _action)
 	_update_camera_lock(delta)
 
 
@@ -509,6 +519,8 @@ func _attack_phase() -> String:
 func _process_attack(delta: float) -> void:
 	var previous_time := _action_time
 	_action_time += delta
+	if previous_time < T.ATTACK_WINDUP and _action_time >= T.ATTACK_WINDUP and foley != null:
+		foley.swing()
 	velocity.x = move_toward(velocity.x, 0.0, T.DECELERATION * delta)
 	velocity.z = move_toward(velocity.z, 0.0, T.DECELERATION * delta)
 
@@ -555,6 +567,8 @@ func _do_hit(use_live_bone: bool) -> bool:
 	)
 	if hit.is_empty():
 		return false
+	if foley != null:
+		foley.impact()
 	var victim := hit["target"] as Node3D
 	var zone_name := HitCheck.zone_label(String(hit.get("zone", "torso")))
 	if victim.has_method("is_passive") and bool(victim.call("is_passive")):
@@ -609,6 +623,8 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		_last_hit = "уворот (неуязвимость)"
 		return
 	combat_mode = true
+	if foley != null:
+		foley.hurt()
 	health = maxf(0.0, health - amount)
 	if is_instance_valid(rig) and rig.has_method("add_kick"):
 		rig.call("add_kick", 1.3)
