@@ -11,18 +11,14 @@ const STEPS := [
 ]
 const SWISH := preload("res://assets/audio/knife_swish.wav")
 const IMPACT := preload("res://assets/audio/hit_body.wav")
-const EFFORT := preload("res://assets/audio/grunt-f.wav")
-const HURT := [preload("res://assets/audio/hurt-1-f.wav"), preload("res://assets/audio/hurt-2-f.wav"), preload("res://assets/audio/hurt-3-f.wav")]
 
 var _voices: Array[AudioStreamPlayer3D] = []
 var _slot := 0
 var _step_index := 0
-var _hurt_index := 0
 var _prev_phase := 0.0
 var _phase_known := false
 var _was_grounded := false
 var _ground_known := false
-var _voice_cooldown := 0.0
 
 
 func _ready() -> void:
@@ -45,7 +41,6 @@ func silence() -> void:
 
 
 func update_motion(delta: float, phase: float, grounded: bool, distance: float, action: String) -> void:
-	_voice_cooldown = maxf(0.0, _voice_cooldown - delta)
 	if _ground_known and grounded and not _was_grounded:
 		_step(-9.0)
 	_was_grounded = grounded
@@ -70,9 +65,6 @@ func _step(db: float) -> void:
 
 func swing() -> void:
 	_play(SWISH, -15.0)
-	if _voice_cooldown <= 0.0:
-		_play(EFFORT, -22.0)
-		_voice_cooldown = 1.4
 
 
 func impact() -> void:
@@ -80,10 +72,8 @@ func impact() -> void:
 
 
 func hurt() -> void:
-	if _voice_cooldown <= 0.0:
-		_play(HURT[_hurt_index % HURT.size()], -18.0)
-		_hurt_index += 1
-		_voice_cooldown = 1.0
+	# Вокал временно отключён: текущие записи не подходят персонажу.
+	pass
 
 
 func _play(stream: AudioStream, db: float) -> void:

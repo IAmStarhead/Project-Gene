@@ -26,6 +26,7 @@ var stamina: float = T.MAX_STAMINA
 var combat_mode := false
 
 var _stamina_cooldown: float = 0.0
+var _health_cooldown: float = 0.0
 var _spawn_pos := Vector3(0.0, 0.08, 5.4)
 var _spawn_recorded := false
 
@@ -222,6 +223,7 @@ func _physics_process(delta: float) -> void:
 		lock.update(delta)
 	_update_buffers(delta)
 	_update_stamina(delta)
+	_update_health_regen(delta)
 
 	if _action == "dodge":
 		_process_dodge(delta)
@@ -618,7 +620,17 @@ func _refresh_targets() -> void:
 	_targets = cleaned
 
 
+func _update_health_regen(delta: float) -> void:
+	# Учитываем часть тика после истечения задержки; во время паузы физика не идёт.
+	var healing_time := maxf(0.0, delta - _health_cooldown)
+	_health_cooldown = maxf(0.0, _health_cooldown - delta)
+	if health > 0.0:
+		health = minf(T.MAX_HEALTH, health + T.HEALTH_REGEN * healing_time)
+
+
 func take_damage(amount: float, _from_dir: Vector3) -> void:
+	if amount <= 0.0:
+		return
 	if _invulnerable:
 		_last_hit = "уворот (неуязвимость)"
 		return
@@ -626,12 +638,14 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 	if foley != null:
 		foley.hurt()
 	health = maxf(0.0, health - amount)
+	_health_cooldown = T.HEALTH_REGEN_DELAY
 	if is_instance_valid(rig) and rig.has_method("add_kick"):
 		rig.call("add_kick", 1.3)
 	if character != null and character.has_method("play_hit"):
 		character.play_hit()
 	if health <= 0.0:
 		health = T.MAX_HEALTH
+		_health_cooldown = 0.0
 		stamina = T.MAX_STAMINA
 		global_position = _spawn_pos
 		rotation = Vector3.ZERO

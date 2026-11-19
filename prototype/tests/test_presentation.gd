@@ -109,6 +109,12 @@ func _run() -> void:
 	f.update_motion(1.0 / 60.0, 0.99, true, 0.02, "attack")
 	f.update_motion(1.0 / 60.0, 0.01, true, 0.02, "attack")
 	check(int(f.get("_slot")) == n, "no gait step during attack")
+	f.swing()
+	check(int(f.get("_slot")) == n + 1, "swing plays only one non-vocal sound")
+	check(f.get("_voices")[(n % 4)].stream == Foley.SWISH, "swing uses swish")
+	n = f.get("_slot")
+	f.hurt()
+	check(int(f.get("_slot")) == n, "hurt does not play a vocal")
 	T.FOLEY_ENABLED = false
 	f.swing()
 	f.impact()
@@ -117,6 +123,32 @@ func _run() -> void:
 	T.FOLEY_ENABLED = true
 	f.impact()
 	check(int(f.get("_slot")) == n + 1, "impact starts a voice")
+	# Use deterministic ticks to verify regeneration and hit gating.
+	player.set_physics_process(false)
+	player.health = 70.0
+	player.take_damage(10.0, Vector3.ZERO)
+	check(is_equal_approx(player.health, 60.0), "damage applied")
+	player._update_health_regen(T.HEALTH_REGEN_DELAY - 0.5)
+	check(is_equal_approx(player.health, 60.0), "no regeneration during delay")
+	player._invulnerable = true
+	player.take_damage(10.0, Vector3.ZERO)
+	player._invulnerable = false
+	player._update_health_regen(1.5)
+	check(is_equal_approx(player.health, 60.0 + T.HEALTH_REGEN), "invulnerable hit does not reset delay; remainder heals")
+	player.take_damage(1.0, Vector3.ZERO)
+	var after_hit: float = player.health
+	player._update_health_regen(T.HEALTH_REGEN_DELAY)
+	check(is_equal_approx(player.health, after_hit), "new hit restarts delay")
+	player._update_health_regen(100.0)
+	check(is_equal_approx(player.health, T.MAX_HEALTH), "regeneration clamps to max")
+	player.take_damage(999.0, Vector3.ZERO)
+	check(is_equal_approx(player.health, T.MAX_HEALTH) and is_equal_approx(float(player.get("_health_cooldown")), 0.0), "prototype respawn resets health and delay")
+	player.health = 50.0
+	player.set_physics_process(true)
+	scene.menu.open()
+	await create_timer(0.15, true).timeout
+	check(is_equal_approx(player.health, 50.0), "regeneration pauses with game")
+	scene.menu.close()
 	f.queue_free()
 	scene.queue_free()
 	await process_frame

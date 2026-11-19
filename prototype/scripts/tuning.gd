@@ -58,6 +58,8 @@ const INPUT_BUFFER := 0.16        ## сек, сколько помнится н�
 
 # ─────────────────────────────────────────────── ЗДОРОВЬЕ И СТАМИНА
 const MAX_HEALTH := 100.0
+const HEALTH_REGEN_DELAY := 4.0   ## сек после последнего полученного урона
+const HEALTH_REGEN := 5.0         ## HP/сек; временный баланс альфы
 const MAX_STAMINA := 100.0
 const STAMINA_REGEN := 28.0       ## в секунду
 const STAMINA_REGEN_DELAY := 0.55 ## пауза после траты перед восстановлением
