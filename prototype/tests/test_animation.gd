@@ -49,6 +49,7 @@ func _run() -> void:
 		return
 	_test_native_tracks(character)
 	_test_attack_clock(character)
+	_test_grounded_attack_pose(character)
 	_test_distance_and_air(character)
 	_test_locomotion_posture(character)
 	_test_air_progress(character)
@@ -123,6 +124,28 @@ func _test_attack_clock(character: Node3D) -> void:
 				var target := Vector3(.045, 1.305, .638) if side == "L" else Vector3(-.035, 1.305, .677)
 				check(joint(character, "hand." + side).distance_to(target) < .0001,
 					"no low-pass delay at impact, %d FPS, %s" % [fps, side])
+
+
+func _test_grounded_attack_pose(character: Node3D) -> void:
+	# Once transition blending is finished, grounded attacks must be exactly
+	# the authored clip, for player and clone timings and both hands.
+	for timing in [Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
+			Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER)]:
+		for side in ["L", "R"]:
+			character.reset_motion()
+			var action_time: float = timing.x + timing.y * .5
+			character.update_motion(.1, Vector3(0, 0, 1.65), "attack", action_time, side,
+				{"grounded": true, "combat": true, "distance": .1, "attack_timing": timing})
+			var clip := "attack_left" if side == "L" else "attack_right"
+			var expected: Dictionary = character.sample_clip(clip, character.attack_clip_time(action_time, timing, side))
+			var difference := 0.0
+			for i in character.skeleton.get_bone_count():
+				var actual: Quaternion = character.skeleton.get_bone_pose_rotation(i)
+				var wanted: Quaternion = expected.rotations[i]
+				difference = maxf(difference, 1.0 - absf(actual.dot(wanted)))
+			var hip: Vector3 = character.skeleton.get_bone_pose_position(character.skeleton.find_bone("hips"))
+			check(difference < .000002 and hip.distance_to(expected.hips) < .000002,
+				"grounded attack clip preserved for %s" % side)
 
 
 func _test_distance_and_air(character: Node3D) -> void:

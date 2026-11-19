@@ -22,6 +22,17 @@ var pitch: float = -13.0    ## наклон камеры, градусы
 var health: float = T.MAX_HEALTH
 var stamina: float = T.MAX_STAMINA
 
+# Тестовый невидимый клинок действует ТОЛЬКО на подготовленный манекен.
+var training_blade := false
+var training_limb := 0
+var training_special := false
+var _attack_blade := false
+var _attack_blade_limb := 0
+var _attack_blade_special := false
+const TRAINING_LIMB_NAMES := ["левая рука", "правая рука", "левая нога", "правая нога"]
+const TRAINING_BLADE_REACH := 1.60
+
+
 ## Стойка игрока (переключается R); бой клона живёт отдельно на клавише T.
 var combat_mode := false
 
@@ -126,6 +137,28 @@ func _exit_tree() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+		if key == KEY_V:
+			training_blade = not training_blade
+			_sync_training_selection()
+			get_viewport().set_input_as_handled()
+			return
+		if training_blade:
+			if key >= KEY_1 and key <= KEY_4:
+				training_limb = key - KEY_1
+				_sync_training_selection()
+				get_viewport().set_input_as_handled()
+				return
+			if key == KEY_N:
+				training_special = not training_special
+				get_viewport().set_input_as_handled()
+				return
+			if key == KEY_K:
+				for manikin in get_tree().get_nodes_in_group("cut_manikin"):
+					manikin.restore_all()
+				get_viewport().set_input_as_handled()
+				return
 	if lock != null and lock.handle_input(event):
 		get_viewport().set_input_as_handled()
 		return
@@ -167,6 +200,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_jump_buffer = 0.0
 	elif event.is_action_pressed("toggle_stance"):
 		toggle_combat_mode()
+
+
+func _sync_training_selection() -> void:
+	for manikin in get_tree().get_nodes_in_group("cut_manikin"):
+		manikin.highlight_limb(training_limb if training_blade else -1)
 
 
 func toggle_combat_mode() -> void:
@@ -509,6 +547,10 @@ func _start_attack() -> void:
 	_hit_done = false
 	_miss_logged = false
 	_last_hit = ""
+	# Тип и выбор части фиксируются в начале замаха, а не в момент контакта.
+	_attack_blade = training_blade
+	_attack_blade_limb = training_limb
+	_attack_blade_special = training_special
 	# При захвате цели доворачиваем корпус прямо к противнику перед выбросом руки.
 	if lock != null and lock.active():
 		var face: Array = []
@@ -565,6 +607,8 @@ func _do_hit(use_live_bone: bool) -> bool:
 		var face: Array = []
 		if lock.facing(face):
 			forward = face[0]
+	if _attack_blade:
+		return _do_training_cut(forward)
 	var hit := HitCheck.find_hit(
 		self,
 		_targets,
@@ -591,7 +635,40 @@ func _do_hit(use_live_bone: bool) -> bool:
 	return true
 
 
+func _do_training_cut(forward: Vector3) -> bool:
+	# Тестовый объём, не произвольный разрез и не трек настоящего меча.
+	forward.y = 0.0
+	if forward.length_squared() < .0001:
+		return false
+	forward = forward.normalized()
+	for manikin in get_tree().get_nodes_in_group("cut_manikin"):
+		if not is_instance_valid(manikin) or not manikin.is_inside_tree():
+			continue
+		var point: Vector3 = manikin.limb_point(_attack_blade_limb)
+		var to := point - global_position
+		if absf(to.y) > 1.9 or to.y < -.15:
+			continue
+		var flat := Vector3(to.x, 0, to.z)
+		var distance := flat.length()
+		if distance < .05 or distance > TRAINING_BLADE_REACH:
+			continue
+		if rad_to_deg(forward.angle_to(flat / distance)) > T.ATTACK_ANGLE:
+			continue
+		var from := global_position + Vector3(0, maxf(.2, to.y), 0)
+		var query := PhysicsRayQueryParameters3D.create(from, point, 1)
+		if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+			continue
+		if manikin.sever(_attack_blade_limb, _attack_blade_special, forward):
+			_last_hit = "Манекен: " + TRAINING_LIMB_NAMES[_attack_blade_limb]
+			if foley != null:
+				foley.impact()
+			return true
+	return false
+
+
 func _miss_reason() -> String:
+	if _attack_blade:
+		return "мимо: манекен далеко, вне угла или часть уже отсечена"
 	var near := _nearest_target()
 	if near == null:
 		return "мимо (целей нет)"

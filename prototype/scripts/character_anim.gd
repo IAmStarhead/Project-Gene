@@ -237,7 +237,10 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
 		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
-	var pose := _locomotion_pose()
+	# На земле атака целиком заменяет позу передвижения; сэмплировать
+	# и смешивать её заранее в каждом боевом тике было лишней работой.
+	# Для воздуха и остальных состояний сохраняем прежний путь без изменений.
+	var pose: Dictionary = {} if action == "attack" and grounded else _locomotion_pose()
 	var state := "ground"
 	if action == "attack":
 		state = "attack_" + side

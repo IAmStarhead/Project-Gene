@@ -4,12 +4,14 @@ extends Node3D
 const T := preload("res://scripts/tuning.gd")
 const PlayerScene := preload("res://scenes/player.tscn")
 const CloneScene := preload("res://scenes/clone.tscn")
+const CutManikinScene := preload("res://scenes/cut_manikin.tscn")
 const ROOM_SCENE := preload("res://scenes/room.tscn")
 const PRELOAD_MENU := preload("res://scenes/pause_menu.tscn")
 
 var room: Node3D
 var player: CharacterBody3D
 var clone: CharacterBody3D
+var cut_manikin: StaticBody3D
 var _hint_panel: PanelContainer
 var _hint: Label
 var _bar_panel: PanelContainer
@@ -34,6 +36,11 @@ func _ready() -> void:
 	)
 	clone.rotation.y = PI
 	add_child(clone)
+
+	# Отдельная учебная модель, не повреждает GLB героини или клона.
+	cut_manikin = CutManikinScene.instantiate()
+	cut_manikin.position = Vector3(3.0, 0.0, 3.2)
+	add_child(cut_manikin)
 
 	_apply_style_to_characters()
 	_build_overlay()
@@ -64,7 +71,8 @@ func _build_overlay() -> void:
 	_hint.text = (
 		"WASD — бег · Shift — спринт · Left Alt — шаг\n"
 		+ "ЛКМ / ПКМ — удар · Пробел — уворот · F — прыжок\n"
-		+ "Tab или СКМ — захват цели · колесо — смена цели"
+		+ "Tab или СКМ — захват цели · колесо — смена цели\n"
+		+ "V — тестовый клинок у манекена"
 	)
 	_hint_panel.add_child(_hint)
 
@@ -94,6 +102,7 @@ func _build_overlay() -> void:
 	for pair in [
 		["R", "стойка"],
 		["T", "клон"],
+		["V", "клинок"],
 		["H", "витрина"],
 		["B", "свет"],
 		["F4", "графика"],

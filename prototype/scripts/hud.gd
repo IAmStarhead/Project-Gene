@@ -18,6 +18,7 @@ var _health_lag: ColorRect
 var _stamina_fill: ColorRect
 var _stance_label: Label
 var _values_label: Label
+var _training_label: Label
 var _target_mark: Control
 var _health_lag_value := 1.0
 var _last_combat_state := -1
@@ -84,6 +85,12 @@ func _build_bars() -> void:
 	_values_label.add_theme_color_override("font_color", Color(0.85, 0.93, 0.94))
 	_values_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_values_label)
+	_training_label = Label.new()
+	_training_label.add_theme_font_size_override("font_size", 12)
+	_training_label.add_theme_color_override("font_color", Color(1.0, .83, .48))
+	_training_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_training_label.visible = false
+	column.add_child(_training_label)
 
 	var health_row := _bar_row(HP_HEIGHT, true)
 	column.add_child(health_row["root"])
@@ -176,6 +183,13 @@ func _process(delta: float) -> void:
 		else:
 			_stance_label.text = "СТОЙКА: ОБЫЧНАЯ  [R]"
 			_stance_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.92, 0.90))
+
+	_training_label.visible = bool(player.get("training_blade"))
+	if _training_label.visible:
+		var chosen: int = int(player.get("training_limb"))
+		var names := ["левая рука", "правая рука", "левая нога", "правая нога"]
+		var material := "особый · рост заблокирован" if bool(player.get("training_special")) else "обычный · рост включён"
+		_training_label.text = "КЛИНОК [V] · %s [1–4]\n%s [N] · сброс манекена [K]" % [names[chosen], material]
 
 	_update_target_mark()
 

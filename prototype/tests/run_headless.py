@@ -54,6 +54,8 @@ def main():
         expected_pattern=r'Presentation suite: \d+ checks, 0 failures')
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_limb_demo.gd'],
         expected_pattern=r'Limb demo suite: \d+ checks, 0 failures')
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_cut_manikin.gd'],
+        expected_pattern=r'Cut manikin suite: \d+ checks, 0 failures')
 
 
 if __name__ == '__main__':
