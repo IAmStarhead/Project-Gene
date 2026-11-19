@@ -1,0 +1,644 @@
+{
+  "schema": "gene-animation-review/41",
+  "source_commit": "422b1907b2423b63cfd29aaccf81445fba69ecbc",
+  "baseline_commit": "2c9de181beb64c0b9b314dcfde0bf059e6fc744e",
+  "input_files": {
+    "model_sha256": "prototype/assets/heroine/female_A_rigged_safe.glb",
+    "appearance_sha256": "prototype/assets/heroine/appearance/lab_uniform.json",
+    "motion_set_sha256": "prototype/assets/heroine/animations/motion_set.json",
+    "runtime_sha256": "prototype/scripts/character_appearance.gd",
+    "controller_sha256": "prototype/scripts/character_anim.gd"
+  },
+  "input_sha256": {
+    "model_sha256": "8f7782b2dc60768f2e94285a6967d6718867b0d4203b25aa97eeeedc2775e626",
+    "appearance_sha256": "ad8404b7fa737bce11e7e8d3fd009f755113ac3aef064b456987e0cc282b1f41",
+    "motion_set_sha256": "88bc9418951c42cc931affba121efba6f1d6c6ea3330bbd67dd2e8dfeed5e2da",
+    "runtime_sha256": "b9e84b550ff1391a86b54856feacab56fd3d6d8685d2f0a184ca0ea75d562706",
+    "controller_sha256": "369e706b77396e8b23307630a56550ca268fd081318bf53c63dec1590f1e0ef7"
+  },
+  "environment": {
+    "python": "3.11.2",
+    "packages": {
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "trimesh": "5.2.1",
+      "python-fcl": "0.7.0.11",
+      "Pillow": "13.0.0",
+      "imageio-ffmpeg": "0.8.1"
+    },
+    "native_engine": "4.7.2-stable (custom_build)",
+    "visual_engine": "Godot 4.7.2 custom_build.3d95ead8f; Emscripten 4.0.14; single-threaded WASM; Compatibility/WebGL2; Chromium/SwiftShader",
+    "official_windows_opengl33_tested": false,
+    "geforce_940mx_fps_measured": false
+  },
+  "checks": {
+    "native": {
+      "checks": 606,
+      "failures": 0
+    },
+    "python": {
+      "tests": 40,
+      "result": "OK"
+    },
+    "generators": "both --check passed",
+    "js_syntax": "npm run check passed",
+    "browser": {
+      "clips": 18,
+      "poses": 90,
+      "pause_seek_resume_controls_mobile_isolation": "OK"
+    },
+    "independent_live_js_native_parity": {
+      "frames": 848,
+      "seeks": 14,
+      "max_mm": 0.0974,
+      "limit_mm": 0.25
+    },
+    "production_ui": {
+      "screenshots": 8,
+      "physical_canvas_sizes": [
+        [
+          800,
+          450
+        ],
+        [
+          1024,
+          576
+        ],
+        [
+          1280,
+          720
+        ]
+      ],
+      "H_round_trips": 2,
+      "engine_js_errors": 0
+    }
+  },
+  "preservation": {
+    "takes": 20,
+    "frames": 3066,
+    "clone_actor_frames": 300,
+    "protected_bones": [
+      "hips",
+      "spine",
+      "chest",
+      "neck",
+      "head",
+      "thigh.L",
+      "shin.L",
+      "foot.L",
+      "toe.L",
+      "thigh.R",
+      "shin.R",
+      "foot.R",
+      "toe.R"
+    ],
+    "max_non_arm_rotation_difference": 0.0,
+    "max_hips_difference": 0.0,
+    "other_unchanged_fields_differences": {},
+    "minimum_cloth_capsule_gap": [
+      -2.02536582949442e-07,
+      [
+        "run",
+        128,
+        "player"
+      ]
+    ],
+    "before_commit": "2c9de181beb64c0b9b314dcfde0bf059e6fc744e",
+    "before_trace_sha256": "e78c2042ea8e87ab842a5d9f0ec71a02103ed29418116204e6fb0b47ad745e77",
+    "after_trace_sha256": "9b372ee0185f03dd6b4e2935aa6f9412ef22db9a096d73d8a123c3ae3455543e"
+  },
+  "protected_motion_sha256": "1e5e906559a064e972a70dd7a2b6945d4768407f88d82065c935cde9229c3ef5",
+  "protected_dodge_sha256": "71103f883c1757d5d51ef2d381c7fb651ae6acdc613d065746e207da4c99571e",
+  "geometry": {
+    "body_vertices": 18176,
+    "body_triangles": 33300,
+    "bones": 21,
+    "gown_vertices": 3681,
+    "gown_triangles": 7014,
+    "rest_positions_normals_indices_exact_vs_baseline": true,
+    "skin_weight_changed_vertices_vs_baseline": 710,
+    "skin_weight_delta_threshold": 1e-06,
+    "coverage_parameters_sha256": "38b65962878c656020cedaeeaa125e272f7176ee7a129a553532db610d55d894",
+    "visible_body_faces_before_after": [
+      27346,
+      27342
+    ],
+    "coverage_note": "Identical coverage parameters. Four-face difference follows changed shoulder weights; mask not enlarged."
+  },
+  "displayed_edge_ratios": {
+    "actors": 3366,
+    "trace_sha256": "9b372ee0185f03dd6b4e2935aa6f9412ef22db9a096d73d8a123c3ae3455543e",
+    "appearance_sha256": "ad8404b7fa737bce11e7e8d3fd009f755113ac3aef064b456987e0cc282b1f41",
+    "maxima": {
+      "complete_meridian": {
+        "ratio": 1.0168049089341213,
+        "frame": [
+          "dodge_left",
+          22,
+          "player"
+        ],
+        "grid_index": [
+          4
+        ]
+      },
+      "complete_circumference": {
+        "ratio": 1.7744693257261241,
+        "frame": [
+          "dodge_right",
+          31,
+          "player"
+        ],
+        "grid_index": [
+          9
+        ]
+      },
+      "local_meridian_edge": {
+        "ratio": 1.0614710059707833,
+        "frame": [
+          "modifiers",
+          126,
+          "player"
+        ],
+        "grid_index": [
+          8,
+          14
+        ]
+      },
+      "local_circumferential_edge": {
+        "ratio": 1.977471715767516,
+        "frame": [
+          "dodge_back",
+          34,
+          "player"
+        ],
+        "grid_index": [
+          9,
+          1
+        ]
+      },
+      "local_diagonal_edge": {
+        "ratio": 2.076290952816081,
+        "frame": [
+          "dodge_left",
+          29,
+          "player"
+        ],
+        "grid_index": [
+          8,
+          9
+        ]
+      }
+    },
+    "definition": "Displayed native edges / corresponding rest edges, not stress. Full lengths alone hide local distortion."
+  },
+  "headless_garment_cpu_profile": {
+    "max_us": 29784,
+    "median_us": 15019,
+    "note": "headless sandbox CPU only, no GPU/FPS claim",
+    "p95_us": 20808,
+    "samples": 848
+  },
+  "fcl": {
+    "library_cycles": {
+      "frames": 848,
+      "intersecting_frames": {
+        "gown": 848,
+        "skirt": 0
+      },
+      "frames_by_approximate_body_part": {
+        "gown/chest": 848,
+        "gown/forearm.L": 16,
+        "gown/forearm.R": 16,
+        "gown/upper_arm.L": 848,
+        "gown/upper_arm.R": 848
+      },
+      "seconds": 112.78,
+      "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+    },
+    "exact_seeks": {
+      "frames": 14,
+      "intersecting_frames": {
+        "gown": 14,
+        "skirt": 0
+      },
+      "frames_by_approximate_body_part": {
+        "gown/chest": 14,
+        "gown/upper_arm.L": 14,
+        "gown/upper_arm.R": 14
+      },
+      "seconds": 1.905,
+      "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+    },
+    "physics_controller": {
+      "frames": 3366,
+      "intersecting_frames": {
+        "gown": 3366,
+        "skirt": 0
+      },
+      "frames_by_approximate_body_part": {
+        "gown/chest": 3366,
+        "gown/forearm.L": 72,
+        "gown/forearm.R": 65,
+        "gown/upper_arm.L": 3366,
+        "gown/upper_arm.R": 3366
+      },
+      "seconds": 539.491,
+      "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+    },
+    "webgl_gameplay": {
+      "frames": 508,
+      "intersecting_frames": {
+        "gown": 508,
+        "skirt": 0
+      },
+      "frames_by_approximate_body_part": {
+        "gown/chest": 508,
+        "gown/forearm.L": 6,
+        "gown/forearm.R": 6,
+        "gown/upper_arm.L": 508,
+        "gown/upper_arm.R": 508
+      },
+      "seconds": 68.612,
+      "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+    }
+  },
+  "contact_localization": {
+    "back-024": {
+      "contacts": 153,
+      "unique_gown_faces": 98,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.18255,
+          -0.0137814
+        ],
+        [
+          0.1982238,
+          1.3203059,
+          0.1621798
+        ]
+      ]
+    },
+    "cross-016": {
+      "contacts": 190,
+      "unique_gown_faces": 130,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1887275,
+          0.0340286
+        ],
+        [
+          0.1982238,
+          1.3251238,
+          0.1868008
+        ]
+      ]
+    },
+    "cross-018": {
+      "contacts": 257,
+      "unique_gown_faces": 183,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1859381,
+          0.0340286
+        ],
+        [
+          0.1982238,
+          1.3348047,
+          0.1893523
+        ]
+      ]
+    },
+    "cross-019": {
+      "contacts": 257,
+      "unique_gown_faces": 183,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1859381,
+          0.0340286
+        ],
+        [
+          0.1982238,
+          1.3348047,
+          0.1893523
+        ]
+      ]
+    },
+    "cross-020": {
+      "contacts": 257,
+      "unique_gown_faces": 183,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1859381,
+          0.0340286
+        ],
+        [
+          0.1982238,
+          1.3348047,
+          0.1893523
+        ]
+      ]
+    },
+    "cross-frame10": {
+      "contacts": 202,
+      "unique_gown_faces": 139,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.186478,
+          0.0340286
+        ],
+        [
+          0.1982238,
+          1.3261603,
+          0.1909795
+        ]
+      ]
+    },
+    "dodge-frame5": {
+      "contacts": 171,
+      "unique_gown_faces": 111,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1864722,
+          -0.0039946
+        ],
+        [
+          0.1982238,
+          1.3248027,
+          0.1668926
+        ]
+      ]
+    },
+    "guard-000": {
+      "contacts": 179,
+      "unique_gown_faces": 120,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.18255,
+          -0.0137814
+        ],
+        [
+          0.1982238,
+          1.3248027,
+          0.1705172
+        ]
+      ]
+    },
+    "jab-018": {
+      "contacts": 175,
+      "unique_gown_faces": 123,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1944878,
+          0.0340286
+        ],
+        [
+          0.1982238,
+          1.3404718,
+          0.1801414
+        ]
+      ]
+    },
+    "jog-frame23": {
+      "contacts": 193,
+      "unique_gown_faces": 121,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1205102,
+          -0.0738774
+        ],
+        [
+          0.1982238,
+          1.2813452,
+          0.1315875
+        ]
+      ]
+    },
+    "left-024": {
+      "contacts": 200,
+      "unique_gown_faces": 133,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1725008,
+          -0.0039946
+        ],
+        [
+          0.1982238,
+          1.3263508,
+          0.1815397
+        ]
+      ]
+    },
+    "right-024": {
+      "contacts": 159,
+      "unique_gown_faces": 97,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1943666,
+          -0.0137814
+        ],
+        [
+          0.1982238,
+          1.3147473,
+          0.1508721
+        ]
+      ]
+    },
+    "sprint-031": {
+      "contacts": 184,
+      "unique_gown_faces": 121,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1704906,
+          -0.0738774
+        ],
+        [
+          0.1982238,
+          1.3126275,
+          0.1595253
+        ]
+      ]
+    },
+    "sprint-frame8": {
+      "contacts": 220,
+      "unique_gown_faces": 145,
+      "gown_rest_bounds": [
+        [
+          -0.1957959,
+          1.1188608,
+          -0.0528187
+        ],
+        [
+          0.1982238,
+          1.2590377,
+          0.1149586
+        ]
+      ]
+    }
+  },
+  "visual": {
+    "gallery_pair_validation": {
+      "verified_pairs": 29,
+      "same_commands": true,
+      "same_camera": true,
+      "max_normalized_quaternion_error": {
+        "before": 1.0857981180834031e-13,
+        "after": 1.0857981180834031e-13
+      }
+    },
+    "magenta_frames_per_version": 15,
+    "overview_clips": 18,
+    "contact_overlay_frames": 4,
+    "native_post_draw_acknowledged": true,
+    "raw_gameplay_window_pixels": [
+      800,
+      450
+    ],
+    "diagnostic_root_viewport": [
+      1280,
+      720
+    ],
+    "recordings": {
+      "locomotion": {
+        "native_framebuffers": 82,
+        "first_tick": 45,
+        "last_tick": 450,
+        "player_hit_active_samples": 0,
+        "clone_hit_active_samples": 0,
+        "player_min_health": 100,
+        "clone_min_health": 120,
+        "states": {
+          "ground": 82
+        },
+        "capture_conditions": "isolated pack: existing lights 1.05/.18/.06, ambient .35, filmic .9; no shadows/MSAA/glow; laboratory geometry/colliders and production materials/controllers retained",
+        "route_fixture": "(7.8,.03,4), move_left across clear front corridor; no mid-take relocation",
+        "per_take_displacement_m": {
+          "relaxed-walk": 1.62914991378784,
+          "relaxed-jog": 2.65582776069641,
+          "relaxed-sprint": 4.15277802944184,
+          "moving-combat-switch": 2.7055575847625706,
+          "combat-walk": 1.0566558837890598,
+          "moving-relaxed-switch": 2.1724925041198704,
+          "stop": 0.02833366394041903
+        }
+      },
+      "dodge": {
+        "native_framebuffers": 48,
+        "first_tick": 40,
+        "last_tick": 275,
+        "player_hit_active_samples": 0,
+        "clone_hit_active_samples": 0,
+        "player_min_health": 100,
+        "clone_min_health": 120,
+        "states": {
+          "dodge": 20,
+          "ground": 28
+        },
+        "capture_conditions": "isolated pack: existing lights 1.05/.18/.06, ambient .35, filmic .9; no shadows/MSAA/glow; laboratory geometry/colliders and production materials/controllers retained",
+        "route_fixture": "production spawn except side-by-side clone setup"
+      },
+      "actions": {
+        "native_framebuffers": 70,
+        "first_tick": 40,
+        "last_tick": 379,
+        "player_hit_active_samples": 3,
+        "clone_hit_active_samples": 0,
+        "player_min_health": 95,
+        "clone_min_health": 120,
+        "states": {
+          "air": 14,
+          "land": 6,
+          "ground": 26,
+          "attack_L": 12,
+          "attack_R": 12
+        },
+        "capture_conditions": "isolated pack: existing lights 1.05/.18/.06, ambient .35, filmic .9; no shadows/MSAA/glow; laboratory geometry/colliders and production materials/controllers retained",
+        "route_fixture": "production spawn except side-by-side clone setup"
+      },
+      "clone": {
+        "native_framebuffers": 54,
+        "first_tick": 40,
+        "last_tick": 299,
+        "player_hit_active_samples": 9,
+        "clone_hit_active_samples": 4,
+        "player_min_health": 58,
+        "clone_min_health": 96,
+        "states": {
+          "ground": 42,
+          "attack_L": 6,
+          "attack_R": 6
+        },
+        "capture_conditions": "isolated pack: existing lights 1.05/.18/.06, ambient .35, filmic .9; no shadows/MSAA/glow; laboratory geometry/colliders and production materials/controllers retained",
+        "route_fixture": "production spawn except side-by-side clone setup"
+      }
+    },
+    "movie": {
+      "file": "godot41-motion-review.mp4",
+      "container_fps": 60,
+      "unique_gameplay_frames": 254,
+      "physics_hz": 60,
+      "gameplay_ticks": 1258,
+      "gameplay_seconds": 20.966666666666665,
+      "total_frames": 2038,
+      "total_seconds": 33.96666666666667,
+      "sample_note": "12 distinct native Godot frames/s, with 2-tick endpoints retained; frames repeated in a 60 fps container; 800x450 gameplay source upscaled to 1152x648 inside 1280x720, not a performance capture",
+      "sha256": "633b18c062c4f406f82998022a71762446a6bc39de14989e3d310a6a7196b3f8",
+      "bytes": 1369542,
+      "stamps": {
+        "appearance_sha256": "ad8404b7fa737bce11e7e8d3fd009f755113ac3aef064b456987e0cc282b1f41",
+        "controller_sha256": "369e706b77396e8b23307630a56550ca268fd081318bf53c63dec1590f1e0ef7",
+        "model_sha256": "8f7782b2dc60768f2e94285a6967d6718867b0d4203b25aa97eeeedc2775e626",
+        "motion_set_sha256": "88bc9418951c42cc931affba121efba6f1d6c6ea3330bbd67dd2e8dfeed5e2da",
+        "runtime_sha256": "b9e84b550ff1391a86b54856feacab56fd3d6d8685d2f0a184ca0ea75d562706"
+      }
+    },
+    "decoded_movie_frames": 2038
+  },
+  "artifacts": {
+    "godot41-clips-overview.jpg": {
+      "bytes": 311556,
+      "sha256": "a9f949218691d48a8169dab85f18728a63ae559e6f253f74c9cecb7b10951e07"
+    },
+    "godot41-contact-locations.jpg": {
+      "bytes": 104128,
+      "sha256": "87bf244118429ea6ccd44e99ebdd6ea616c35d249baa2e22c33f7110b5f2a53e"
+    },
+    "godot41-motion-review.mp4": {
+      "bytes": 1369542,
+      "sha256": "633b18c062c4f406f82998022a71762446a6bc39de14989e3d310a6a7196b3f8"
+    },
+    "godot41-shoulders.jpg": {
+      "bytes": 144512,
+      "sha256": "b404ca2c216302a6157d85ab906cf2bddb86fab9dc385ca7037019fc05c9b3a0"
+    },
+    "godot41-showcase-800.png": {
+      "bytes": 97938,
+      "sha256": "ebac36fc0dc5549b35647161b95c3edda97a3b5ade75f19dc1ec766ccdf8a3a0"
+    },
+    "godot41-skirt.jpg": {
+      "bytes": 148919,
+      "sha256": "cc8bd1ea781b2874ef3f8b6baa8ed7987b65744715b0dc85dcbdfd6e2e17d380"
+    }
+  },
+  "limits": [
+    "Bodice/sleeve intersections remain in every FCL set. No all-clear claim for the gown.",
+    "FCL triangle contacts are neither signed depth nor a visibility or harmlessness classification.",
+    "No general cloth self/hand/wall/object collision, terrain IK, or universal sole guarantee.",
+    "Visual review uses sampled native framebuffers, not continuous 60-distinct-frame gameplay or a performance capture.",
+    "Diagnostic lights/exposure/cameras, front-corridor start and clone fixture differ from normal play; production materials/scenes/physics retained.",
+    "Official Godot Windows/OpenGL3.3 and target GPU performance remain unverified; custom editor fresh import reports fontconfig errors. Headless suite uses --skip-import without weakening its error checks."
+  ],
+  "raw_data_note": "Raw traces, detailed contact pairs, PNG sequences, isolated full-skin diagnostic, dependencies and capture tooling stay outside Git."
+}
