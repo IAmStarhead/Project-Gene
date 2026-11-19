@@ -64,6 +64,17 @@ func _run() -> void:
 	scene.menu.close()
 	check(not paused and not scene.menu.visible, "menu resumes")
 
+	player.show_details = true
+	player._set_clone_profiling(true)
+	for i in 70:
+		await physics_frame
+	check(clone.profile_enabled and str(clone.profile_text).contains("Клон CPU/тик:"), "F3 collects clone timing window")
+	player.show_details = false
+	player._set_clone_profiling(false)
+	await process_frame
+	await physics_frame
+	check(not clone.profile_enabled, "clone profiling stops with F3")
+
 	player.velocity = Vector3(T.RUN_SPEED, 0, 0)
 	rig._process(1.0)
 	check(rig.spring.spring_length > T.CAMERA_DISTANCE + 0.2, "speed pulls camera back")

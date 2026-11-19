@@ -139,6 +139,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			)
 	elif event.is_action_pressed("toggle_debug_details"):
 		show_details = not show_details
+		_set_clone_profiling(show_details)
 		if label != null:
 			label.visible = show_details
 		if show_details:
@@ -192,6 +193,12 @@ func _input_direction() -> Vector3:
 		return Vector3.ZERO
 	var basis_yaw := Basis(Vector3.UP, yaw)
 	return (basis_yaw * Vector3(input.x, 0.0, input.y)).normalized()
+
+
+func _set_clone_profiling(enabled: bool) -> void:
+	var clone := get_tree().get_first_node_in_group("clone")
+	if is_instance_valid(clone):
+		clone.set_profiling(enabled)
 
 
 func _process(delta: float) -> void:
@@ -688,6 +695,9 @@ func _write_debug_label() -> void:
 	])
 	if _gpu_is_integrated:
 		lines.append("[!] Встроенная графика! Выберите NVIDIA GeForce 940MX")
+	var clone := get_tree().get_first_node_in_group("clone")
+	if is_instance_valid(clone):
+		lines.append(str(clone.profile_text))
 	lines.append("Отрисовка: %d вызовов  ·  %d примитивов" % [draws, prims])
 	lines.append("Графика [F4]: %s  ·  свет [B]: %s  ·  стиль [G]: %s" % [q_name, b_name, style_name])
 	lines.append("Режим [R]: %s  ·  %s  ·  захват: %s" % [stance_name(), state_text, lock_name])

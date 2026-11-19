@@ -52,6 +52,8 @@ def main():
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_animation.gd'], expect_suite=True)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_presentation.gd'],
         expected_pattern=r'Presentation suite: \d+ checks, 0 failures')
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_limb_demo.gd'],
+        expected_pattern=r'Limb demo suite: \d+ checks, 0 failures')
 
 
 if __name__ == '__main__':

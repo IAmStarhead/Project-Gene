@@ -37,6 +37,16 @@ var _last_label_active := false
 var _last_deal: float = 0.0
 var _idle_awake: float = 0.8
 
+# Включается только пока открыт F3. CPU-время функций клона, не GPU и не FPS.
+var profile_enabled := false
+var _prof_ticks := 0
+var _prof_total := 0
+var _prof_fight := 0
+var _prof_move := 0
+var _prof_anim := 0
+var _prof_peak := 0
+var profile_text := "Клон: собираем замеры…"
+
 var _step_params := PhysicsTestMotionParameters3D.new()
 var _step_result := PhysicsTestMotionResult3D.new()
 
@@ -98,6 +108,8 @@ func mode_name() -> String:
 
 
 func _physics_process(delta: float) -> void:
+	var prof_start := Time.get_ticks_usec() if profile_enabled else 0
+	var prof_mark := prof_start
 	if not _spawn_recorded:
 		_spawn_pos = global_position
 		_spawn_recorded = true
@@ -125,6 +137,10 @@ func _physics_process(delta: float) -> void:
 		Mode.ON:
 			_fight(delta)
 
+	if profile_enabled:
+		var now := Time.get_ticks_usec()
+		_prof_fight += now - prof_mark
+		prof_mark = now
 	var stepped_up := false
 	if mode == Mode.ON and _attack_time < 0.0 and on_floor:
 		stepped_up = _try_step_up(delta)
@@ -133,6 +149,10 @@ func _physics_process(delta: float) -> void:
 	if stepped_up:
 		apply_floor_snap()
 
+	if profile_enabled:
+		var now := Time.get_ticks_usec()
+		_prof_move += now - prof_mark
+		prof_mark = now
 	_face(delta)
 
 	if character != null and character.has_method("update_motion"):
@@ -159,12 +179,46 @@ func _physics_process(delta: float) -> void:
 				"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
 			})
 
+	if profile_enabled:
+		var now := Time.get_ticks_usec()
+		_prof_anim += now - prof_mark
+		prof_mark = now
 	if character != null and foley != null:
 		var phase: Variant = character.get("_phase")
 		var displacement := global_position - previous_position
 		if phase != null:
 			foley.update_motion(delta, float(phase), is_on_floor(), Vector2(displacement.x, displacement.z).length(), "attack" if _attack_time >= 0.0 else "")
 	_update_label()
+	if profile_enabled:
+		var elapsed := Time.get_ticks_usec() - prof_start
+		_prof_total += elapsed
+		_prof_peak = maxi(_prof_peak, elapsed)
+		_prof_ticks += 1
+		if _prof_ticks >= 60:
+			profile_text = "Клон CPU/тик: %.2f мс, пик %.2f · логика %.2f / движение %.2f / поворот+вид %.2f" % [
+				float(_prof_total) / _prof_ticks / 1000.0, _prof_peak / 1000.0,
+				float(_prof_fight) / _prof_ticks / 1000.0, float(_prof_move) / _prof_ticks / 1000.0,
+				float(_prof_anim) / _prof_ticks / 1000.0]
+			_prof_ticks = 0
+			_prof_total = 0
+			_prof_fight = 0
+			_prof_move = 0
+			_prof_anim = 0
+			_prof_peak = 0
+
+
+
+func set_profiling(enabled: bool) -> void:
+	if profile_enabled == enabled:
+		return
+	profile_enabled = enabled
+	_prof_ticks = 0
+	_prof_total = 0
+	_prof_fight = 0
+	_prof_move = 0
+	_prof_anim = 0
+	_prof_peak = 0
+	profile_text = "Клон: собираем замеры…"
 
 
 func _try_step_up(delta: float) -> bool:
