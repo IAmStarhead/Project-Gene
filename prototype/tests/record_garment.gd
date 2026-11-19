@@ -40,6 +40,9 @@ func _record() -> void:
 	world.add_child(character)
 	var result := {"fps": FPS, "source": "Godot seek_clip + actual appearance update, all 18 clips",
 		"native_version": Engine.get_version_info()["string"],
+		"model_sha256": FileAccess.get_sha256(Character.MODEL_PATH),
+		"runtime_sha256": FileAccess.get_sha256("res://scripts/character_appearance.gd"),
+		"controller_sha256": FileAccess.get_sha256("res://scripts/character_anim.gd"),
 		"appearance_sha256": FileAccess.get_sha256("res://assets/heroine/appearance/lab_uniform.json"),
 		"motion_set_sha256": FileAccess.get_sha256("res://assets/heroine/animations/motion_set.json"),
 		"takes": {}, "seeks": {}}
@@ -62,7 +65,12 @@ func _record() -> void:
 		result["takes"][name] = frames
 		print("Garment clip %s: %d native frames" % [name, count])
 	for item in [["cross-frame10", "attack_right", .163], ["dodge-frame5", "dodge", .090],
-			["sprint-frame8", "sprint_relaxed", .136], ["jog-frame23", "run_relaxed", .388]]:
+			["sprint-frame8", "sprint_relaxed", .136], ["jog-frame23", "run_relaxed", .388],
+			["cross-016", "attack_right", .16], ["cross-018", "attack_right", .18],
+			["cross-019", "attack_right", .19], ["cross-020", "attack_right", .20],
+			["jab-018", "attack_left", .18], ["guard-000", "guard", 0.0],
+			["back-024", "dodge_back", .24], ["left-024", "dodge_left", .24],
+			["right-024", "dodge_right", .24], ["sprint-031", "sprint_relaxed", .31]]:
 		character.seek_clip(item[1], item[2])
 		result["seeks"][item[0]] = frame(character, item[2])
 	timings.sort()

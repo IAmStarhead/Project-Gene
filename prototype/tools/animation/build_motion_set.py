@@ -55,6 +55,10 @@ def body(rig, hip=(0, .835, .02), yaw=(-6, -4, -7), lean=(3, 2), roll=0, breath=
     p.bend('chest', x=lean[1] + breath, y=yaw[2], z=-roll * .35)
     p.bend('neck', x=-2)
     p.bend('head', x=-sum(lean) * .65 - breath * .5, y=-sum(yaw) * .85)
+    # The same quiet clavicular support in guard AND action endpoints.
+    # Relaxed locomotion has its own authored shoulder rhythm, unchanged.
+    for side, sign in [('L', 1), ('R', -1)]:
+        p.bend('shoulder.'+side, x=2, z=sign)
     return p
 
 
@@ -248,10 +252,23 @@ def attack(rig, t, side):
            -7 + (24 if right else -6) * twist)
     p = body(rig, hip=(.018 * twist, .835 - .016 * twist, .02 + (.040 if right else .022) * twist),
              yaw=yaw, lean=(3 + 2 * twist, 2 + 2 * twist))
-    # The clavicle protracts slightly, instead of dragging the whole chest mesh.
-    p.bend('shoulder.' + side, x=5 * twist)
+    # Share forward reach with the clavicle instead of hinging the whole
+    # sleeve on the humerus. Lower body and action timing stay intact;
+    # the small, explicitly compensated visible reach change is below.
+    for which, sign in [('L', 1), ('R', -1)]:
+        active = which == side
+        p.bend('shoulder.'+which, x=2+(16 if active else 12)*twist,
+               z=sign*(1+(5 if active else 2)*twist))
     start = [.145, 1.295, .265] if side == 'L' else [-.145, 1.305, .205]
-    end = [.045, 1.305, .638] if side == 'L' else [-.035, 1.305, .677]
+    end = np.array([.045, 1.305, .655] if side == 'L' else [-.035, 1.305, .700])
+    # Keep a small anatomical elbow bend AFTER clavicular protraction.
+    # Otherwise sharing the shoulder reach shortened the jab by bending its
+    # elbow ~30 degrees at impact. This changes only the visible arm target,
+    # not attack range, active windows or the gameplay hit volume.
+    root = p.world('upper_arm.'+side)[:3, 3]
+    length = sum(np.linalg.norm(rig.positions[rig.index[name+'.'+side]])
+                 for name in ['forearm', 'hand'])-.0025
+    end[2] = root[2]+np.sqrt(max(0, length*length-np.sum((end[:2]-root[:2])**2)))
     wrist = mix(start, end, reach)
     pole = mix([.30 if side == 'L' else -.30, .99, .12],
                [.23 if side == 'L' else -.23, 1.15, .38], twist)

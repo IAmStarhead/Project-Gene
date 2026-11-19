@@ -387,7 +387,17 @@ func _add_hit(pose: Dictionary, weight: float) -> Dictionary:
 		var rest: Quaternion = reference["rotations"][i]
 		var value: Quaternion = reaction["rotations"][i]
 		var difference := rest.inverse() * value
-		result["rotations"][i] = (pose["rotations"][i] * Quaternion.IDENTITY.slerp(difference, weight)).normalized()
+		var amount := weight
+		var name := _bone_names[i]
+		if name.begins_with("shoulder.") or name.begins_with("upper_arm.") \
+				or name.begins_with("forearm.") or name.begins_with("hand."):
+			# The hit clip is authored relative to GUARD. Applying its arm
+			# delta at full strength to lowered ordinary arms swung a forearm
+			# through the waist during the first four combat-entry ticks.
+			# Keep the torso/head flinch immediate; blend only this guard-
+			# relative arm delta with the stance it actually belongs to.
+			amount *= _combat_blend
+		result["rotations"][i] = (pose["rotations"][i] * Quaternion.IDENTITY.slerp(difference, amount)).normalized()
 	return result
 
 

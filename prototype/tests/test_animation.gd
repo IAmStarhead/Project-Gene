@@ -62,7 +62,7 @@ func _run() -> void:
 	_test_garment_surface(character)
 	_test_player_modes()
 	_test_combat()
-	_test_showcase()
+	await _test_showcase()
 	character.free()
 	await _test_actual_physics()
 	await _test_modifier_and_dodge_physics()
@@ -120,7 +120,7 @@ func _test_attack_clock(character: Node3D) -> void:
 					var delta := minf(1.0 / fps, timing.x - time)
 					time += delta
 					character.update_motion(delta, Vector3.ZERO, "attack", time, side, context)
-				var target := Vector3(.045, 1.305, .638) if side == "L" else Vector3(-.035, 1.305, .677)
+				var target := Vector3(.045, 1.305, .67039497) if side == "L" else Vector3(-.035, 1.305, .70535173)
 				check(joint(character, "hand." + side).distance_to(target) < .0001,
 					"no low-pass delay at impact, %d FPS, %s" % [fps, side])
 
@@ -155,6 +155,28 @@ func _test_distance_and_air(character: Node3D) -> void:
 	var hit_pose: Dictionary = character._add_hit(character._last_pose, 1.0)
 	var leg_after: Quaternion = hit_pose["rotations"][character.skeleton.find_bone("thigh.L")]
 	check(absf(leg_before.dot(leg_after)) > .999999, "additive hit reaction does not replace the legs")
+	# A guard-relative arm delta is not valid on fully lowered relaxed arms.
+	# Retain an immediate torso/head response while the stance raises the arms.
+	character.reset_motion(false)
+	character._hit_time = .055
+	var relaxed: Dictionary = character.sample_clip("idle_relaxed", 0.0)
+	var relaxed_hit: Dictionary = character._add_hit(relaxed, 1.0)
+	var protected_arms := true
+	for name in ["shoulder.L", "upper_arm.L", "forearm.L", "hand.L", "shoulder.R", "upper_arm.R", "forearm.R", "hand.R"]:
+		var bone: int = character.skeleton.find_bone(name)
+		protected_arms = protected_arms and absf(relaxed["rotations"][bone].dot(relaxed_hit["rotations"][bone])) > .999999
+	check(protected_arms, "guard-relative hit arms fade with combat entry rather than folding through the waist")
+	var chest: int = character.skeleton.find_bone("chest")
+	check(absf(relaxed["rotations"][chest].dot(relaxed_hit["rotations"][chest])) < .9999,
+		"relaxed hit still reacts immediately in the torso")
+	character._combat_blend = .5
+	var half_hit: Dictionary = character._add_hit(relaxed, 1.0)
+	character._combat_blend = 1.0
+	var full_hit: Dictionary = character._add_hit(relaxed, 1.0)
+	var upper_arm: int = character.skeleton.find_bone("upper_arm.L")
+	var expected: Quaternion = relaxed["rotations"][upper_arm].slerp(full_hit["rotations"][upper_arm], .5)
+	check(absf(expected.dot(half_hit["rotations"][upper_arm])) > .999999,
+		"combat-entry hit arms interpolate the authored guard-relative delta")
 
 
 func _test_locomotion_posture(character: Node3D) -> void:
@@ -512,16 +534,50 @@ func _test_directional_dodge(character: Node3D) -> void:
 
 
 func cloth_rings_ordered(appearance: Node3D) -> bool:
-	for i in range(appearance._segments, appearance._points.size()):
-		var point: Vector3 = appearance._hips_inverse*appearance._points[i]
-		var rest: Vector3 = appearance._rest[i]
-		if absf(point.y-rest.y) > .00002:
-			return false
-		var a := Vector2(point.x, point.z-.02).normalized()
-		var b := Vector2(rest.x, rest.z-.02).normalized()
-		if a.dot(b) < .99999:
-			return false
+	# Report 40: fixed Y was the cause of the boxy knee. Test real material
+	# order and winding instead: lifted rows must still descend, never wrap.
+	for row in appearance._rings:
+		for k in appearance._segments:
+			var i: int = row*appearance._segments+k
+			var point: Vector3 = appearance._hips_inverse*appearance._points[i]
+			var next: Vector3 = appearance._hips_inverse*appearance._points[row*appearance._segments+(k+1)%appearance._segments]
+			var angle:=fposmod(atan2(next.x,next.z-.02)-atan2(point.x,point.z-.02),TAU)
+			if angle <= 0.0 or angle > PI*.25: return false
+			if row > 0:
+				var above: Vector3 = appearance._hips_inverse*appearance._points[i-appearance._segments]
+				if point.y >= above.y-.000001: return false
 	return true
+
+
+func cloth_strain(appearance: Node3D) -> Vector2:
+	var result := Vector2.ZERO  # complete meridian, ring circumference
+	for k in appearance._segments:
+		var length := 0.0
+		for row in range(1, appearance._rings):
+			var i: int = row*appearance._segments+k
+			length += (appearance._points[i] as Vector3).distance_to(appearance._points[i-appearance._segments])
+		result.x = maxf(result.x, length/appearance._meridian_lengths[(appearance._rings-1)*appearance._segments+k])
+	for row in appearance._rings:
+		var perimeter := 0.0
+		for k in appearance._segments:
+			perimeter += (appearance._points[row*appearance._segments+k] as Vector3).distance_to(appearance._points[row*appearance._segments+(k+1)%appearance._segments])
+		result.y = maxf(result.y, perimeter/appearance._circumferences[row])
+	return result
+
+
+func cloth_local_strain(appearance: Node3D) -> Vector2:
+	var result := Vector2.ZERO  # individual meridian / circumferential edges
+	for row in appearance._rings:
+		for k in appearance._segments:
+			var i: int = row*appearance._segments+k
+			var next: int = row*appearance._segments+(k+1)%appearance._segments
+			result.y = maxf(result.y, (appearance._points[i] as Vector3).distance_to(appearance._points[next])/
+				(appearance._rest[i] as Vector3).distance_to(appearance._rest[next]))
+			if row > 0:
+				var above: int = i-appearance._segments
+				result.x = maxf(result.x, (appearance._points[i] as Vector3).distance_to(appearance._points[above])/
+					(appearance._rest[i] as Vector3).distance_to(appearance._rest[above]))
+	return result
 
 
 func _test_appearance(character: Node3D) -> void:
@@ -591,6 +647,8 @@ func _test_appearance(character: Node3D) -> void:
 	var worst_gap := INF
 	var finite := true
 	var worst_secondary := 0.0
+	var worst_strain := Vector2.ZERO
+	var worst_local_strain := Vector2.ZERO
 	var ordered := true
 	for fps in [30, 60, 120]:
 		character.reset_motion(false)
@@ -601,6 +659,8 @@ func _test_appearance(character: Node3D) -> void:
 				{"combat": false, "grounded": true, "distance": T.RUN_SPEED*dt})
 			worst_gap = minf(worst_gap, appearance.collision_gap())
 			ordered = ordered and cloth_rings_ordered(appearance)
+			worst_strain = worst_strain.max(cloth_strain(appearance))
+			worst_local_strain = worst_local_strain.max(cloth_local_strain(appearance))
 			for k in appearance._points.size():
 				finite = finite and (appearance._points[k] as Vector3).is_finite()
 				worst_secondary = maxf(worst_secondary, (appearance._points[k] as Vector3).distance_to(appearance._goals[k]))
@@ -616,10 +676,25 @@ func _test_appearance(character: Node3D) -> void:
 					{"combat": true, "grounded": true, "dodge_direction": direction, "distance": 0.0})
 				worst_gap = minf(worst_gap, appearance.collision_gap())
 				ordered = ordered and cloth_rings_ordered(appearance)
+				worst_strain = worst_strain.max(cloth_strain(appearance))
+				worst_local_strain = worst_local_strain.max(cloth_local_strain(appearance))
 	check(ordered, "sprint and all four dodges cannot invert or twist the skirt rings at 30/60/120 FPS")
 	check(finite and appearance.cloth_vertices().size() == 320, "cloth remains finite at 30/60/120 FPS")
 	check(worst_gap > -.00001, "free cloth points stay outside the analytic leg collision envelopes")
-	check(worst_secondary < .02501, "secondary motion stays within 2.5 cm AFTER collision, including sprint knees")
+	check(worst_secondary < .01201, "coherent secondary motion stays within 1.2 cm AFTER collision, including sprint knees")
+	check(worst_strain.x < 1.04, "material-length drape cannot double the meridians over a knee (4% maximum)")
+	check(worst_strain.y < 1.90, "soft perimeter control reduces the former 2.49x lateral skirt stretch below 1.90x")
+	check(worst_local_strain.x < 1.25, "individual meridian edges cannot hide stretching in a safe total length")
+	check(worst_local_strain.y < 2.50, "material redistribution removes the former 5.88x local lateral triangle stretch")
+	print("Cloth LOCAL meridian/circumferential edge max ratio: %.4f / %.4f" % [worst_local_strain.x, worst_local_strain.y])
+	print("Cloth material length/perimeter max ratio: %.4f / %.4f (not inextensible woven cloth)" % [worst_strain.x,worst_strain.y])
+	for clip_name in ["dodge_back", "dodge_left", "dodge_right"]:
+		character.seek_clip(clip_name,.24)
+		var lift := 0.0
+		for k in appearance._segments:
+			var i: int = (appearance._rings-1)*appearance._segments+k
+			lift = maxf(lift,(appearance._goal_local[i] as Vector3).y-(appearance._rest[i] as Vector3).y)
+		check(lift > .08,"report 40: knee support raises the material hem instead of inflating fixed Y rows: "+clip_name)
 	check(appearance.collision_count > 0, "body collision is actually exercised, not just declared")
 	character.position = Vector3(10, 0, -10)
 	character.update_motion(.016, Vector3.ZERO, "", 0, "R", {"combat": false})
@@ -680,12 +755,13 @@ func _test_garment_surface(character: Node3D) -> void:
 			var radius := radial.length()
 			var hit_distance := INF
 			for row in app._rings-1:
-				if point.y > cloth[row*app._segments].y+.00001 or point.y < cloth[(row+1)*app._segments].y-.00001:
-					continue
 				for k in app._segments:
 					var a: int = row*app._segments+k
 					var b: int = row*app._segments+(k+1)%app._segments
 					for face in [[a, b, a+app._segments], [b, b+app._segments, a+app._segments]]:
+						var minimum:=minf(cloth[face[0]].y,minf(cloth[face[1]].y,cloth[face[2]].y))
+						var maximum:=maxf(cloth[face[0]].y,maxf(cloth[face[1]].y,cloth[face[2]].y))
+						if point.y < minimum-.00001 or point.y > maximum+.00001: continue
 						var hit = Geometry3D.ray_intersects_triangle(origin, radial/radius, cloth[face[0]], cloth[face[1]], cloth[face[2]])
 						if hit != null:
 							hit_distance = minf(hit_distance, origin.distance_to(hit))
@@ -911,7 +987,43 @@ func _test_showcase() -> void:
 		showcase._process(1.0/60)
 	check(showcase.character.appearance.cloth_vertices() != sought,
 		"showcase resumes real cloth simulation after a paused seek")
+	await _test_showcase_layout(showcase)
 	showcase.free()
+
+
+func _test_showcase_layout(showcase: Node3D) -> void:
+	var original_size := root.size
+	for size in [Vector2i(800,450), Vector2i(1024,576), Vector2i(1280,720)]:
+		root.size = size
+		await process_frame
+		await process_frame
+		for index in showcase.CLIPS.size():
+			showcase._select_clip(index)
+			showcase._seek(.19 if index in [7,8] else showcase._timeline.max_value*.5)
+			for yaw in [0.0,90.0,180.0,270.0]:
+				showcase._set_camera(yaw)
+				showcase._process(0)
+				var safe: Rect2 = showcase._controls.safe_rect()
+				var character: Node3D = showcase.character
+				var head: Vector3 = character.skeleton.global_transform*(joint(character,"head")+Vector3(0,.12,0))
+				var probes := [head, character.skeleton.global_transform*joint(character,"foot.L"), character.skeleton.global_transform*joint(character,"foot.R")]
+				var framed := true
+				for point in probes:
+					framed = framed and safe.has_point(showcase.cam.unproject_position(point))
+				check(framed,"showcase head/feet stay outside panels at %s / %s / %s" % [size,showcase.CLIPS[index][0],yaw])
+	var event := InputEventKey.new()
+	event.physical_keycode = KEY_V
+	event.pressed = true
+	showcase._unhandled_input(event)
+	check(not showcase._controls.root.visible,"V hides the showcase overlay without changing combat")
+	showcase._unhandled_input(event)
+	check(showcase._controls.root.visible,"V restores showcase controls")
+	var before: float = showcase._time
+	event.physical_keycode = KEY_LEFT
+	showcase._unhandled_input(event)
+	check(showcase._time < before and not showcase._playing,"physical Left frame-steps and pauses independently of keyboard layout")
+	root.size = original_size
+	await process_frame
 
 
 func box(size: Vector3, position: Vector3) -> void:

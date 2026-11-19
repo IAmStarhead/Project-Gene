@@ -54,7 +54,12 @@ def main():
     parser.add_argument('trace', type=Path)
     parser.add_argument('--appearance', type=Path, default=OUTPUT)
     parser.add_argument('--motion-set', type=Path, default=MOTION_OUTPUT/'motion_set.json')
-    parser.add_argument('--seeks-only', action='store_true', help='Only the four exact feedback seeks')
+    parser.add_argument('--model', type=Path, default=MODEL)
+    parser.add_argument('--runtime', type=Path, default=MODEL.parents[2]/'scripts/character_appearance.gd')
+    parser.add_argument('--controller', type=Path, default=MODEL.parents[2]/'scripts/character_anim.gd')
+    parser.add_argument('--seeks-only', action='store_true', help='Only exact feedback seeks (including report 40)')
+    parser.add_argument('--contact-details', action='store_true',
+                        help='Export triangle IDs/positions for local inspection (can be large; keep outside Git)')
     parser.add_argument('--require-skirt-clear', action='store_true', help='Fail if any sampled skirt/body triangle pair intersects')
     parser.add_argument('--output', type=Path, help='Save summary and intersecting frames outside Git')
     args = parser.parse_args()
@@ -74,9 +79,13 @@ def main():
     motion_stamp = hashlib.sha256(args.motion_set.read_bytes()).hexdigest()
     if trace.get('motion_set_sha256') != motion_stamp:
         raise SystemExit('Stale/missing motion stamp: regenerate the native recording for this motion set')
-    if appearance['model_sha256'] != hashlib.sha256(MODEL.read_bytes()).hexdigest():
+    for key, path in [('model_sha256', args.model), ('runtime_sha256', args.runtime),
+                      ('controller_sha256', args.controller)]:
+        if trace.get(key) != hashlib.sha256(path.read_bytes()).hexdigest():
+            raise SystemExit('Stale/missing trace '+key+': rerecord after body/runtime/controller edits')
+    if appearance['model_sha256'] != trace['model_sha256']:
         raise SystemExit('The appearance and actual body model hashes differ')
-    rig = Rig(MODEL)
+    rig = Rig(args.model)
     mesh = rig.mesh_data()
     body_triangles = visible_body_triangles(rig, mesh, appearance['coverage'])
     # Labels are approximate dominant-weight attribution, not anatomical truth.
@@ -116,11 +125,21 @@ def main():
                 counts[label] += 1
                 names = sorted({rig.names[body_labels[c.index('body')]] for c in contacts})
                 hits[label] = {'contacts': len(contacts), 'approximate_body_parts': names}
+                if args.contact_details:
+                    # IDs refer to these exact stamped meshes, not anatomical
+                    # regions. Depth of overlapping open facings is NOT a
+                    # reliable signed-penetration/visibility classification.
+                    hits[label]['details'] = [
+                        {'body_triangle': c.index('body'),
+                         'garment_triangle': c.index(next(n for n in c.names if n != 'body')),
+                         'point': np.asarray(c.point).tolist()} for c in contacts]
                 for bone in names:
                     parts[f'{label}/{bone}'] += 1
         if hits:
             intersections.append({'frame': name, 'hits': hits})
     summary = {'frames': len(frames), 'appearance_sha256': stamp, 'motion_set_sha256': motion_stamp,
+               'model_sha256': trace['model_sha256'], 'runtime_sha256': trace['runtime_sha256'],
+               'controller_sha256': trace['controller_sha256'],
                'intersecting_frames': {label: counts[label] for label in ['gown', 'skirt']},
                'frames_by_approximate_body_part': dict(sorted(parts.items())),
                'seconds': round(time.monotonic()-start, 3),

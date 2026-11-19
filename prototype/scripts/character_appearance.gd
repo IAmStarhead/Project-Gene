@@ -34,6 +34,19 @@ var _cells := PackedInt32Array()
 var _sample_heights := PackedFloat32Array()
 var _sample_directions := PackedVector2Array()
 var _sample_base := PackedFloat32Array()
+var _sample_rest := PackedVector3Array()
+var _drape_rest := PackedVector3Array()
+var _drape_directions := PackedVector2Array()
+var _meridian_lengths := PackedFloat32Array()
+var _goal_local := PackedVector3Array()
+var _curve_points := PackedVector3Array()
+var _curve_distances := PackedFloat32Array()
+var _circumferences := PackedFloat32Array()
+var _circumference_coordinates := PackedFloat32Array()
+var _surface_relaxations := 3
+var _angular_relaxations := 2
+var _circumference_limit := 1.45
+var _min_drape_fraction := .86
 var _goals := PackedVector3Array()
 var _hips_transform: Transform3D
 var _hips_inverse: Transform3D
@@ -117,7 +130,7 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	_surface_margin = float(cloth["surface_margin"])
 	_max_secondary = float(cloth["max_secondary_offset"])
 	for item in cloth["capsules"]:
-		_capsules.append([skeleton.find_bone(item[0]), skeleton.find_bone(item[1]), float(item[2]), float(item[3])])
+		_capsules.append([skeleton.find_bone(item[0]), skeleton.find_bone(item[1]), float(item[2]), float(item[3]), float(item[4])])
 	_hips = skeleton.find_bone("hips")
 	# Bind transforms come from the same source as the animation author, not
 	# an assumption about Godot's imported rest normalization.
@@ -132,15 +145,32 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 			_cell_centers.append((_rest[a]+_rest[b]+_rest[a+_segments]+_rest[b+_segments])*.25)
 	for i in _rest.size():
 		_skirt_colors.append(Color(_data["cloth"]["binding"][0], _data["cloth"]["binding"][1], _data["cloth"]["binding"][2]) if i/_segments == _rings-1 else Color(_data["cloth"]["fabric"][0], _data["cloth"]["fabric"][1], _data["cloth"]["fabric"][2]))
-	# Interleave node rows and half-cell rows; fixed ray directions are
-	# cached once. Capsule coefficients then need computing only per ROW.
-	for row in _rings*2-1:
-		var source_row := row/2
-		_sample_heights.append(_rest[source_row*_segments].y if row%2 == 0 else _cell_centers[source_row*_segments].y)
+	# Fine support chart includes circumferential half samples. Material
+	# meridians are later resampled by length, so rows are FREE TO RISE.
+	for value in cloth["sample_heights"]:
+		_sample_heights.append(float(value))
+	for value in cloth["sample_positions"]:
+		var point := _vector(value)
+		_sample_rest.append(point)
+		_sample_directions.append(Vector2(point.x, point.z-.02).normalized())
+		_sample_base.append(0.0)
+	for value in cloth["drape_positions"]:
+		var point:=_vector(value)
+		_drape_rest.append(point)
+		_drape_directions.append(Vector2(point.x,point.z-.02).normalized())
+	_circumferences = PackedFloat32Array(cloth["circumferences"])
+	_surface_relaxations = int(cloth["surface_relaxations"])
+	_angular_relaxations = int(cloth["angular_relaxations"])
+	for row in _rings:
+		var distance := 0.0
 		for k in _segments:
-			var point := _rest[source_row*_segments+k] if row%2 == 0 else _cell_centers[source_row*_segments+k]
-			_sample_directions.append(Vector2(point.x, point.z-.02).normalized())
-			_sample_base.append(0.0)
+			_circumference_coordinates.append(distance/_circumferences[row])
+			distance += _rest[row*_segments+k].distance_to(_rest[row*_segments+(k+1)%_segments])
+	_circumference_limit = float(cloth["circumference_soft_limit"])
+	_min_drape_fraction = float(cloth["min_drape_fraction"])
+	for row in cloth["meridian_lengths"]:
+		for value in row:
+			_meridian_lengths.append(float(value))
 	reset_cloth()
 
 
@@ -371,7 +401,9 @@ func _update_colliders() -> void:
 	for capsule in _capsules:
 		var a := _hips_inverse*(actor.global_transform*skeleton.get_bone_global_pose(capsule[0]).origin)
 		var b := _hips_inverse*(actor.global_transform*skeleton.get_bone_global_pose(capsule[1]).origin)
-		a = a.lerp(b, capsule[3])
+		var first := a.lerp(b, capsule[3])
+		b = a.lerp(b, capsule[4])
+		a = first
 		var axis := b-a
 		_capsule_local.append([a, b, axis, axis.length_squared(), capsule[2]+_thickness+_surface_margin])
 
@@ -425,6 +457,19 @@ func _surface_minimum(local: Vector3) -> float:
 	if absf(dy) < 1.0:
 		minimum = sqrt((1.0-dy*dy)/(radial.x*radial.x/(.187*.187)+radial.z*radial.z/(.124*.124)))
 	for capsule in _capsule_local:
+		var a: Vector3 = capsule[0]
+		var b: Vector3 = capsule[1]
+		var radius: float = capsule[4]
+		if local.y < minf(a.y,b.y)-radius or local.y > maxf(a.y,b.y)+radius:
+			continue
+		var axis: Vector3 = capsule[2]
+		var nearest := a+axis*clampf((local-a).dot(axis)/maxf(float(capsule[3]),.000001),0,1)
+		var normal := local-nearest
+		# Convex supporting-plane rejection: an outside point moving away
+		# from its nearest capsule surface cannot hit that capsule farther
+		# along this ray. Most fitted skirt points take this cheap branch.
+		if normal.length_squared() >= radius*radius and normal.dot(radial) >= 0.0:
+			continue
 		minimum = maxf(minimum, _capsule_far(origin, radial, capsule))
 	return minimum
 
@@ -487,36 +532,245 @@ func _fit_goals() -> void:
 					var disc_b := along_b*along_b+sphere_b
 					far = maxf(-along+sqrt(disc_a) if disc_a >= 0.0 else -1.0, -along_b+sqrt(disc_b) if disc_b >= 0.0 else -1.0)
 				samples[i] = maxf(samples[i], far)
-	_goal_radii = _rest_radius.duplicate()
-	for row in range(1, _rings):
+	var rows := _sample_heights.size()
+	var radii := PackedFloat32Array()
+	radii.resize(rows*_segments)
+	var factor := 1.0/cos(PI/_segments)
+	for row in rows:
 		for k in _segments:
 			var i := row*_segments+k
-			_goal_radii[i] = maxf(_goal_radii[i], samples[row*2*_segments+k]+.0001)
-			if _goal_radii[i] > _rest_radius[i]+.00001:
-				collision_count += 1
-	# Half-cell contact supports all corners of the displayed triangles.
-	var factor := 1.0/cos(PI/_segments)
-	for row in _rings-1:
+			var point := _drape_rest[i]
+			var base := Vector2(point.x, point.z-.02).length()
+			var minimum := samples[i]+.0001 if row%2 == 0 else maxf(samples[i],samples[row*_segments+(k+_segments-1)%_segments])*factor+.0015
+			radii[i] = maxf(base,minimum) if row > 0 else base
+			if radii[i] > base+.00001: collision_count+=1
+
+	# Include the upper tangent of each capsule in every meridian plane.
+	# A bent calf can enter a horizontal chart abruptly between two rows:
+	# fixing only the final point then stretched a meridian by 24% in a
+	# gameplay blend, despite the 18 isolated clips staying within 2%.
+	# Raise the support on the immediately preceding chart row instead,
+	# so the arc budget is spent ABOVE that calf, before final clearance.
+	for capsule in _capsule_local:
+		var a: Vector3 = capsule[0]
+		var axis: Vector3 = capsule[2]
+		var radius: float = capsule[4]
+		var top: float = maxf(a.y,(capsule[1] as Vector3).y)+radius
+		if top >= _sample_heights[0] or top <= _sample_heights[-1]: continue
 		for k in _segments:
-			var minimum := samples[(row*2+1)*_segments+k]*factor+.0015
-			if row == 0:
-				minimum = maxf(minimum, 2.0*minimum-(_rest_radius[k]+_rest_radius[(k+1)%_segments])*.5)
-			var cell := row*_segments+k
-			for corner in 4:
-				var i := _cells[cell*4+corner]
-				if i >= _segments:
-					_goal_radii[i] = maxf(_goal_radii[i], minimum)
-	# Local bend only: no max-dilation around half the skirt / down to the hem.
-	for iteration in 2:
-		var source := _goal_radii.duplicate()
-		for row in range(1, _rings):
+			var row := 0
+			while row < rows-2 and _sample_heights[row+1] >= top: row+=1
+			var along := -1.0
+			for iteration in 2:
+				var d := _drape_directions[row*_segments+k]
+				var cross_a := a.x*d.y-(a.z-.02)*d.x
+				var cross_axis := axis.x*d.y-axis.z*d.x
+				var at := 1.0 if axis.y > 0.0 else 0.0
+				if absf(cross_axis) > .000001:
+					var target := radius*axis.y*signf(cross_axis)/sqrt(axis.y*axis.y+cross_axis*cross_axis)
+					at = clampf((target-cross_a)/cross_axis,0,1)
+				var transverse := cross_a+at*cross_axis
+				if absf(transverse) >= radius:
+					along=-1.0
+					break
+				var height := a.y+at*axis.y+sqrt(maxf(0,radius*radius-transverse*transverse))
+				along = (a.x+at*axis.x)*d.x+(a.z-.02+at*axis.z)*d.y
+				if along <= 0 or height <= _sample_heights[-1]:
+					along=-1.0
+					break
+				row=0
+				while row < rows-2 and _sample_heights[row+1] >= height: row+=1
+			if row > 0 and along > 0:
+				radii[row*_segments+k]=maxf(radii[row*_segments+k],along+.0015)
+
+	# A small one-sided fairing of the SUPPORT curve. It never moves the
+	# surface inward through a collider. Unlike the old projection it does
+	# not stretch material rows: the next stage spends meridian length.
+	for pass_index in 2:
+		var source := radii.duplicate()
+		for row in range(1, rows):
 			for k in _segments:
 				var i := row*_segments+k
-				_goal_radii[i] = maxf(source[i], source[row*_segments+(k+_segments-1)%_segments]*.18+source[i]*.64+source[row*_segments+(k+1)%_segments]*.18)
+				var angular := source[row*_segments+(k+_segments-1)%_segments]*.18+source[i]*.64+source[row*_segments+(k+1)%_segments]*.18
+				var vertical := source[(row-1)*_segments+k]*.16+source[i]*.68+source[mini(row+1,rows-1)*_segments+k]*.16
+				radii[i] = maxf(source[i], maxf(angular, vertical))
+	_curve_points.resize(rows*_segments)
+	_curve_distances.resize(rows*_segments)
+	for k in _segments:
+		for row in rows:
+			var i := k*rows+row
+			var d := _drape_directions[row*_segments+k]
+			var radius := radii[row*_segments+k]
+			_curve_points[i] = Vector3(d.x*radius, _sample_heights[row], .02+d.y*radius)
+			_curve_distances[i] = _curve_distances[i-1]+_curve_points[i].distance_to(_curve_points[i-1]) if row > 0 else 0.0
 	_goals.resize(_rest.size())
+	_goal_local.resize(_rest.size())
+	_goal_radii.resize(_rest.size())
+	var previous_length := 0.0
+	for row in _rings:
+		var ring := PackedVector3Array()
+		ring.resize(_segments)
+		var length := _meridian_lengths[row*_segments]
+		var fraction := 1.0
+		for k in _segments:
+			ring[k] = _drape_point(k, _meridian_lengths[row*_segments+k]) if row > 0 else _rest[k]
+		var circumference := _ring_length(ring)
+		var maximum := _circumferences[row]*_circumference_limit
+		if row > 0 and circumference > maximum:
+			# Woven fabric cannot double its circumference across an evasion.
+			# Spend less downward arc: the MATERIAL ROW LIFTS over the thighs
+			# instead. Compression here stands for unresolved small folds.
+			var low := maxf(_min_drape_fraction, minf(previous_length/maxf(length,.000001),1.0))
+			var high := 1.0
+			for k in _segments:
+				ring[k]=_drape_point(k,_meridian_lengths[row*_segments+k]*low)
+			# Never compress an entire 48 cm skirt into a 12 cm mini to
+			# satisfy a perimeter target. Retain at least 86% downward arc.
+			if _ring_length(ring) <= maximum:
+				for iteration in 5:
+					var mid := (low+high)*.5
+					for k in _segments:
+						ring[k] = _drape_point(k, _meridian_lengths[row*_segments+k]*mid)
+					if _ring_length(ring) > maximum: high=mid
+					else: low=mid
+			fraction=low
+			for k in _segments:
+				ring[k] = _drape_point(k, _meridian_lengths[row*_segments+k]*fraction)
+
+		previous_length=length*fraction
+		for k in _segments:
+			var i:=row*_segments+k
+			_goal_local[i] = ring[k]
+			_goal_radii[i] = Vector2(ring[k].x,ring[k].z-.02).length()
+			_goals[i] = _hips_transform*ring[k]
+
+	# Round the hem's HEIGHT as well as its radius. Independent lifted
+	# meridians otherwise left sharp downward arrowheads on lateral dodges.
+	# Raise neighbouring material smoothly along the same supported curve;
+	# never lower a contact point or push cloth through the leg.
+	var hem_height:=PackedFloat32Array()
+	for k in _segments: hem_height.append(_goal_local[(_rings-1)*_segments+k].y)
+	var rounded:=hem_height.duplicate()
+	for iteration in 4:
+		var source:=rounded.duplicate()
+		for k in _segments:
+			rounded[k]=minf(hem_height[k]+.045,maxf(source[k],source[(k+_segments-1)%_segments]*.25+source[k]*.5+source[(k+1)%_segments]*.25))
+	for k in _segments:
+		var lift:=rounded[k]-hem_height[k]
+		if lift < .000001: continue
+		for row in range(1,_rings):
+			var i:=row*_segments+k
+			var u:=_meridian_lengths[i]/_meridian_lengths[(_rings-1)*_segments+k]
+			var point:=_drape_at_height(k,_goal_local[i].y+lift*u*u)
+			_goal_local[i]=point
+			_goal_radii[i]=Vector2(point.x,point.z-.02).length()
+			_goals[i]=_hips_transform*point
+
+	# Arc interpolation can cut a round collider by a few millimetres.
+	# Resolve the CURRENT analytic envelope, locally, after all length/hem
+	# operations. This is not a wider garment or an increased skin mask.
+	for i in range(_segments,_rest.size()):
+		var point:=_goal_local[i]
+		var minimum:=_surface_minimum(point)+.0001
+		if minimum > _goal_radii[i]:
+			var direction:=Vector3(point.x,0,point.z-.02).normalized()
+			point=Vector3(direction.x*minimum,point.y,.02+direction.z*minimum)
+			_goal_local[i]=point
+			_goal_radii[i]=minimum
+			_goals[i]=_hips_transform*point
+
+	_redistribute_surface()
+
+
+func _redistribute_surface() -> void:
+	# Fixed rays concentrated strain in one triangle beside a raised knee
+	# (5.88x locally despite a 1.82x ring). Slide material along the EXISTING
+	# surface, then spend its meridian lengths. No larger collision volumes.
+	var arc := PackedFloat32Array()
+	arc.resize(_rings)
+	for iteration in _surface_relaxations:
+		if iteration < _angular_relaxations:
+			_redistribute_rings()
+			# Keep an ordered chart through a steep knee's new arc allocation.
+			for row in range(_rings-2, 0, -1):
+				for k in _segments:
+					var i := row*_segments+k
+					_goal_local[i].y = maxf(_goal_local[i].y, _goal_local[i+_segments].y+.00001)
+		var source := _goal_local.duplicate()
+		for k in _segments:
+			arc[0] = 0
+			for row in range(1, _rings):
+				arc[row] = arc[row-1]+source[row*_segments+k].distance_to(source[(row-1)*_segments+k])
+			# Do not collapse the last rows when small folds use less length.
+			var fraction := minf(1, arc[_rings-1]/_meridian_lengths[(_rings-1)*_segments+k])
+			var at := 1
+			for row in range(1, _rings):
+				var length := _meridian_lengths[row*_segments+k]*fraction
+				while at < _rings-1 and arc[at] < length: at += 1
+				var u := clampf((length-arc[at-1])/maxf(arc[at]-arc[at-1], .000001), 0, 1)
+				_goal_local[row*_segments+k] = source[(at-1)*_segments+k].lerp(source[at*_segments+k], u)
+		# Interpolation can cut a convex capsule. Restore its unchanged
+		# envelope after each pass, including the FINAL length-only pass.
+		for i in range(_segments, _rest.size()):
+			var point := _goal_local[i]
+			var radius := Vector2(point.x, point.z-.02).length()
+			var minimum := _surface_minimum(point)+.0001
+			if minimum > radius:
+				var factor := minimum/maxf(radius, .000001)
+				_goal_local[i] = Vector3(point.x*factor, point.y, .02+(point.z-.02)*factor)
 	for i in _rest.size():
-		var radial := _radial[i]*_goal_radii[i]
-		_goals[i] = _hips_transform*Vector3(radial.x, _rest[i].y, .02+radial.z)
+		var point := _goal_local[i]
+		_goal_radii[i] = Vector2(point.x, point.z-.02).length()
+		_goals[i] = _hips_transform*point
+
+
+func _redistribute_rings() -> void:
+	var source := _goal_local.duplicate()
+	var arc := PackedFloat32Array()
+	arc.resize(_segments+1)
+	for row in range(1, _rings):
+		var base := row*_segments
+		arc[0] = 0
+		for k in _segments:
+			arc[k+1] = arc[k]+source[base+k].distance_to(source[base+(k+1)%_segments])
+		var at := 1
+		for k in _segments:
+			var length := _circumference_coordinates[base+k]*arc[_segments]
+			while at < _segments and arc[at] < length: at += 1
+			var u := clampf((length-arc[at-1])/maxf(arc[at]-arc[at-1], .000001), 0, 1)
+			_goal_local[base+k] = source[base+at-1].lerp(source[base+at%_segments], u)
+
+
+static func _ring_length(ring: PackedVector3Array) -> float:
+	var length:=0.0
+	for k in ring.size(): length+=ring[k].distance_to(ring[(k+1)%ring.size()])
+	return length
+
+
+func _drape_point(k: int, length: float) -> Vector3:
+	var rows := _sample_heights.size()
+	var base := k*rows
+	var low:=1
+	var high:=rows-1
+	while low < high:
+		var mid: int = (low+high)/2
+		if _curve_distances[base+mid] < length: low=mid+1
+		else: high=mid
+	var at := base+low
+	var u:=clampf((length-_curve_distances[at-1])/maxf(_curve_distances[at]-_curve_distances[at-1],.000001),0,1)
+	return _curve_points[at-1].lerp(_curve_points[at],u)
+
+
+func _drape_at_height(k: int, height: float) -> Vector3:
+	var low:=1
+	var high:=_sample_heights.size()-1
+	while low < high:
+		var mid: int = (low+high)/2
+		if _sample_heights[mid] > height: low=mid+1
+		else: high=mid
+	var at:=k*_sample_heights.size()+low
+	var u:=clampf((_sample_heights[low-1]-height)/maxf(_sample_heights[low-1]-_sample_heights[low],.000001),0,1)
+	return _curve_points[at-1].lerp(_curve_points[at],u)
 
 
 func update_pose(delta: float, grounded: bool = true) -> void:
@@ -550,17 +804,23 @@ func _project_points(grounded: bool) -> void:
 	for i in _segments:
 		_points[i] = _goals[i]
 		_previous[i] = _goals[i]
-	# A small radial textile shell, NOT an unconstrained flying sheet.
-	# Preserve ring heights/angular order so a fast lateral quickstep cannot
-	# turn two rows inside-out or wrap the hem twice around the same knee.
-	for i in range(_segments, _points.size()):
-		var local := _hips_inverse*_points[i]
-		var radial := _radial[i]
-		var minimum := _goal_radii[i]
-		var radius := clampf(Vector3(local.x, 0, local.z-.02).dot(radial), minimum, minimum+_max_secondary)
-		_points[i] = _hips_transform*Vector3(radial.x*radius, _rest[i].y, .02+radial.z*radius)
-		if grounded:
-			_points[i].y = maxf(_points[i].y, actor.global_position.y+.025)
+	# One coherent secondary amplitude per material meridian. Independent
+	# offsets on a 12 mm hem band stretched it by >2x even with a 25 mm cap.
+	# The smooth length ramp cannot make that old saw-toothed edge.
+	for k in _segments:
+		var hem:=(_rings-1)*_segments+k
+		var local := _hips_inverse*_points[hem]
+		var goal := _goal_local[hem]
+		var radial := Vector3(goal.x,0,goal.z-.02).normalized()
+		var amount:=clampf(Vector3(local.x,0,local.z-.02).dot(radial)-_goal_radii[hem],0,_max_secondary)
+		for row in range(1,_rings):
+			var i:=row*_segments+k
+			var u:=_meridian_lengths[i]/_meridian_lengths[hem]
+			goal=_goal_local[i]
+			radial=Vector3(goal.x,0,goal.z-.02).normalized()
+			var radius:=_goal_radii[i]+amount*u*u
+			_points[i]=_hips_transform*Vector3(radial.x*radius,goal.y,.02+radial.z*radius)
+			if grounded: _points[i].y=maxf(_points[i].y,actor.global_position.y+.025)
 
 
 func collision_gap() -> float:

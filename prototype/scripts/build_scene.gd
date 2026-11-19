@@ -78,6 +78,13 @@ void light() {
 }
 """
 
+# Immutable toon materials are shared per original surface material. Besides
+# avoiding one shader/material allocation per character/scene, this keeps their
+# RIDs alive across the deferred main <-> showcase handoff in GLES3 (4.7.2
+# otherwise reported material_* null errors when old overrides were released).
+# No per-character tint is mutated here; textile materials remain independent.
+static var _toon_cache: Dictionary = {}
+
 var _white: StandardMaterial3D
 var _floor_mat: StandardMaterial3D
 
@@ -144,6 +151,9 @@ func apply_toon(root: Node) -> void:
 			# взгляд манекена (два серых овала вместо глаз).
 			if base != null and base.resource_name.contains("eye"):
 				continue
+			if _toon_cache.has(base):
+				mi.set_surface_override_material(i, _toon_cache[base])
+				continue
 			var mat := ShaderMaterial.new()
 			mat.shader = shader
 			# ГЛАВНОЕ: забираем текстуру у родного материала модели.
@@ -160,6 +170,7 @@ func apply_toon(root: Node) -> void:
 			else:
 				mat.set_shader_parameter("use_texture", false)
 				mat.set_shader_parameter("base_color", Color(0.95, 0.82, 0.76))
+			_toon_cache[base] = mat
 			mi.set_surface_override_material(i, mat)
 
 

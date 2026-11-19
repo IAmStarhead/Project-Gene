@@ -101,9 +101,9 @@ def floor_probes(rig):
 
 def build():
     rig = Rig(MODEL)
-    # The visual grid is deliberately finer than the former 16-sided skirt.
-    # Scalar radial springs replace 2 passes of edge constraints that were
-    # discarded immediately by the fixed-height/angular projection anyway.
+    # The rendered grid remains small. A denser, cached material-coordinate
+    # chart samples body support between vertices, then is resampled by REST
+    # meridian arc length. Knee contact can lift the hem, not only inflate it.
     levels = [1.02, .96, .90, .84, .78, .72, .66, .60, .555, .543]
     segments = 32
     cloth = []
@@ -117,6 +117,17 @@ def build():
             z = (front if np.cos(theta) >= 0 else -back)+pleat
             cloth.append([(rx+pleat)*np.sin(theta), y, z*np.cos(theta)])
     cloth = np.asarray(cloth)
+    # Alternate node rows and cell-centre rows (608 support rays), not
+    # a redundant 1,600-ray chart. Keep original material meridians too.
+    heights = np.unique(np.r_[levels, (np.array(levels[:-1])+levels[1:])*.5])[::-1]
+    grid = cloth.reshape(len(levels), segments, 3)
+    samples, drape = [], []
+    for row_index, y in enumerate(heights):
+        row = np.array([[np.interp(y, levels[::-1], grid[::-1, k, axis])
+                         for axis in range(3)] for k in range(segments)])
+        drape.extend(row)
+        samples.extend(row if row_index%2 == 0 else (row+np.roll(row,-1,axis=0))*.5)
+    lengths = np.vstack([np.zeros(segments), np.cumsum(np.linalg.norm(np.diff(grid, axis=0), axis=2), axis=0)])
     gown = bodice(rig, cloth[:segments], cloth[segments:2*segments])
     hips_bind = rig.inverse_bind[rig.index['hips']]
     return {'version': 2, 'hips_inverse_bind': np.vstack([hips_bind[:3, :3], hips_bind[:3, 3]]).tolist(),
@@ -131,11 +142,17 @@ def build():
             'gown': gown,
             'cloth': {'positions': np.round(cloth, 7).tolist(), 'segments': segments,
                       'rings': len(levels), 'edges': [], 'iterations': 0, 'step': 1/60,
-                      'solver': 'bounded_radial_surface_v2', 'surface_samples': True,
-                      'thickness': .004, 'surface_margin': .014, 'max_secondary_offset': .025,
+                      'solver': 'arc_length_drape_v4', 'surface_relaxations': 3, 'angular_relaxations': 2, 'surface_samples': True,
+                      'sample_heights': np.round(heights, 8).tolist(),
+                      'sample_positions': np.round(samples, 8).tolist(),
+                      'drape_positions': np.round(drape, 8).tolist(),
+                      'meridian_lengths': np.round(lengths, 8).tolist(),
+                      'circumferences': np.round(np.linalg.norm(np.roll(grid, -1, axis=1)-grid, axis=2).sum(axis=1), 8).tolist(),
+                      'thickness': .004, 'surface_margin': .014, 'max_secondary_offset': .012, 'circumference_soft_limit': 1.45, 'min_drape_fraction': .86,
                       'fabric': FABRIC, 'binding': BINDING, 'capsules': [
-                          ['thigh.L', 'shin.L', .110, .20], ['thigh.R', 'shin.R', .110, .20],
-                          ['shin.L', 'foot.L', .070, 0.0], ['shin.R', 'foot.R', .070, 0.0]]}}
+                          ['thigh.L', 'shin.L', .110, .20, .60], ['thigh.R', 'shin.R', .110, .20, .60],
+                          ['thigh.L', 'shin.L', .083, .60, 1.0], ['thigh.R', 'shin.R', .083, .60, 1.0],
+                          ['shin.L', 'foot.L', .070, 0.0, 1.0], ['shin.R', 'foot.R', .070, 0.0, 1.0]]}}
 
 
 def main():

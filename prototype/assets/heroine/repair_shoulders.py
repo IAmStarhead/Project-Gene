@@ -20,9 +20,10 @@ def shoulder_weights(positions, triangles, joints, weights, names):
     Weld coincident seam vertices for the solve, identify the three surface
     lobes in a narrow upper-arm band by connectivity, and use the existing
     forearm influences to name the two arm lobes. Keep arm-chain proportions
-    there, remove arm influence from the torso lobe, and solve a harmonic
-    transition over the shoulder cap. The graph never jumps across the air
-    gap from the arm to the chest. The same result goes to every seam copy.
+    there, remove arm influence from the torso lobe, and minimise squared
+    graph-Laplacian energy across the shoulder cap and its fixed one-ring.
+    The graph never jumps across the air gap from the arm to the chest.
+    The same result goes to every seam copy.
 
     Heights delimit the shoulder/elbow region of THIS model, not a generic
     auto-rig recipe. Fail loudly if its topology no longer has these lobes.
@@ -92,24 +93,38 @@ def shoulder_weights(positions, triangles, joints, weights, names):
     u = (u*u*(3 - 2*u))[:, None]
     fixed = base*(1 - u) + fixed*u
 
-    # Positive inverse-edge-length graph conductance: a bounded harmonic
-    # interpolant, with the torso center and top of the shoulder held fixed.
-    unknown = (p[:, 1] >= 1.24) & (p[:, 1] < 1.38) & (np.abs(p[:, 0]) > .08)
+    # Positive inverse-edge-length graph conductance. Keep the torso centre
+    # and upper shoulder anchors fixed; fit a smooth derivative at the join.
+    unknown = (p[:, 1] >= 1.24) & (p[:, 1] < 1.433) & (np.abs(p[:, 0]) > .055)
     active = np.bincount(directed[:, 0], minlength=len(p)) > 0
     unknown &= active
     vertices = np.flatnonzero(unknown)
     rows = np.full(len(p), -1, dtype=int)
     rows[vertices] = np.arange(len(vertices))
-    links = directed[unknown[directed[:, 0]]]
+    # Fit the graph Laplacian over BOTH free vertices and their fixed one-ring.
+    # Squared Laplacian energy gives a C1-like falloff at anchor boundaries;
+    # the former harmonic solution had an abrupt weight derivative there.
+    touch = unknown.copy()
+    touch[directed[unknown[directed[:, 1]], 0]] = True
+    row_ids = np.flatnonzero(touch)
+    row_lookup = np.full(len(p), -1, dtype=int)
+    row_lookup[row_ids] = np.arange(len(row_ids))
+    links = directed[touch[directed[:, 0]]]
     conductance = 1 / np.maximum(np.linalg.norm(p[links[:, 0]] - p[links[:, 1]], axis=1), .001)
-    a, b = rows[links[:, 0]], rows[links[:, 1]]
-    matrix = np.diag(np.bincount(a, weights=conductance, minlength=len(vertices)))
-    interior = b >= 0
-    np.add.at(matrix, (a[interior], b[interior]), -conductance[interior])
-    rhs = np.zeros((len(vertices), len(names)))
-    np.add.at(rhs, a[~interior], conductance[~interior, None] * fixed[links[~interior, 1]])
-    fixed[vertices] = np.linalg.solve(matrix, rhs)
+    totals = np.bincount(row_lookup[links[:, 0]],weights=conductance,minlength=len(row_ids))
+    conductance /= totals[row_lookup[links[:, 0]]]
+    operator = np.zeros((len(row_ids),len(p)))
+    operator[np.arange(len(row_ids)),row_ids] = 1
+    np.add.at(operator,(row_lookup[links[:, 0]],links[:, 1]),-conductance)
+    free = operator[:,unknown]
+    rhs = -operator[:,~unknown] @ fixed[~unknown]
+    fixed[vertices] = np.linalg.lstsq(free, rhs, rcond=1e-9)[0]
     fixed = np.maximum(fixed, 0)
+    # LAPACK may leave ~1e-12 weights on unrelated bones, varying with its
+    # thread count / reduction order. Those tails can even reorder padding
+    # joints. Canonicalise numerical zero BEFORE four-influence selection;
+    # otherwise byte-exact regeneration fails despite identical deformation.
+    fixed[fixed < 1e-10] = 0
     fixed /= fixed.sum(axis=1, keepdims=True)
 
     # Ordinary glTF four-weight LBS, not an engine-specific skinning trick.

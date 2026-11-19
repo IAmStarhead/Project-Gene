@@ -39,6 +39,10 @@ class SkinWeightTests(unittest.TestCase):
                          'e5f8d6cd051e42db2967f534f749cd5bf684a218e7e006ed8218ecb534ea06ed')
         result, report = repair_axilla_weights(self.gltf, self.before)
         self.assertEqual(result, self.rig.binary)
+        # Numerical-zero LAPACK tails must not choose arbitrary padding bones.
+        # Keep byte equality, rather than relaxing this to approximate weights.
+        repeated, _ = repair_axilla_weights(self.gltf, self.before)
+        self.assertEqual(repeated, result)
         self.assertEqual(self.gltf, self.rig.gltf)
         self.assertEqual(len(report['lobes']), 3)
         self.assertGreater(report['changed'], 1000)

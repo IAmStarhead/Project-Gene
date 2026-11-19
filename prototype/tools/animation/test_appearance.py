@@ -119,6 +119,10 @@ class AppearanceTests(unittest.TestCase):
 
     def test_underarm_mask_stops_well_inside_the_tailored_cuff(self):
         coverage = self.data['coverage']
+        # Report 40 forbids hiding the shoulder repair with a larger mask.
+        # Freeze the exact coverage parameters accepted in 2c9de18.
+        self.assertEqual(hashlib.sha256(json.dumps(coverage, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
+                         '38b65962878c656020cedaeeaa125e272f7176ee7a129a553532db610d55d894')
         self.assertTrue(coverage['preserve_limbs'])
         self.assertEqual(coverage['sleeves'], [], 'The broad legacy sleeve cylinders must not be used')
         self.assertEqual(len(coverage['underarm_cores']), 2)
@@ -166,27 +170,44 @@ class AppearanceTests(unittest.TestCase):
                     largest_error = max(largest_error, reduced-actual)
         self.assertLess(largest_error, .0007, 'Runtime 1 mm lift must cover the full sole too')
 
-    def test_cloth_is_bounded_and_samples_surface_contacts(self):
+    def test_cloth_spends_material_length_and_samples_surface_contacts(self):
         cloth = self.data['cloth']
         p = np.asarray(cloth['positions'])
         self.assertEqual(p.shape, (320, 3))
         self.assertEqual(len(p), cloth['rings']*cloth['segments'])
         self.assertEqual(cloth['segments'], 32, 'No old 16-sided umbrella')
         self.assertLessEqual(cloth['max_secondary_offset'], .025)
-        self.assertEqual(cloth['solver'], 'bounded_radial_surface_v2')
+        self.assertEqual(cloth['solver'], 'arc_length_drape_v4')
+        self.assertEqual(cloth['surface_relaxations'], 3)
+        self.assertEqual(cloth['angular_relaxations'], 2)
         self.assertTrue(cloth['surface_samples'], 'Contact at half cells, not just particles')
         self.assertEqual(cloth['iterations'], 0, 'Do not solve then discard edge constraints in a radial shell')
         self.assertEqual(cloth['edges'], [])
+        self.assertLessEqual(cloth['max_secondary_offset'], .012)
+        self.assertGreaterEqual(cloth['min_drape_fraction'], .85)
+        heights = np.asarray(cloth['sample_heights'])
+        self.assertEqual(len(heights), cloth['rings']*2-1)
+        self.assertTrue((np.diff(heights) < 0).all())
+        sample = np.asarray(cloth['sample_positions']).reshape(len(heights), 32, 3)
+        drape = np.asarray(cloth['drape_positions']).reshape(len(heights), 32, 3)
+        np.testing.assert_allclose(sample[:, :, 1], np.broadcast_to(heights[:, None], sample[:, :, 1].shape), atol=1e-7)
+        np.testing.assert_allclose(sample[::2], drape[::2], atol=1e-7)
+        np.testing.assert_allclose(sample[1::2], (drape[1::2]+np.roll(drape[1::2],-1,axis=1))*.5, atol=1e-7)
+        grid = p.reshape(cloth['rings'],32,3)
+        lengths = np.vstack([np.zeros(32),np.cumsum(np.linalg.norm(np.diff(grid,axis=0),axis=2),axis=0)])
+        np.testing.assert_allclose(cloth['meridian_lengths'],lengths,atol=1e-7)
+        np.testing.assert_allclose(cloth['circumferences'],np.linalg.norm(np.roll(grid,-1,axis=1)-grid,axis=2).sum(axis=1),atol=1e-7)
         self.assertGreaterEqual(p[0, 1], 1.0, 'Waist must be above the flexed upper thigh / knee')
         self.assertAlmostEqual(p[-1, 1], .543)
         self.assertLess(np.max(np.linalg.norm(p[:, [0, 2]], axis=1)), .24)
-        self.assertEqual(len(cloth['capsules']), 4)
-        for a, b, radius, start in cloth['capsules']:
+        self.assertEqual(len(cloth['capsules']), 6)
+        for a, b, radius, start, end in cloth['capsules']:
             self.assertIn(a, self.rig.names)
             self.assertIn(b, self.rig.names)
             self.assertGreater(radius, .05)
             self.assertGreaterEqual(start, 0)
-            self.assertLess(start, .3)
+            self.assertLess(start, end)
+            self.assertLessEqual(end, 1)
         self.assertTrue(all(c[3] >= .15 for c in cloth['capsules'][:2]),
                         'No false hip-end sphere expanding the skirt into the idle forearms')
 
