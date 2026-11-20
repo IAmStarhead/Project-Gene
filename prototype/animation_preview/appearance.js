@@ -279,8 +279,94 @@ export class Appearance {
       return radius;
     });
     this.redistributeSurface();
+    this.filletSupportedSurface();
     this.goalRadii=this.goalLocal.map(p=>Math.hypot(p.x,p.z-.02));
     this.goals=this.goalLocal.map(p=>p.clone().applyMatrix4(this.hips));
+  }
+  // Match the native boundary-only fillet. This is an independent live
+  // solve, not an interpolation of previously recorded Godot vertices.
+  filletSupportedSurface(){
+    const c=this.data.cloth,n=this.segments,base=(c.rings-1)*n;
+    const original=this.goalLocal.slice(base).map(p=>p.clone());
+    const restLap=original.map((_,k)=>this.rest[base+(k+n-1)%n].clone()
+      .add(this.rest[base+(k+1)%n]).multiplyScalar(.5).sub(this.rest[base+k]));
+    let hem=original.map(p=>p.clone());
+    for(let iteration=0;iteration<24;iteration++){
+      const source=hem;
+      hem=source.map((p,k)=>this.normalClear(p.clone().addScaledVector(
+        source[(k+n-1)%n].clone().add(source[(k+1)%n]).multiplyScalar(.5).sub(p).sub(restLap[k]),.5)));
+    }
+    for(let row=1;row<c.rings;row++)for(let k=0;k<n;k++){
+      const i=row*n+k,u=c.meridian_lengths[row][k]/c.meridian_lengths[c.rings-1][k];
+      this.goalLocal[i].addScaledVector(hem[k].clone().sub(original[k]),u*u);
+    }
+    this.clearFilletedSurface();
+    for(let iteration=0;iteration<3;iteration++)this.resampleFilletedMeridians();
+    for(let iteration=0;iteration<3;iteration++)for(let row=c.rings-2;row>0;row--)for(let k=0;k<n;k++){
+      const i=row*n+k;
+      if(this.goalLocal[i].y<this.goalLocal[i+n].y+.0002){
+        this.goalLocal[i].y=this.goalLocal[i+n].y+.0002;
+        this.normalClear(this.goalLocal[i]);
+      }
+    }
+  }
+  normalClear(point){
+    const dy=(point.y-.89)/.145;
+    if(Math.abs(dy)<1){
+      const radius=Math.hypot(point.x,point.z-.02),x=point.x/Math.max(radius,.000001),z=(point.z-.02)/Math.max(radius,.000001);
+      const minimum=Math.sqrt((1-dy*dy)/(x*x/(.187*.187)+z*z/(.124*.124)));
+      if(radius<minimum){point.x=x*minimum;point.z=.02+z*minimum;}
+    }
+    for(const [a,b,r] of this.colliders){
+      const radius=r+.00025;
+      if(point.y<Math.min(a.y,b.y)-radius||point.y>Math.max(a.y,b.y)+radius)continue;
+      const axis=b.clone().sub(a),at=THREE.MathUtils.clamp(point.clone().sub(a).dot(axis)/Math.max(axis.lengthSq(),.000001),0,1);
+      const offset=point.clone().sub(a.clone().addScaledVector(axis,at)),distance=offset.length();
+      if(distance<radius)point.addScaledVector(offset,(radius-distance)/Math.max(distance,.000001));
+    }
+    return point;
+  }
+  clearFilletedSurface(){
+    // The native method batches the same independent projection by capsule.
+    this.goalLocal.forEach((p,i)=>{if(i>=this.segments)this.normalClear(p);});
+  }
+  resampleFilletedMeridians(){
+    const c=this.data.cloth,n=this.segments,source=this.goalLocal.map(p=>p.clone()),arc=[];
+    for(let k=0;k<n;k++){
+      arc[0]=0;
+      for(let row=1;row<c.rings;row++)arc[row]=arc[row-1]+source[row*n+k].distanceTo(source[(row-1)*n+k]);
+      const fraction=Math.min(1,arc[c.rings-1]/c.meridian_lengths[c.rings-1][k]);let at=1;
+      for(let row=1;row<c.rings;row++){
+        const length=c.meridian_lengths[row][k]*fraction;
+        while(at<c.rings-1&&arc[at]<length)at++;
+        const u=THREE.MathUtils.clamp((length-arc[at-1])/Math.max(arc[at]-arc[at-1],.000001),0,1);
+        this.goalLocal[row*n+k]=source[(at-1)*n+k].clone().lerp(source[at*n+k],u);
+      }
+    }
+    this.clearFilletedSurface();
+  }
+  safeSecondary(k,amount){
+    if(amount<=.000001||this.secondaryClear(k,amount))return amount;
+    let low=0,high=amount;
+    for(let iteration=0;iteration<8;iteration++){
+      const mid=(low+high)*.5;
+      if(this.secondaryClear(k,mid))low=mid;else high=mid;
+    }
+    return low;
+  }
+  secondaryClear(k,amount){
+    const c=this.data.cloth,n=this.segments;
+    for(let row=1;row<c.rings;row++){
+      const i=row*n+k,point=this.goalLocal[i].clone(),u=c.meridian_lengths[row][k]/c.meridian_lengths[c.rings-1][k];
+      const radial=new THREE.Vector3(point.x,0,point.z-.02).normalize();point.addScaledVector(radial,amount*u*u);
+      for(const [a,b,r] of this.colliders){
+        const radius=r+.00003;
+        if(point.y<Math.min(a.y,b.y)-radius||point.y>Math.max(a.y,b.y)+radius)continue;
+        const axis=b.clone().sub(a),at=THREE.MathUtils.clamp(point.clone().sub(a).dot(axis)/Math.max(axis.lengthSq(),.000001),0,1);
+        if(point.distanceToSquared(a.clone().addScaledVector(axis,at))<radius*radius)return false;
+      }
+    }
+    return true;
   }
   redistributeSurface(){
     const c=this.data.cloth,segments=this.segments,arc=[];
@@ -369,7 +455,7 @@ export class Appearance {
     for(let k=0;k<this.segments;k++){
       const hem=(c.rings-1)*this.segments+k,local=this.points[hem].clone().applyMatrix4(this.hipsInverse),goal=this.goalLocal[hem];
       const radial=new THREE.Vector3(goal.x,0,goal.z-.02).normalize();
-      const amount=THREE.MathUtils.clamp(new THREE.Vector3(local.x,0,local.z-.02).dot(radial)-this.goalRadii[hem],0,c.max_secondary_offset);
+      const amount=this.safeSecondary(k,THREE.MathUtils.clamp(new THREE.Vector3(local.x,0,local.z-.02).dot(radial)-this.goalRadii[hem],0,c.max_secondary_offset));
       for(let row=1;row<c.rings;row++){
         const i=row*this.segments+k,u=c.meridian_lengths[row][k]/c.meridian_lengths[c.rings-1][k],p=this.goalLocal[i];
         radial.set(p.x,0,p.z-.02).normalize();const radius=this.goalRadii[i]+amount*u*u;

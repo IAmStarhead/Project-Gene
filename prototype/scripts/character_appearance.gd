@@ -753,6 +753,7 @@ func _fit_goals() -> void:
 			_goals[i]=_hips_transform*point
 
 	_redistribute_surface()
+	_fillet_supported_surface()
 
 
 func _redistribute_surface() -> void:
@@ -888,6 +889,7 @@ func _project_points(grounded: bool) -> void:
 		var goal := _goal_local[hem]
 		var radial := Vector3(goal.x,0,goal.z-.02).normalized()
 		var amount:=clampf(Vector3(local.x,0,local.z-.02).dot(radial)-_goal_radii[hem],0,_max_secondary)
+		amount = _safe_secondary(k, amount)
 		for row in range(1,_rings):
 			var i:=row*_segments+k
 			var u:=_meridian_lengths[i]/_meridian_lengths[hem]
@@ -978,3 +980,158 @@ func _upload_skirt() -> void:
 		_vertex_bytes.encode_u16(_tangent_offset+i*_normal_stride, tx)
 		_vertex_bytes.encode_u16(_tangent_offset+i*_normal_stride+2, ty)
 	_skirt_mesh.surface_update_vertex_region(0, 0, _vertex_bytes)
+
+
+func _fillet_supported_surface() -> void:
+	# Only the 32-point material boundary needs a fairing solve. Solving all
+	# 320 points at every pass produced the same hem but cost six times the
+	# old update. Transfer this boundary correction through the cloth ONCE.
+	# A nearest-normal contact slides around a knee instead of re-creating
+	# its sharp radial tip. Rest curvature preserves the idle circumference.
+	var base := (_rings-1)*_segments
+	var original := PackedVector3Array()
+	var hem := PackedVector3Array()
+	var rest_lap := PackedVector3Array()
+	for k in _segments:
+		original.append(_goal_local[base+k])
+		hem.append(_goal_local[base+k])
+		rest_lap.append((_rest[base+(k+_segments-1)%_segments]+_rest[base+(k+1)%_segments])*.5-_rest[base+k])
+	for iteration in 24:
+		var source := hem.duplicate()
+		for k in _segments:
+			var lap := (source[(k+_segments-1)%_segments]+source[(k+1)%_segments])*.5-source[k]
+			hem[k] = _normal_clear(source[k]+(lap-rest_lap[k])*.5)
+	for row in range(1, _rings):
+		for k in _segments:
+			var i := row*_segments+k
+			var u := _meridian_lengths[i]/_meridian_lengths[base+k]
+			_goal_local[i] += (hem[k]-original[k])*(u*u)
+	_clear_filleted_surface()
+	for iteration in 3:
+		_resample_filleted_meridians()
+	# Keep the thin binding below its preceding material row when the calf
+	# is almost horizontal. Lift only offending neighbours; never lower a
+	# contact point or enlarge a capsule/garment to obtain a green test.
+	for iteration in 3:
+		for row in range(_rings-2, 0, -1):
+			for k in _segments:
+				var i := row*_segments+k
+				if _goal_local[i].y < _goal_local[i+_segments].y+.0002:
+					var point := _goal_local[i]
+					point.y = _goal_local[i+_segments].y+.0002
+					_goal_local[i] = _normal_clear(point)
+	for i in _rest.size():
+		_goal_radii[i] = Vector2(_goal_local[i].x, _goal_local[i].z-.02).length()
+		_goals[i] = _hips_transform*_goal_local[i]
+
+
+func _clear_filleted_surface() -> void:
+	# Same nearest-normal projection as _normal_clear, batched by capsule.
+	# Cache the six capsule records, not thousands of Variant-array reads.
+	for i in range(_segments, _rest.size()):
+		var point := _goal_local[i]
+		var dy := (point.y-.89)/.145
+		if absf(dy) >= 1.0: continue
+		var radial := Vector2(point.x, point.z-.02)
+		var radius := radial.length()
+		var direction := radial/maxf(radius, .000001)
+		var minimum := sqrt((1.0-dy*dy)/(direction.x*direction.x/(.187*.187)+direction.y*direction.y/(.124*.124)))
+		if radius < minimum:
+			_goal_local[i] = Vector3(direction.x*minimum, point.y, .02+direction.y*minimum)
+	for capsule in _capsule_local:
+		var a: Vector3 = capsule[0]
+		var b: Vector3 = capsule[1]
+		var axis: Vector3 = capsule[2]
+		var inverse_length := 1.0/maxf(float(capsule[3]), .000001)
+		var radius: float = capsule[4]+.00025
+		var low := minf(a.y,b.y)-radius
+		var high := maxf(a.y,b.y)+radius
+		for i in range(_segments, _rest.size()):
+			var point := _goal_local[i]
+			if point.y < low or point.y > high: continue
+			var nearest := a+axis*clampf((point-a).dot(axis)*inverse_length, 0, 1)
+			var offset := point-nearest
+			var squared := offset.length_squared()
+			if squared < radius*radius:
+				var distance := sqrt(squared)
+				_goal_local[i] = point+offset*((radius-distance)/maxf(distance,.000001))
+
+
+func _resample_filleted_meridians() -> void:
+	var source := _goal_local.duplicate()
+	var arc := PackedFloat32Array()
+	arc.resize(_rings)
+	for k in _segments:
+		arc[0] = 0
+		for row in range(1, _rings):
+			arc[row] = arc[row-1]+source[row*_segments+k].distance_to(source[(row-1)*_segments+k])
+		var fraction := minf(1, arc[_rings-1]/_meridian_lengths[(_rings-1)*_segments+k])
+		var at := 1
+		for row in range(1, _rings):
+			var length := _meridian_lengths[row*_segments+k]*fraction
+			while at < _rings-1 and arc[at] < length: at += 1
+			var u := clampf((length-arc[at-1])/maxf(arc[at]-arc[at-1], .000001), 0, 1)
+			_goal_local[row*_segments+k] = source[(at-1)*_segments+k].lerp(source[at*_segments+k], u)
+	_clear_filleted_surface()
+
+
+func _normal_clear(point: Vector3) -> Vector3:
+	# Existing pelvis envelope; no new collider or larger safety volume.
+	var dy := (point.y-.89)/.145
+	if absf(dy) < 1.0:
+		var radial := Vector2(point.x, point.z-.02)
+		var radius := radial.length()
+		var direction := radial/maxf(radius, .000001)
+		var minimum := sqrt((1.0-dy*dy)/(direction.x*direction.x/(.187*.187)+direction.y*direction.y/(.124*.124)))
+		if radius < minimum:
+			point.x = direction.x*minimum
+			point.z = .02+direction.y*minimum
+	for capsule in _capsule_local:
+		var a: Vector3 = capsule[0]
+		var b: Vector3 = capsule[1]
+		var radius: float = capsule[4]+.00025
+		if point.y < minf(a.y,b.y)-radius or point.y > maxf(a.y,b.y)+radius:
+			continue
+		var axis: Vector3 = capsule[2]
+		var nearest := a+axis*clampf((point-a).dot(axis)/maxf(float(capsule[3]), .000001), 0, 1)
+		var offset := point-nearest
+		var distance := offset.length()
+		if distance < radius:
+			point += offset*((radius-distance)/maxf(distance,.000001))
+	return point
+
+
+func _safe_secondary(k: int, amount: float) -> float:
+	# Normal fillets need not be at the farthest radial ray intersection:
+	# adding even an outward 12 mm drift can meet the bent calf again.
+	# Limit the ONE coherent meridian amplitude, not separate vertex pushes
+	# which would recreate a saw-tooth hem or exceed the secondary bound.
+	if amount <= .000001 or _secondary_clear(k, amount):
+		return amount
+	var low := 0.0
+	var high := amount
+	for iteration in 8:
+		var mid := (low+high)*.5
+		if _secondary_clear(k, mid): low = mid
+		else: high = mid
+	return low
+
+
+func _secondary_clear(k: int, amount: float) -> bool:
+	for row in range(1, _rings):
+		var i := row*_segments+k
+		var point := _goal_local[i]
+		var u := _meridian_lengths[i]/_meridian_lengths[(_rings-1)*_segments+k]
+		var radial := Vector3(point.x, 0, point.z-.02).normalized()
+		point += radial*(amount*u*u)
+		for capsule in _capsule_local:
+			var a: Vector3 = capsule[0]
+			var b: Vector3 = capsule[1]
+			var radius: float = capsule[4]+.00003
+			if point.y < minf(a.y,b.y)-radius or point.y > maxf(a.y,b.y)+radius:
+				continue
+			var axis: Vector3 = capsule[2]
+			var nearest := a+axis*clampf((point-a).dot(axis)/maxf(float(capsule[3]), .000001), 0, 1)
+			if point.distance_squared_to(nearest) < radius*radius:
+				return false
+	return true

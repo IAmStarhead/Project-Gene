@@ -59,6 +59,7 @@ func _run() -> void:
 	_test_relaxed_jump(character)
 	_test_directional_dodge(character)
 	_test_appearance(character)
+	_test_rounded_material_hem(character)
 	_test_garment_surface(character)
 	_test_player_modes()
 	_test_combat()
@@ -705,6 +706,45 @@ func _test_appearance(character: Node3D) -> void:
 	print("Clothing: 320 surface nodes; actual imported hand matches %d; sampled capsule gap %.6f m; secondary max %.3f m" % [
 		appearance.body.mesh.get_meta("hand_vertices"), worst_gap, worst_secondary])
 	clone.free()
+	character.position = Vector3.ZERO
+	character.reset_motion(false)
+
+
+func _test_rounded_material_hem(character: Node3D) -> void:
+	var app: Node3D = character.appearance
+	# Same 32-point material boundary, exact seeks and local coordinates as
+	# 9fecef0, NOT subdivided render vertices or a different metric. These
+	# are geometric second differences in metres, not physical cloth stress.
+	for item in [["dodge_back", .24, .04859], ["dodge_left", .24, .03818],
+			["dodge_right", .24, .05541], ["sprint_relaxed", .31, .03439]]:
+		character.seek_clip(item[0], item[1])
+		var maximum := 0.0
+		var base: int = (app._rings-1)*app._segments
+		for k in app._segments:
+			var p: Vector3 = app._goal_local[base+k]
+			var before: Vector3 = app._goal_local[base+(k+app._segments-1)%app._segments]
+			var after: Vector3 = app._goal_local[base+(k+1)%app._segments]
+			maximum = maxf(maximum, (before+after-p*2).length())
+		check(maximum < float(item[2])*.95,
+			"same-grid hem fillet improves the frozen pre-fillet curvature, not just tessellation: "+item[0])
+		print("Hem second difference %s @ %.3f: %.3f mm" % [item[0], item[1], maximum*1000])
+	# Regression found during development: after a normal fillet a positive
+	# radial drift can RE-ENTER a bent calf. Keep one bounded amplitude for
+	# the entire material meridian; do not fix independent points afterwards.
+	character.position = Vector3.ZERO
+	character.reset_motion(false)
+	for i in 12:
+		character.position.z += T.RUN_SPEED/60.0
+		character.update_motion(1.0/60.0, Vector3(0,0,T.RUN_SPEED), "", 0, "L",
+			{"combat":false, "grounded":true, "distance":T.RUN_SPEED/60.0})
+	var limited := false
+	var clear := true
+	for k in app._segments:
+		var amount: float = app._safe_secondary(k, .012)
+		limited = limited or amount < .0119
+		clear = clear and amount >= 0 and amount <= .012 and app._secondary_clear(k, amount)
+	check(limited and clear, "bent-calf regression exercises the coherent collision-limited secondary amplitude")
+	check(app.collision_gap() > -.00001, "limited secondary drift cannot re-enter the current calf envelope")
 	character.position = Vector3.ZERO
 	character.reset_motion(false)
 
