@@ -54,12 +54,12 @@ const ATTACK_DAMAGE := 24.0
 const ATTACK_STAMINA := 18.0
 const ATTACK_CANCEL_WINDOW := 0.22 ## сек до конца восстановления, когда можно отменить уворотом
 
-# Approved extra action, Q: LEFT body hook, old LMB/RMB numbers unchanged.
+# Q: LEFT body hook. Stronger damage, old LMB/RMB numbers unchanged.
 const HOOK_WINDUP := .22
 const HOOK_ACTIVE := .10
 const HOOK_RECOVERY := .30
 const HOOK_REACH := .60
-const HOOK_DAMAGE := 18.0
+const HOOK_DAMAGE := 30.0
 const HOOK_STAMINA := 18.0
 
 # ─────────────────────────────────────────────── ВВОД

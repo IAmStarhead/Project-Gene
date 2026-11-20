@@ -432,16 +432,18 @@ def hit(rig, t):
 
 
 def body_hook(rig, t):
-    """Approved Q: .22 preparation / .10 active / .30 recovery, left only.
+    """Q: .22 preparation / .10 active / .30 recovery, left only.
 
     Compact lateral arc at body height, flexed elbow and planted staggered
     support. Knuckles stay inside the .60 m reach envelope. No root travel.
     """
     load = curve(t, [(0, 0), (.13, 1), (.22, 0), (.62, 0)])
     strike = curve(t, [(0, 0), (.14, 0), (.22, 1), (.28, 1), (.32, .85), (.48, .12), (.62, 0)])
-    p = body(rig, hip=(.012*load-.018*strike, .835-.022*load-.012*strike, .02+.012*strike),
-             yaw=(-6+6*load-12*strike, -4+4*load-10*strike, -7+8*load-16*strike),
-             lean=(3+4*strike, 2+3*strike), roll=-2*strike)
+    # More committed torso rotation and weight transfer, without moving the
+    # action root or changing the short fist trajectory / planted feet.
+    p = body(rig, hip=(.012*load-.024*strike, .835-.022*load-.016*strike, .02+.012*strike),
+             yaw=(-6+6*load-14*strike, -4+4*load-12*strike, -7+8*load-18*strike),
+             lean=(3+5*strike, 2+3.5*strike), roll=-2.5*strike)
     p.bend('shoulder.L', x=2+9*strike, z=1+3*strike)
     guard_hands(p)
     wrist = np.array([trajectory(t, [(0, .145), (.13, .255), (.18, .245), (.22, .135),

@@ -62,7 +62,7 @@ func _run() -> void:
 			player._process_attack(.20)
 			player._process_attack(.10)
 			check(probe.hits == (1 if distance < .95 else 0), "short hook hit/close/miss after skipped active window")
-			check(probe.total_damage == (18 if distance < .95 else 0), "one approved 18 damage, legacy target adapter")
+			check(probe.total_damage == (30 if distance < .95 else 0), "one stronger 30 damage hook, legacy target adapter")
 			player._process_attack(.109)
 			check(player._action == "attack", "hook recovery persists until .62")
 			player._process_attack(.002)

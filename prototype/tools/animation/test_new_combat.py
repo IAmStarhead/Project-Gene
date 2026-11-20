@@ -1,4 +1,4 @@
-"""Approved short Q hook + directional head/body reaction authoring."""
+""Short, committed Q hook + directional head/body reaction authoring."""
 import json
 import unittest
 import numpy as np
@@ -21,6 +21,12 @@ class NewCombatTests(unittest.TestCase):
         for t in [0, .62]:
             np.testing.assert_allclose(r.globals(*sample(c, t)),
                                        r.globals(*sample(self.clips['guard'], 0)), atol=2e-7)
+        # A more committed body turn at impact, while retaining the short arc.
+        guard = r.globals(*sample(self.clips['guard'], 0))
+        impact = r.globals(*sample(c, .22))
+        chest = r.index['chest']
+        turn = np.rad2deg(Rotation.from_matrix(guard[chest, :3, :3].T @ impact[chest, :3, :3]).magnitude())
+        self.assertGreater(turn, 43)
         fists, feet = [], []
         for t in np.linspace(0, .62, 125):
             g = r.globals(*sample(c, t))
