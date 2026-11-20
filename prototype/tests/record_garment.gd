@@ -38,7 +38,11 @@ func _record() -> void:
 	var character := Node3D.new()
 	character.set_script(Character)
 	world.add_child(character)
-	var result := {"fps": FPS, "source": "Godot seek_clip + actual appearance update, all 18 clips",
+	var outfit := OS.get_environment("GEN_OUTFIT")
+	if outfit not in ["dress", "suit"]:
+		outfit = "dress"
+	character.appearance.set_outfit(outfit)
+	var result := {"fps": FPS, "outfit": outfit, "source": "Godot seek_clip + actual appearance update, current native library",
 		"native_version": Engine.get_version_info()["string"],
 		"model_sha256": FileAccess.get_sha256(Character.MODEL_PATH),
 		"runtime_sha256": FileAccess.get_sha256("res://scripts/character_appearance.gd"),
@@ -47,7 +51,10 @@ func _record() -> void:
 		"motion_set_sha256": FileAccess.get_sha256("res://assets/heroine/animations/motion_set.json"),
 		"takes": {}, "seeks": {}}
 	var timings: Array[int] = []
-	for name in character.MOTIONS.get_animation_list():
+	var clip_names: PackedStringArray = character.MOTIONS.get_animation_list()
+	if OS.get_environment("GEN_GARMENT_SEEKS_ONLY") == "1":
+		clip_names = PackedStringArray()
+	for name in clip_names:
 		var duration: float = character.clip_duration(name)
 		var count := ceili(duration*FPS)
 		character.seek_clip(name, 0.0)
@@ -70,12 +77,16 @@ func _record() -> void:
 			["cross-019", "attack_right", .19], ["cross-020", "attack_right", .20],
 			["jab-018", "attack_left", .18], ["guard-000", "guard", 0.0],
 			["back-024", "dodge_back", .24], ["left-024", "dodge_left", .24],
-			["right-024", "dodge_right", .24], ["sprint-031", "sprint_relaxed", .31]]:
+			["right-024", "dodge_right", .24], ["sprint-031", "sprint_relaxed", .31],
+			["hook-022", "attack_body_hook", .22], ["hook-027", "attack_body_hook", .27],
+			["head-front", "hit_head_front", .055], ["torso-front", "hit_torso_front", .055]]:
 		character.seek_clip(item[1], item[2])
 		result["seeks"][item[0]] = frame(character, item[2])
 	timings.sort()
-	result["profile"] = {"samples": timings.size(), "median_us": timings[timings.size()/2],
-		"p95_us": timings[int(timings.size()*.95)], "max_us": timings[-1],
+	result["profile"] = {"samples": timings.size(),
+		"median_us": timings[timings.size()/2] if not timings.is_empty() else 0,
+		"p95_us": timings[int(timings.size()*.95)] if not timings.is_empty() else 0,
+		"max_us": timings[-1] if not timings.is_empty() else 0,
 		"note": "headless sandbox CPU only, no GPU/FPS claim"}
 	print("Garment update profile (sandbox CPU, not GPU FPS): ", result["profile"])
 	var path := OS.get_environment("GEN_GARMENT_OUTPUT")

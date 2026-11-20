@@ -49,10 +49,28 @@ def visible_body_triangles(rig, mesh, coverage):
     return mesh['indices'][~hidden[mesh['indices']].all(axis=1)]
 
 
+def suit_body_triangles(rig, mesh, coverage):
+    """Mirror ONLY the suit's documented garment-specific native coverage."""
+    p, joints, weights = [mesh[key] for key in ['POSITION', 'JOINTS_0', 'WEIGHTS_0']]
+    arm_ids = [i for i, n in enumerate(rig.names) if n.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
+    arms = (weights*np.isin(joints, arm_ids)).sum(axis=1)
+    overlap = coverage['skin_overlap']
+    hidden = (arms < .15) & (p[:, 1] > coverage['ankle']+overlap) & (p[:, 1] < coverage['neck']-overlap)
+    sleeves = arms >= .85
+    for cuff in coverage['wrists']:
+        ids = [rig.index[n+'.'+cuff['side']] for n in ['forearm', 'hand']]
+        forearm = (weights*np.isin(joints, ids)).sum(axis=1)
+        along = (p-cuff['origin'])@cuff['axis']
+        sleeves &= ~((forearm > .2) & (along > cuff['end']-overlap))
+    hidden |= sleeves
+    return mesh['indices'][~hidden[mesh['indices']].all(axis=1)]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('trace', type=Path)
     parser.add_argument('--appearance', type=Path, default=OUTPUT)
+    parser.add_argument('--outfit', choices=['dress', 'suit'], default='dress')
     parser.add_argument('--motion-set', type=Path, default=MOTION_OUTPUT/'motion_set.json')
     parser.add_argument('--model', type=Path, default=MODEL)
     parser.add_argument('--runtime', type=Path, default=MODEL.parents[2]/'scripts/character_appearance.gd')
@@ -73,6 +91,8 @@ def main():
 
     appearance = json.loads(args.appearance.read_text())
     trace = json.loads(args.trace.read_text())
+    if trace.get('outfit', 'dress') != args.outfit:
+        raise SystemExit('Trace outfit differs: rerecord with GEN_OUTFIT='+args.outfit)
     stamp = hashlib.sha256(args.appearance.read_bytes()).hexdigest()
     if trace.get('appearance_sha256') != stamp:
         raise SystemExit('Stale/missing trace stamp: regenerate with tests/record_garment.gd and this appearance asset')
@@ -87,11 +107,16 @@ def main():
         raise SystemExit('The appearance and actual body model hashes differ')
     rig = Rig(args.model)
     mesh = rig.mesh_data()
-    body_triangles = visible_body_triangles(rig, mesh, appearance['coverage'])
+    if args.outfit == 'suit':
+        if args.require_skirt_clear:
+            parser.error('--require-skirt-clear applies only to --outfit=dress')
+        body_triangles = suit_body_triangles(rig, mesh, appearance['suit']['coverage'])
+    else:
+        body_triangles = visible_body_triangles(rig, mesh, appearance['coverage'])
     # Labels are approximate dominant-weight attribution, not anatomical truth.
     dominant = mesh['JOINTS_0'][np.arange(len(mesh['POSITION'])), mesh['WEIGHTS_0'].argmax(axis=1)]
     body_labels = dominant[body_triangles[:, 0]]
-    gown = appearance['gown']
+    gown = appearance['suit'] if args.outfit == 'suit' else appearance['gown']
     gown_mesh = {key: np.asarray(gown[value]) for key, value in [
         ('POSITION', 'positions'), ('JOINTS_0', 'joints'), ('WEIGHTS_0', 'weights')]}
     gown_triangles = np.asarray(gown['indices']).reshape(-1, 3)
@@ -118,14 +143,16 @@ def main():
         if cloth.shape != (segments*rings, 3):
             raise SystemExit(f'{name}: stale cloth grid {cloth.shape}, expected {(segments*rings, 3)}')
         hits = {}
-        for label, vertices, faces in [('gown', rig.skin(q, h, gown_mesh), gown_triangles),
-                                       ('skirt', cloth, skirt_triangles)]:
+        surfaces = [('suit' if args.outfit == 'suit' else 'gown', rig.skin(q, h, gown_mesh), gown_triangles)]
+        if args.outfit == 'dress':
+            surfaces.append(('skirt', cloth, skirt_triangles))
+        for label, vertices, faces in surfaces:
             collision, contacts = manager.in_collision_single(trimesh.Trimesh(vertices, faces, process=False), return_data=True)
             if collision:
                 counts[label] += 1
                 names = sorted({rig.names[body_labels[c.index('body')]] for c in contacts})
                 hits[label] = {'contacts': len(contacts), 'approximate_body_parts': names}
-                if label == 'gown' and 'face_groups' in gown:
+                if label in ['gown', 'suit'] and 'face_groups' in gown:
                     groups = gown['face_groups']
                     if len(groups) != len(gown_triangles):
                         raise SystemExit('Gown face-group inventory does not match its triangles')
@@ -146,10 +173,11 @@ def main():
                     parts[f'{label}/{bone}'] += 1
         if hits:
             intersections.append({'frame': name, 'hits': hits})
-    summary = {'frames': len(frames), 'appearance_sha256': stamp, 'motion_set_sha256': motion_stamp,
+    labels = ['suit'] if args.outfit == 'suit' else ['gown', 'skirt']
+    summary = {'frames': len(frames), 'outfit': args.outfit, 'appearance_sha256': stamp, 'motion_set_sha256': motion_stamp,
                'model_sha256': trace['model_sha256'], 'runtime_sha256': trace['runtime_sha256'],
                'controller_sha256': trace['controller_sha256'],
-               'intersecting_frames': {label: counts[label] for label in ['gown', 'skirt']},
+               'intersecting_frames': {label: counts[label] for label in labels},
                'frames_by_approximate_body_part': dict(sorted(parts.items())),
                'seconds': round(time.monotonic()-start, 3),
                'limitations': 'Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.'}
