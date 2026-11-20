@@ -56,7 +56,7 @@ class MotionSetTests(unittest.TestCase):
         self.assertEqual(self.data['model_sha256'], hashlib.sha256(MODEL.read_bytes()).hexdigest())
         self.assertEqual(self.data['bones'], self.rig.names)
         self.assertEqual(len(self.rig.names), 21)
-        self.assertEqual(len(self.data['clips']), 18)
+        self.assertEqual(len(self.data['clips']), 39)
         self.assertTrue({'idle_relaxed', 'walk_relaxed', 'run_relaxed'} <= self.data['clips'].keys())
 
     def test_generated_files_are_reproducible(self):
@@ -89,7 +89,7 @@ class MotionSetTests(unittest.TestCase):
 
     def test_actions_return_to_same_guard(self):
         idle = self.globals('guard', 0)
-        for name in ['attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'land', 'hit']:
+        for name in ['attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'land', 'hit', 'attack_body_hook', *[f'hit_{z}_{d}' for z in ['head', 'torso'] for d in ['front', 'back', 'left', 'right']]]:
             end = self.globals(name, self.data['clips'][name]['duration'])
             np.testing.assert_allclose(end, idle, atol=2e-7, err_msg=name)
         for a, b in [('guard', 'jump_start'), ('jump_start', 'jump_up'),
@@ -97,6 +97,45 @@ class MotionSetTests(unittest.TestCase):
             at = 0 if a == 'guard' else self.data['clips'][a]['duration']
             np.testing.assert_allclose(self.globals(a, at), self.globals(b, 0),
                                        atol=2e-7, err_msg=f'{a} -> {b}')
+
+    def test_repair42_preserves_all_non_upper_arm_keys_and_ordinary_clips(self):
+        # Frozen from 1d5d20b / the integrated pre-repair-42 motion set.
+        # Only the guarding humerus plane is edited. Keep EVERY hip key,
+        # timing/meta field, other bone and the entire four ordinary clips.
+        protected = {}
+        legacy = ['guard', 'idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run', 'attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'jump_start', 'jump_up', 'jump_down', 'land', 'hit']
+        self.assertTrue(set(legacy) <= self.data['clips'].keys())
+        for name in legacy:
+            clip = self.data['clips'][name]
+            ordinary = name in ('idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed')
+            keep = [i for i, bone in enumerate(self.data['bones'])
+                    if ordinary or bone not in ('upper_arm.L', 'upper_arm.R')]
+            protected[name] = {key: value for key, value in clip.items() if key != 'rotations'} | {
+                'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
+
+        def canonical_zero(value):
+            if isinstance(value, list):
+                return [canonical_zero(v) for v in value]
+            if isinstance(value, dict):
+                return {k: canonical_zero(v) for k, v in value.items()}
+            # Canonicalise ONLY exact IEEE signed zero, not small deviations.
+            return 0.0 if isinstance(value, float) and value == 0 else value
+
+        stamp = hashlib.sha256(json.dumps(canonical_zero(protected), sort_keys=True,
+                                          separators=(',', ':')).encode()).hexdigest()
+        self.assertEqual(stamp, 'b50941126c60ae8f6212c5cac6608ecc513572d0e3b02f1e02d9420c0e06098a')
+
+    def test_guard_elbows_clear_the_bodice_without_moving_the_fists(self):
+        guard = self.globals('guard', 0)
+        for side, sign, target in [('L', 1, [.145, 1.295, .265]),
+                                   ('R', -1, [-.145, 1.305, .205])]:
+            np.testing.assert_allclose(self.joint(guard, 'hand.'+side), target, atol=1e-7)
+            elbow = self.joint(guard, 'forearm.'+side)
+            self.assertGreater(sign*elbow[0], .27, 'Guard elbow is pinned against the upper bodice')
+            self.assertLess(sign*elbow[0], .30, 'Do not solve contact by flaring arms into a T pose')
+        for name, other in [('attack_right', 'L'), ('attack_left', 'R')]:
+            g = self.globals(name, .19)
+            self.assertGreater((1 if other == 'L' else -1)*self.joint(g, 'forearm.'+other)[0], .27)
 
     def test_punches_extend_forward_and_free_hand_covers(self):
         for name in ['attack_left', 'attack_right']:

@@ -186,11 +186,21 @@ func _unhandled_input(event: InputEvent) -> void:
 		_apply_lighting()
 		_apply_style_to_characters()
 		_refresh_debug_if_open()
+	elif event.is_action_pressed("toggle_outfit"):
+		_toggle_outfit()
 	elif event.is_action_pressed("open_showcase"):
 		get_tree().change_scene_to_file("res://scenes/showcase.tscn")
 	elif event.is_action_pressed("toggle_clone"):
 		if is_instance_valid(clone) and clone.has_method("cycle_mode"):
 			clone.cycle_mode()
+
+
+func _toggle_outfit() -> void:
+	T.OUTFIT = "suit" if T.OUTFIT == "dress" else "dress"
+	for actor in [player, clone]:
+		if is_instance_valid(actor) and actor.character != null and actor.character.appearance != null:
+			actor.character.appearance.set_outfit(T.OUTFIT)
+	_refresh_debug_if_open()
 
 
 func _open_equipment(from_pause: bool) -> void:

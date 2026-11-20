@@ -117,8 +117,57 @@ class AppearanceTests(unittest.TestCase):
         self.assertLess(np.ptp(fabric), .04)
         self.assertGreater(min(self.data['cloth']['binding']), .60, 'No near-black collar/binding')
 
+    def test_facing_contact_groups_are_explicit_and_do_not_enlarge_the_cuff(self):
+        gown = self.data['gown']
+        groups = gown['face_groups']
+        tri = np.asarray(gown['indices']).reshape(-1, 3)
+        self.assertEqual(len(groups), len(tri))
+        self.assertEqual(set(groups), {'outer', 'binding', 'cuff_facing', 'neck_facing', 'waist_adapter', 'badge'})
+        p = np.asarray(gown['positions'])
+        for a, b in gown['cuff_edges']:
+            for i in [a, b]:
+                side = 'L' if p[i, 0] > 0 else 'R'
+                root = self.rig.rest_world[self.rig.index['upper_arm.'+side]]
+                self.assertAlmostEqual(np.dot(p[i]-root[:3, 3], root[:3, 1]), .158, places=6)
+        self.assertGreater(groups.count('cuff_facing'), 100)
+        self.assertGreater(groups.count('outer'), 5000)
+
+    def test_turned_cuff_donors_stay_on_the_arm_instead_of_jumping_to_chest(self):
+        from test_motion_set import sample
+        from build_motion_set import OUTPUT as MOTIONS
+        g, r = self.data['gown'], self.rig
+        tri = np.asarray(g['indices']).reshape(-1, 3)
+        ids = np.unique(tri[np.array(g['face_groups']) == 'cuff_facing'])
+        p, j, w = [np.asarray(g[key]) for key in ['positions', 'joints', 'weights']]
+        for side, sign in [('L', 1), ('R', -1)]:
+            selected = ids[p[ids, 0]*sign > 0]
+            arm = [r.index[n+'.'+side] for n in ['upper_arm', 'forearm', 'hand']]
+            self.assertLess((w[selected]*~np.isin(j[selected], arm)).sum(axis=1).max(), .00001,
+                            'A sewn inner cuff must never inherit nearest CHEST weights across the rest axilla')
+        # A real 14 mm return may deform, but never becomes the historical
+        # visible 20x spear. Use actual poses, not construction names as an
+        # exemption for a visibly stretched facing.
+        faces = tri[np.array(g['face_groups']) == 'cuff_facing']
+        edges = np.unique(np.sort(np.concatenate([faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]]), axis=1), axis=0)
+        rest = np.linalg.norm(p[edges[:, 0]]-p[edges[:, 1]], axis=1)
+        edges, rest = edges[rest > .002], rest[rest > .002]
+        mesh = {'POSITION': p, 'JOINTS_0': j, 'WEIGHTS_0': w}
+        clips = json.loads((MOTIONS/'motion_set.json').read_text())['clips']
+        maximum = 1.
+        for name, c in clips.items():
+            for t in np.linspace(0, c['duration'], 13):
+                v = r.skin(*sample(c, t), mesh)
+                ratio = np.linalg.norm(v[edges[:, 0]]-v[edges[:, 1]], axis=1)/rest
+                maximum = max(maximum, float(ratio.max()))
+                self.assertLess(ratio.max(), 1.55, (name, 'turned cuff edge / rest edge, not fabric stress'))
+        print(f'\\n  Turned cuff local-edge ratio: {maximum:.4f}x (all clips, no chest donors)')
+
     def test_underarm_mask_stops_well_inside_the_tailored_cuff(self):
         coverage = self.data['coverage']
+        # Report 40 forbids hiding the shoulder repair with a larger mask.
+        # Freeze the exact coverage parameters accepted in 2c9de18.
+        self.assertEqual(hashlib.sha256(json.dumps(coverage, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
+                         '38b65962878c656020cedaeeaa125e272f7176ee7a129a553532db610d55d894')
         self.assertTrue(coverage['preserve_limbs'])
         self.assertEqual(coverage['sleeves'], [], 'The broad legacy sleeve cylinders must not be used')
         self.assertEqual(len(coverage['underarm_cores']), 2)
@@ -166,27 +215,44 @@ class AppearanceTests(unittest.TestCase):
                     largest_error = max(largest_error, reduced-actual)
         self.assertLess(largest_error, .0007, 'Runtime 1 mm lift must cover the full sole too')
 
-    def test_cloth_is_bounded_and_samples_surface_contacts(self):
+    def test_cloth_spends_material_length_and_samples_surface_contacts(self):
         cloth = self.data['cloth']
         p = np.asarray(cloth['positions'])
         self.assertEqual(p.shape, (320, 3))
         self.assertEqual(len(p), cloth['rings']*cloth['segments'])
         self.assertEqual(cloth['segments'], 32, 'No old 16-sided umbrella')
         self.assertLessEqual(cloth['max_secondary_offset'], .025)
-        self.assertEqual(cloth['solver'], 'bounded_radial_surface_v2')
+        self.assertEqual(cloth['solver'], 'arc_length_drape_v4')
+        self.assertEqual(cloth['surface_relaxations'], 3)
+        self.assertEqual(cloth['angular_relaxations'], 2)
         self.assertTrue(cloth['surface_samples'], 'Contact at half cells, not just particles')
         self.assertEqual(cloth['iterations'], 0, 'Do not solve then discard edge constraints in a radial shell')
         self.assertEqual(cloth['edges'], [])
+        self.assertLessEqual(cloth['max_secondary_offset'], .012)
+        self.assertGreaterEqual(cloth['min_drape_fraction'], .85)
+        heights = np.asarray(cloth['sample_heights'])
+        self.assertEqual(len(heights), cloth['rings']*2-1)
+        self.assertTrue((np.diff(heights) < 0).all())
+        sample = np.asarray(cloth['sample_positions']).reshape(len(heights), 32, 3)
+        drape = np.asarray(cloth['drape_positions']).reshape(len(heights), 32, 3)
+        np.testing.assert_allclose(sample[:, :, 1], np.broadcast_to(heights[:, None], sample[:, :, 1].shape), atol=1e-7)
+        np.testing.assert_allclose(sample[::2], drape[::2], atol=1e-7)
+        np.testing.assert_allclose(sample[1::2], (drape[1::2]+np.roll(drape[1::2],-1,axis=1))*.5, atol=1e-7)
+        grid = p.reshape(cloth['rings'],32,3)
+        lengths = np.vstack([np.zeros(32),np.cumsum(np.linalg.norm(np.diff(grid,axis=0),axis=2),axis=0)])
+        np.testing.assert_allclose(cloth['meridian_lengths'],lengths,atol=1e-7)
+        np.testing.assert_allclose(cloth['circumferences'],np.linalg.norm(np.roll(grid,-1,axis=1)-grid,axis=2).sum(axis=1),atol=1e-7)
         self.assertGreaterEqual(p[0, 1], 1.0, 'Waist must be above the flexed upper thigh / knee')
         self.assertAlmostEqual(p[-1, 1], .543)
         self.assertLess(np.max(np.linalg.norm(p[:, [0, 2]], axis=1)), .24)
-        self.assertEqual(len(cloth['capsules']), 4)
-        for a, b, radius, start in cloth['capsules']:
+        self.assertEqual(len(cloth['capsules']), 6)
+        for a, b, radius, start, end in cloth['capsules']:
             self.assertIn(a, self.rig.names)
             self.assertIn(b, self.rig.names)
             self.assertGreater(radius, .05)
             self.assertGreaterEqual(start, 0)
-            self.assertLess(start, .3)
+            self.assertLess(start, end)
+            self.assertLessEqual(end, 1)
         self.assertTrue(all(c[3] >= .15 for c in cloth['capsules'][:2]),
                         'No false hip-end sphere expanding the skirt into the idle forearms')
 

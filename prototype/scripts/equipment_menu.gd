@@ -21,6 +21,8 @@ var icon: Control
 var hp: Label
 var stamina: Label
 var entry: Button
+var outfit_label: Label
+var selected_outfit := "dress"
 var layout: MarginContainer
 
 
@@ -104,8 +106,9 @@ func _ready() -> void:
 	right.add_child(stamina)
 	right.add_child(_spacer(16))
 	right.add_child(_section("НА ГЕРОИНЕ"))
-	right.add_child(_label("Лабораторное платье", 16, TEXT))
-	var note := _label("Смена и характеристики одежды пока не реализованы.", 13, MUTED)
+	outfit_label = _label("", 16, TEXT)
+	right.add_child(outfit_label)
+	var note := _label("Смена костюма в игре: O. Характеристики одежды пока не реализованы.", 13, MUTED)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	right.add_child(note)
 	page.add_child(_line())
@@ -218,19 +221,22 @@ func select_category(index: int) -> void:
 		child.queue_free()
 	entry = null
 	for i in 12:
-		if category == 1 and i == 0:
-			entry = _button("ОДЕЖДА", 11)
-			entry.tooltip_text = "Текущее лабораторное платье"
-			entry.custom_minimum_size = Vector2(70, 50)
-			entry.pressed.connect(_select_clothing)
-			grid.add_child(entry)
+		if category == 1 and i < 2:
+			var outfit := "dress" if i == 0 else "suit"
+			var outfit_button := _button("ПЛАТЬЕ" if i == 0 else "ФОРМА", 11)
+			outfit_button.tooltip_text = "Лабораторное платье" if i == 0 else "Лабораторный топ и штаны"
+			outfit_button.custom_minimum_size = Vector2(70, 50)
+			outfit_button.pressed.connect(_select_clothing.bind(outfit))
+			grid.add_child(outfit_button)
+			if i == 0:
+				entry = outfit_button
 		else:
 			var empty := PanelContainer.new()
 			empty.custom_minimum_size = Vector2(70, 50)
 			empty.add_theme_stylebox_override("panel", _panel(Color(.075, .073, .069), Color(.19, .18, .16)))
 			grid.add_child(empty)
 	if category == 1:
-		_select_clothing()
+		_select_clothing(T.OUTFIT)
 	elif category == 0:
 		heading.text = "Оружие отсутствует"
 		description.text = "В прототипе пока нет оружия. Тестовый невидимый клинок — инструмент для манекена, не предмет инвентаря."
@@ -240,9 +246,10 @@ func select_category(index: int) -> void:
 	icon.queue_redraw()
 
 
-func _select_clothing() -> void:
-	heading.text = "Лабораторное платье"
-	description.text = "Текущая одежда героини. Другая экипировка и смена одежды пока не добавлены."
+func _select_clothing(outfit: String) -> void:
+	selected_outfit = outfit
+	heading.text = "Лабораторное платье" if outfit == "dress" else "Лабораторная форма"
+	description.text = ("Надето. " if T.OUTFIT == outfit else "Доступно. ") + "Переключить одежду в игре — O. Характеристики пока не реализованы."
 	icon.queue_redraw()
 
 
@@ -251,7 +258,17 @@ func _draw_icon() -> void:
 	var pale := Color(.78, .78, .71, .9)
 	var faint := Color(.53, .47, .34, .55)
 	icon.draw_arc(center, minf(icon.size.x, icon.size.y) * .38, 0, TAU, 64, faint, 1.0, true)
-	if category == 1:
+	if category == 1 and selected_outfit == "suit":
+		# Условная пиктограмма формы, не отдельный игровой предмет.
+		var top := PackedVector2Array([Vector2(-20,-50),Vector2(-40,-34),Vector2(-47,-14),Vector2(-29,-8),Vector2(-24,-22),Vector2(-23,4),Vector2(23,4),Vector2(24,-22),Vector2(29,-8),Vector2(47,-14),Vector2(40,-34),Vector2(20,-50),Vector2(9,-40),Vector2(-9,-40)])
+		for i in top.size(): top[i] += center
+		icon.draw_colored_polygon(top, Color(.55,.55,.51,.25))
+		icon.draw_polyline(top + PackedVector2Array([top[0]]), pale, 2.0, true)
+		var pants := PackedVector2Array([Vector2(-22,9),Vector2(22,9),Vector2(25,49),Vector2(6,49),Vector2(0,25),Vector2(-6,49),Vector2(-25,49)])
+		for i in pants.size(): pants[i] += center
+		icon.draw_colored_polygon(pants, Color(.55,.55,.51,.25))
+		icon.draw_polyline(pants + PackedVector2Array([pants[0]]), pale, 2.0, true)
+	elif category == 1:
 		# Оригинальная пиктограмма платья, не игровой арт FromSoftware.
 		var p := PackedVector2Array([Vector2(-20,-50),Vector2(-42,-36),Vector2(-49,-15),Vector2(-29,-8),Vector2(-24,-20),Vector2(-23,2),Vector2(-48,47),Vector2(48,47),Vector2(23,2),Vector2(24,-20),Vector2(29,-8),Vector2(49,-15),Vector2(42,-36),Vector2(20,-50),Vector2(10,-40),Vector2(-10,-40)])
 		for i in p.size(): p[i] += center
@@ -264,6 +281,7 @@ func _draw_icon() -> void:
 
 
 func _update_values() -> void:
+	outfit_label.text = "Лабораторное платье" if T.OUTFIT == "dress" else "Лабораторная форма"
 	if is_instance_valid(player):
 		hp.text = "Здоровье    %.0f / %.0f" % [player.health, T.MAX_HEALTH]
 		stamina.text = "Выносливость    %.0f / %.0f" % [player.stamina, T.MAX_STAMINA]

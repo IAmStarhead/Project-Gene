@@ -157,6 +157,19 @@ func _record() -> void:
 	floor_body.add_child(collision)
 	world.add_child(floor_body)
 	var result := {"fps": FPS, "source": "Godot CharacterBody3D + character_anim.gd, actual physics frames",
+		"native_version": Engine.get_version_info()["string"],
+		"model_sha256": FileAccess.get_sha256("res://assets/heroine/female_A_rigged_safe.glb"),
+		"runtime_sha256": FileAccess.get_sha256("res://scripts/character_appearance.gd"),
+		"controller_sha256": FileAccess.get_sha256("res://scripts/character_anim.gd"),
+		"appearance_sha256": FileAccess.get_sha256("res://assets/heroine/appearance/lab_uniform.json"),
+		"motion_set_sha256": FileAccess.get_sha256("res://assets/heroine/animations/motion_set.json"),
+		"gameplay_sha256": {
+			"player": FileAccess.get_sha256("res://scripts/player.gd"),
+			"clone": FileAccess.get_sha256("res://scripts/clone_enemy.gd"),
+			"hit_check": FileAccess.get_sha256("res://scripts/hit_check.gd"),
+			"lock_on": FileAccess.get_sha256("res://scripts/lock_on.gd"),
+			"project": FileAccess.get_sha256("res://project.godot"),
+		},
 		"takes": {"run": await take(true, -1, 180),
 			"jump": await take(false, 18, 108), "run_jump": await take(true, 18, 108),
 			"walk": await take(true, -1, 180, true, "walk"),

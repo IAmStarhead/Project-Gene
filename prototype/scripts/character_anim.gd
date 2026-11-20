@@ -31,6 +31,9 @@ var _phase := 0.0
 var _gait_blend := 0.0
 var _sprint_blend := 0.0
 var _move_weight := 0.0
+var _directional_blend := 0.0
+# +Z forward / +X anatomical left / -X right / -Z back, L1-normalised.
+var _direction_weights := Vector4(1, 0, 0, 0)
 var _combat_mode := true
 var _combat_blend := 1.0
 var _takeoff_pose: Dictionary = {}
@@ -40,6 +43,8 @@ var _air_launched := false
 var _air_launch_speed := 0.0
 var _land_time := 100.0
 var _hit_time := 100.0
+var _hit_zone := "unknown"
+var _hit_direction := Vector3(0, 0, -1) # model-local incoming attacker -> victim
 var _was_grounded := true
 var _state := ""
 var _last_pose: Dictionary = {}
@@ -170,8 +175,12 @@ func seek_clip(clip_name: StringName, time: float, preview_delta: float = 0.0) -
 
 ## Перевод игрового времени в клип: подготовка / активная фаза / возврат.
 ## У клона другая длительность подготовки, но контакт совпадает с уроном.
-func attack_clip_time(time: float, timing: Vector3, side: String = "R") -> float:
-	var clip := MOTIONS.get_animation("attack_right" if side == "R" else "attack_left")
+func attack_clip_name(side: String, kind: String = "straight") -> String:
+	return "attack_body_hook" if kind == "hook" else "attack_right" if side == "R" else "attack_left"
+
+
+func attack_clip_time(time: float, timing: Vector3, side: String = "R", kind: String = "straight") -> float:
+	var clip := MOTIONS.get_animation(attack_clip_name(side, kind))
 	var windup: float = clip.get_meta("windup")
 	var active_end: float = clip.get_meta("active_end")
 	if time <= timing.x:
@@ -211,6 +220,11 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	_was_grounded = grounded
 
 	var planar := Vector2(local_velocity.x, local_velocity.z).length()
+	_directional_blend = move_toward(_directional_blend, 1.0 if context.get("directional", false) else 0.0, delta*6.0)
+	if planar > .03:
+		var desired := Vector4(maxf(local_velocity.z, 0), maxf(local_velocity.x, 0), maxf(-local_velocity.x, 0), maxf(-local_velocity.z, 0))
+		desired /= maxf(absf(local_velocity.x)+absf(local_velocity.z), .000001)
+		_direction_weights = _direction_weights.lerp(desired, 1.0-exp(-delta*12.0))
 	var walk := MOTIONS.get_animation("walk")
 	var run := MOTIONS.get_animation("run")
 	var relaxed_walk := MOTIONS.get_animation("walk_relaxed")
@@ -225,6 +239,12 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	walk_speed = float(context.get("walk_speed", walk_speed))
 	run_speed = float(context.get("jog_speed", run_speed))
 	var sprint_speed: float = context.get("sprint_speed", T.RUN_SPEED)
+	# New directional cycles have metre-calibrated tiers for both actors;
+	# clone speeds remain its own physical 1.65/3.4, not player input modes.
+	walk_speed = lerpf(walk_speed, T.WALK_SPEED, _directional_blend)
+	run_speed = lerpf(run_speed, T.JOG_SPEED, _directional_blend)
+	var directional_max := sprint_speed if context.has("sprint_speed") else lerpf(T.DIRECTIONAL_RUN_SPEED, T.RUN_SPEED, _direction_weights.x)
+	sprint_speed = lerpf(sprint_speed, directional_max, _directional_blend)
 	var want_gait := smoothstep(walk_speed + .20, run_speed, planar)
 	var want_sprint := smoothstep(run_speed + .30, sprint_speed, planar)
 	_gait_blend = move_toward(_gait_blend, want_gait, delta * 4.0)
@@ -234,7 +254,11 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		var distance: float = context.get("distance", planar * delta)
 		var stride := lerpf(lerpf(walk_stride, run_stride, _gait_blend),
 			float(MOTIONS.get_animation("sprint_relaxed").get_meta("stride")), _sprint_blend)
-		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
+		if _directional_blend > 0.0:
+			stride = lerpf(stride, _directional_stride(), _directional_blend)
+		# Backward locomotion has its OWN authored positive-time contact
+		# sequence, not a reversed forward run. No phase reset on lock/R.
+		var direction := -1.0 if local_velocity.z < -0.05 and _directional_blend <= .001 else 1.0
 		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
 	# На земле атака целиком заменяет позу передвижения; сэмплировать
@@ -243,10 +267,11 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	var pose: Dictionary = {} if action == "attack" and grounded else _locomotion_pose()
 	var state := "ground"
 	if action == "attack":
-		state = "attack_" + side
+		var kind: String = context.get("attack_kind", "straight")
+		state = "attack_"+side+("_hook" if kind == "hook" else "")
 		var timing: Vector3 = context.get("attack_timing", Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY))
-		var attack_pose := sample_clip("attack_right" if side == "R" else "attack_left",
-			attack_clip_time(action_time, timing, side))
+		var attack_pose := sample_clip(attack_clip_name(side, kind),
+			attack_clip_time(action_time, timing, side, kind))
 		pose = attack_pose if grounded else _replace_upper(_air_pose(context), attack_pose)
 	elif action == "dodge":
 		state = "dodge"
@@ -303,14 +328,66 @@ func sample_dodge(time: float, direction: Vector3) -> Dictionary:
 
 
 func _locomotion_pose() -> Dictionary:
-	if _combat_blend <= 0.0:
-		return _locomotion_set(false)
-	if _combat_blend >= 1.0:
-		return _locomotion_set(true)
-	# Одна и та же фаза контакта ног. R не перезапускает шаг и не
-	# телепортирует руки; переход занимает треть секунды.
-	return _blend_pose(_locomotion_set(false), _locomotion_set(true),
-		smoothstep(0.0, 1.0, _combat_blend))
+	var ordinary := _locomotion_set(false)
+	var legacy := ordinary
+	if _combat_blend > 0.0:
+		legacy = _blend_pose(ordinary, _locomotion_set(true), smoothstep(0.0, 1.0, _combat_blend))
+	if _directional_blend <= 0.0:
+		return legacy
+	var directional := _directional_pose()
+	# Lock alone doesn't toggle R/T: retain relaxed hands/upper-body when
+	# the player deliberately stays in ordinary stance while targeting.
+	if _combat_blend < 1.0:
+		directional = _blend_pose(_relaxed_target_upper(directional, ordinary), directional, smoothstep(0, 1, _combat_blend))
+	return _blend_pose(legacy, directional, smoothstep(0, 1, _directional_blend))
+
+
+func _relaxed_target_upper(base: Dictionary, ordinary: Dictionary) -> Dictionary:
+	var result := _replace_upper(base, ordinary)
+	# Target-facing steps have a LOWER, wider pelvis than the accepted free
+	# walk. Copying its lowered arms unchanged made the open left hand cut
+	# the dress on the fifth sampled Alt-side-step frame. A quiet 4-degree
+	# abduction is specific to this relaxed target-facing blend: no larger
+	# skirt/sleeve, new mask, raised guard, or edit to the ordinary free clips.
+	for side in ["L", "R"]:
+		var bone := skeleton.find_bone("upper_arm."+side)
+		var parent := skeleton.get_bone_parent(bone)
+		var parent_rotation := Quaternion.IDENTITY
+		while parent >= 0:
+			parent_rotation = result["rotations"][parent]*parent_rotation
+			parent = skeleton.get_bone_parent(parent)
+		var angle := deg_to_rad(4.0)*_move_weight*(1.0 if side == "L" else -1.0)
+		var spread := Quaternion(Vector3.BACK, angle)
+		result["rotations"][bone] = (parent_rotation.inverse()*spread*parent_rotation*result["rotations"][bone]).normalized()
+	return result
+
+
+func _directional_stride() -> float:
+	var total := 0.0
+	var names := ["forward", "left", "right", "back"]
+	for i in 4:
+		var walk := float(MOTIONS.get_animation("combat_"+names[i]+"_walk").get_meta("stride"))
+		var jog := float(MOTIONS.get_animation("combat_"+names[i]+"_jog").get_meta("stride"))
+		var sprint := float(MOTIONS.get_animation("combat_"+names[i]+"_sprint").get_meta("stride"))
+		total += _direction_weights[i]*lerpf(lerpf(walk, jog, _gait_blend), sprint, _sprint_blend)
+	return total
+
+
+func _directional_pose() -> Dictionary:
+	var result: Dictionary = {}
+	var total := 0.0
+	var names := ["forward", "left", "right", "back"]
+	for i in 4:
+		var weight := _direction_weights[i]
+		if weight < .00001:
+			continue
+		var prefix: String = "combat_"+names[i]+"_"
+		var gait := _blend_pose(sample_clip(prefix+"walk", _phase*clip_duration(prefix+"walk")),
+			sample_clip(prefix+"jog", _phase*clip_duration(prefix+"jog")), _gait_blend)
+		gait = _blend_pose(gait, sample_clip(prefix+"sprint", _phase*clip_duration(prefix+"sprint")), _sprint_blend)
+		total += weight
+		result = gait if result.is_empty() else _blend_pose(result, gait, weight/total)
+	return _blend_pose(sample_clip("guard", fposmod(_clock, clip_duration("guard"))), result, _move_weight)
 
 
 func _locomotion_set(combat: bool) -> Dictionary:
@@ -365,11 +442,15 @@ func reset_motion(combat: bool = true) -> void:
 	_gait_blend = 0.0
 	_sprint_blend = 0.0
 	_move_weight = 0.0
+	_directional_blend = 0.0
+	_direction_weights = Vector4(1, 0, 0, 0)
 	_air_time = 0.0
 	_air_launched = false
 	_air_launch_speed = 0.0
 	_land_time = 100.0
 	_hit_time = 100.0
+	_hit_zone = "unknown"
+	_hit_direction = Vector3(0, 0, -1)
 	_was_grounded = true
 	_state = ""
 	_transition_from = {}
@@ -378,19 +459,47 @@ func reset_motion(combat: bool = true) -> void:
 
 
 ## Визуальная реакция без введения нового игрового оглушения.
-func play_hit() -> void:
+## incoming_world is FROM attacker TOWARD victim, in WORLD coordinates.
+## Zone/zero/non-finite direction fallback is safe; no gameplay stun/state.
+func play_hit(zone: String = "unknown", incoming_world: Vector3 = Vector3.ZERO) -> void:
 	_hit_time = 0.0
+	_hit_zone = zone if zone in ["head", "torso", "legs"] else "unknown"
+	_hit_direction = Vector3(0, 0, -1)
+	if incoming_world.is_finite() and incoming_world.length_squared() > .00001:
+		_hit_direction = global_basis.inverse()*incoming_world
+		_hit_direction.y = 0
+		_hit_direction = _hit_direction.normalized() if _hit_direction.length_squared() > .00001 else Vector3(0, 0, -1)
+
+
+func _reaction_pose() -> Dictionary:
+	if _hit_zone not in ["head", "torso"]:
+		return sample_clip("hit", _hit_time) # legs have NO dedicated leg response yet
+	var prefix := "hit_"+_hit_zone+"_"
+	var along := sample_clip(prefix+("front" if _hit_direction.z <= 0 else "back"), _hit_time)
+	var across := sample_clip(prefix+("left" if _hit_direction.x <= 0 else "right"), _hit_time)
+	var amount := absf(_hit_direction.x)/maxf(absf(_hit_direction.x)+absf(_hit_direction.z), .000001)
+	return _blend_pose(along, across, amount)
 
 
 func _add_hit(pose: Dictionary, weight: float) -> Dictionary:
-	var reaction := sample_clip("hit", _hit_time)
+	var reaction := _reaction_pose()
 	var reference := sample_clip("guard", 0.0)
 	var result := _blend_pose(pose, pose, 0.0)
 	for i in _upper_body:
 		var rest: Quaternion = reference["rotations"][i]
 		var value: Quaternion = reaction["rotations"][i]
 		var difference := rest.inverse() * value
-		result["rotations"][i] = (pose["rotations"][i] * Quaternion.IDENTITY.slerp(difference, weight)).normalized()
+		var amount := weight*(.5 if _hit_zone == "legs" else 1.0)
+		var name := _bone_names[i]
+		if name.begins_with("shoulder.") or name.begins_with("upper_arm.") \
+				or name.begins_with("forearm.") or name.begins_with("hand."):
+			# The hit clip is authored relative to GUARD. Applying its arm
+			# delta at full strength to lowered ordinary arms swung a forearm
+			# through the waist during the first four combat-entry ticks.
+			# Keep the torso/head flinch immediate; blend only this guard-
+			# relative arm delta with the stance it actually belongs to.
+			amount *= _combat_blend
+		result["rotations"][i] = (pose["rotations"][i] * Quaternion.IDENTITY.slerp(difference, amount)).normalized()
 	return result
 
 

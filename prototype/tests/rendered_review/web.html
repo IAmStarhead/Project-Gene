@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gen — Godot review</title>
+<style>body{margin:0;background:#203040}canvas{width:100vw;height:100vh;display:block}#status{position:fixed;top:1rem;left:1rem;color:white;font:16px sans-serif}</style>
+</head><body><div id="status">Loading the native Godot WebAssembly engine…</div><canvas id="canvas" tabindex="0"></canvas>
+<script type="module">
+// This bootstrap targets the PINNED custom Emscripten package documented in
+// README.md. It is not Godot's official Web export shell or a Three.js renderer.
+import Godot from './godot.web.template_release.wasm32.nothreads.js';
+const canvas=document.getElementById('canvas'),status=document.getElementById('status');
+window.logs=[];
+const log=(...args)=>{console.log(...args);window.logs.push(args.join(' '));};
+try {
+ const mod=await Godot({canvas,locateFile:p=>new URL(p,location.href).href,print:log,printErr:log,noInitialRun:true});
+ mod.initConfig({canvas,canvasResizePolicy:2});
+ const pack=new URLSearchParams(location.search).get('pack')||'production.pck';
+ if(!/^[\w.-]+\.pck$/.test(pack))throw Error('Pack must be a filename in the public directory');
+ const response=await fetch('./'+pack);
+ if(!response.ok)throw Error('Pack HTTP '+response.status+': '+pack);
+ mod.copyToFS('/game.pck',new Uint8Array(await response.arrayBuffer()));
+ window.mod=mod;
+ const args=['godot','--main-pack','/game.pck','--rendering-method','gl_compatibility'];
+ const ptr=mod._malloc(4*(args.length+1));
+ args.forEach((s,i)=>{const b=new TextEncoder().encode(s+'\0'),p=mod._malloc(b.length);mod.HEAPU8.set(b,p);mod.HEAPU32[(ptr>>2)+i]=p;});
+ mod.HEAPU32[(ptr>>2)+args.length]=0;
+ mod.__Z14godot_web_mainiPPc(args.length,ptr);
+ window.godotReady=true;
+ status.remove();canvas.focus();
+} catch(error) {status.textContent='Godot could not start: '+error.message;console.error(error);}
+</script></body></html>

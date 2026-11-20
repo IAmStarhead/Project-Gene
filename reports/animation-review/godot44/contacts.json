@@ -1,0 +1,368 @@
+{
+  "manifest_sha256": "f4232c0278b175e393305fe3af7caa65fc7b060a183d71f9598dcad6e31ae808",
+  "native_views": 24,
+  "controller_snapshots": 8,
+  "conditions": "Frozen actual-controller snapshots, neutral diagnostic re-render. NOT new controller coverage. Red intersecting garment faces are expanded 0.5 mm, not signed depth; magenta is production visible skin. Both sides/back. Uniform 1000x700 -> 500x350, no crop/retouch.",
+  "sheets": [
+    {
+      "file": "contacts-1.jpg",
+      "sha256": "6748e6f9dbc26c8f733d7b3f31f3769da83acd16a97a264a0353ab3ef7c95ab6",
+      "sources": [
+        {
+          "frame": "contact-01-side.png",
+          "sha256": "c247be62919898354aa146611ba2c2c479b2bacf6e74ceeef3cb73933d922f48",
+          "case": "gaits/suit-gaits-jog/player:4",
+          "view": "side",
+          "garment_contact_triangles": 20,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-01-opposite.png",
+          "sha256": "2f92d1f6bf68709d4078211add2b3701422400b3dbc585688bbdc290081d472e",
+          "case": "gaits/suit-gaits-jog/player:4",
+          "view": "opposite",
+          "garment_contact_triangles": 20,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-01-back.png",
+          "sha256": "e08af47865e23b3f24fdbfeea584413e276ccd4c6d69a53b610409bfe6f79c0d",
+          "case": "gaits/suit-gaits-jog/player:4",
+          "view": "back",
+          "garment_contact_triangles": 20,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-02-side.png",
+          "sha256": "7909ab850502cf1755f22607d046e08cb4327659a4a05214b348e4ab28b77cca",
+          "case": "gaits/suit-gaits-sprint/player:8",
+          "view": "side",
+          "garment_contact_triangles": 24,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-02-opposite.png",
+          "sha256": "3873becf5abe9df880418c77893054eadc33d1348a7b0b32e3bcdbac07d91331",
+          "case": "gaits/suit-gaits-sprint/player:8",
+          "view": "opposite",
+          "garment_contact_triangles": 24,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-02-back.png",
+          "sha256": "6419ecba80d0967e41fcee1fb1be945a7050cc507c473859d127cd76c9b5f731",
+          "case": "gaits/suit-gaits-sprint/player:8",
+          "view": "back",
+          "garment_contact_triangles": 24,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        }
+      ]
+    },
+    {
+      "file": "contacts-2.jpg",
+      "sha256": "971e429b0acc5aa3365a85585abfdbe97398a147be7e2f25434e8813ac5f74ac",
+      "sources": [
+        {
+          "frame": "contact-03-side.png",
+          "sha256": "e7f2225bfbaeb4b4003c96a2af8a0aacbac8123619db07745c91693018fdf336",
+          "case": "wardrobe/suit-dodge-forward/player:1",
+          "view": "side",
+          "garment_contact_triangles": 10,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-03-opposite.png",
+          "sha256": "5cf12a044f67c2db819eef3740e942f6541e5d6945ed14063cd37e3580b6eb29",
+          "case": "wardrobe/suit-dodge-forward/player:1",
+          "view": "opposite",
+          "garment_contact_triangles": 10,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-03-back.png",
+          "sha256": "034f451e2c79e8dff8c5eb3de677bf4a330a0b1bf9626c525d1db5acb8ae9c4e",
+          "case": "wardrobe/suit-dodge-forward/player:1",
+          "view": "back",
+          "garment_contact_triangles": 10,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-04-side.png",
+          "sha256": "887bc8f4f811f5287ce993307e87bd94ec71f0d7876ee3c733c45a062893ab66",
+          "case": "wardrobe/suit-dodge-back/player:1",
+          "view": "side",
+          "garment_contact_triangles": 14,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-04-opposite.png",
+          "sha256": "a626438510619d4ca5a21f801467a7d8050cd647bb5b75fbd38177a36349a689",
+          "case": "wardrobe/suit-dodge-back/player:1",
+          "view": "opposite",
+          "garment_contact_triangles": 14,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-04-back.png",
+          "sha256": "3e494ed2a6a61357561049c34e87ccc46e55686da135dca446373ce6d1fa66d2",
+          "case": "wardrobe/suit-dodge-back/player:1",
+          "view": "back",
+          "garment_contact_triangles": 14,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        }
+      ]
+    },
+    {
+      "file": "contacts-3.jpg",
+      "sha256": "397b59c68d6fc776943713c4dc315bde5f7340fb61994a957cc0353c2c3b3a44",
+      "sources": [
+        {
+          "frame": "contact-05-side.png",
+          "sha256": "aab31f5f10ef5a40921e4ee3097942d72c94d985f794cd42754a1be2d3a94949",
+          "case": "strafe/suit-retreat/player:3",
+          "view": "side",
+          "garment_contact_triangles": 12,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-05-opposite.png",
+          "sha256": "7ec39554ac8a16b941b90c860ec70798d6710101a62b7b0b44ff79e09d820d61",
+          "case": "strafe/suit-retreat/player:3",
+          "view": "opposite",
+          "garment_contact_triangles": 12,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-05-back.png",
+          "sha256": "cc2274de9aac0eeeda4f131384b795e593c8717a0b8bd762735993efe02b1189",
+          "case": "strafe/suit-retreat/player:3",
+          "view": "back",
+          "garment_contact_triangles": 12,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-06-side.png",
+          "sha256": "0f23017315013a956c6e83a22c3c9a0eace3bbb79d437bbbb38f653162edc132",
+          "case": "strafe/wall-stop/player:2",
+          "view": "side",
+          "garment_contact_triangles": 12,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-06-opposite.png",
+          "sha256": "cdb2c01ea2e0a47e27ea4ecd110bf1fc504179aee1ecfddd2d9777961e08a043",
+          "case": "strafe/wall-stop/player:2",
+          "view": "opposite",
+          "garment_contact_triangles": 12,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-06-back.png",
+          "sha256": "0bed3753dcf4eb8c9ea74979213c92ea26153a804c67a0819bdefbb1b5fdb28c",
+          "case": "strafe/wall-stop/player:2",
+          "view": "back",
+          "garment_contact_triangles": 12,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        }
+      ]
+    },
+    {
+      "file": "contacts-4.jpg",
+      "sha256": "79f01f37c66200ca1f2f53176136e1c0f693e5c9ce5452d58a9501422845a2d0",
+      "sources": [
+        {
+          "frame": "contact-07-side.png",
+          "sha256": "f6fe3b001b26cba7df6e4b7e40d921883bbc2047065c635bf85d5a533cfa8513",
+          "case": "gaits/dress-gaits-jog/player:9",
+          "view": "side",
+          "garment_contact_triangles": 8,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-07-opposite.png",
+          "sha256": "b5a92a0e63cb77396602504773dc57d8f872ef429e864ee1e533c29b42ac986d",
+          "case": "gaits/dress-gaits-jog/player:9",
+          "view": "opposite",
+          "garment_contact_triangles": 8,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-07-back.png",
+          "sha256": "7c58e3956a1f3ee01799d55b553e5a3a12e9f947f5a7812080709ce36daeb7d4",
+          "case": "gaits/dress-gaits-jog/player:9",
+          "view": "back",
+          "garment_contact_triangles": 8,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-08-side.png",
+          "sha256": "edee163c28194e5a15311f95d5123ca1025c1bc032c716d58e64c9b7980e4092",
+          "case": "combat/dress-Q/clone:2",
+          "view": "side",
+          "garment_contact_triangles": 30,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-08-opposite.png",
+          "sha256": "9ec55fb181326d4127f37838f15423219576b87ec4e781c17b70b332e99d9cf7",
+          "case": "combat/dress-Q/clone:2",
+          "view": "opposite",
+          "garment_contact_triangles": 30,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        },
+        {
+          "frame": "contact-08-back.png",
+          "sha256": "0a6aa71a86bf14fd9353c6cec71ab217232e7a0393a371cd8458a46947ded124",
+          "case": "combat/dress-Q/clone:2",
+          "view": "back",
+          "garment_contact_triangles": 30,
+          "source_hashes": {
+            "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+            "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+            "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+            "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+            "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885"
+          }
+        }
+      ]
+    }
+  ]
+}

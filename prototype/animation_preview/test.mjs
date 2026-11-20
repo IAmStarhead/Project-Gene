@@ -30,9 +30,9 @@ try {
   const data = await (await fetch(base + '/assets/heroine/animations/motion_set.json')).json();
   const model = await (await fetch(base + '/assets/heroine/female_A_rigged_safe.glb')).arrayBuffer();
   assert.equal(createHash('sha256').update(Buffer.from(model)).digest('hex'), data.model_sha256);
-  assert.equal(await page.locator('.clip-button').count(), 18);
+  assert.equal(await page.locator('.clip-button').count(), 39);
   assert.equal(await page.evaluate(() => window.motionLab.state.selected), 'idle_relaxed');
-  assert.match(await page.locator('#clip-count').textContent(), /18/);
+  assert.match(await page.locator('#clip-count').textContent(), /39/);
   const settle = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
   for (const [name, clip] of Object.entries(data.clips)) {
     await page.locator(`[data-clip="${name}"]`).click();
@@ -70,12 +70,31 @@ try {
       assert(appearance.cloth.every((p) => p.every(Number.isFinite)), 'Finite cloth positions');
       frames++;
     }
-    if (name.startsWith('attack')) {
+    if (['attack_left', 'attack_right'].includes(name)) {
       await page.evaluate((t) => window.motionLab.seek(t), clip.impact);
       const hand = (await page.evaluate(() => window.motionLab.joints)).find((joint) => joint.name === `hand.${clip.side}`);
       assert(Math.abs(hand.position[0]) < .06 && hand.position[2] > .61, `Forward contact in ${name}`);
     }
   }
+  await page.evaluate(() => { window.motionLab.select('attack_body_hook'); window.motionLab.seek(.22); });
+  const hookHand = (await page.evaluate(() => window.motionLab.joints)).find((j) => j.name === 'hand.L').position;
+  assert(hookHand[1] > 1.08 && hookHand[1] < 1.15 && hookHand[2] < .53, 'short body-level hook, not a third straight punch');
+  await page.locator('#outfit').selectOption('suit');
+  assert.equal((await page.evaluate(() => window.motionLab.appearance)).outfit, 'suit');
+  for (const [name, clip] of Object.entries(data.clips)) {
+    await page.evaluate((name) => window.motionLab.select(name), name);
+    for (const fraction of [0, .43, .87]) {
+      await page.evaluate((t) => window.motionLab.seek(t), clip.duration*fraction);
+      const a = await page.evaluate(() => window.motionLab.appearance);
+      assert.equal(a.outfit, 'suit');
+      assert(a.suitVertices > 6000 && a.suitVertices < 14000, 'real rigged top + trousers');
+      assert.equal(a.handOpen, name.endsWith('_relaxed') ? 1 : 0, 'same hand morph in the suit');
+      assert(a.bodyIndices > 1000, 'outfit masking cannot remove the entire body');
+      frames++;
+    }
+  }
+  await page.locator('#outfit').selectOption('dress');
+  assert.equal((await page.evaluate(() => window.motionLab.appearance)).outfit, 'dress');
   // Cloth is part of the selected pose: pause must freeze its history, and
   // explicit scrubbing must reset to a deterministic body-safe result.
   await page.evaluate(() => { window.motionLab.select('run_relaxed'); window.motionLab.seek(.2); });
@@ -144,7 +163,7 @@ try {
   }
   assert.equal((await fetch(base, { headers: { Host: '5173-session.e2b.app' } })).status, 200);
   assert.deepEqual(errors, []);
-  console.log(`GEN browser suite: 18 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
+  console.log(`GEN browser suite: 39 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
 } finally {
   await browser.close();
 }

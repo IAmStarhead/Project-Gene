@@ -57,6 +57,8 @@ void light() {
 static var _cached_floor_tex: ImageTexture = null
 static var _cached_wall_tex: ImageTexture = null
 static var _cached_toon_shader: Shader = null
+static var _cached_skin_materials: Dictionary = {}
+static var _cached_toon_materials: Dictionary = {}
 
 var _world_env: WorldEnvironment
 var _env: Environment
@@ -698,6 +700,8 @@ func _original_surface_material(mi: MeshInstance3D, surface: int) -> BaseMateria
 
 
 func _make_skin_pbr(base: BaseMaterial3D) -> StandardMaterial3D:
+	if _cached_skin_materials.has(base):
+		return _cached_skin_materials[base]
 	var mat := StandardMaterial3D.new()
 	mat.resource_name = "heroine_skin_pbr"
 	# Сохраняем полную текстуру лица (брови, губы, румянец), защищаем красный канал от пересвета
@@ -711,10 +715,13 @@ func _make_skin_pbr(base: BaseMaterial3D) -> StandardMaterial3D:
 	mat.backlight_enabled = true
 	mat.backlight = Color(0.032, 0.013, 0.010)
 	mat.cull_mode = BaseMaterial3D.CULL_BACK
+	_cached_skin_materials[base] = mat
 	return mat
 
 
 func _make_toon_material(base: BaseMaterial3D) -> ShaderMaterial:
+	if _cached_toon_materials.has(base):
+		return _cached_toon_materials[base]
 	if _cached_toon_shader == null:
 		_cached_toon_shader = Shader.new()
 		_cached_toon_shader.code = TOON_SHADER
@@ -727,6 +734,7 @@ func _make_toon_material(base: BaseMaterial3D) -> ShaderMaterial:
 	else:
 		mat.set_shader_parameter("use_texture", false)
 		mat.set_shader_parameter("base_color", base.albedo_color)
+	_cached_toon_materials[base] = mat
 	return mat
 
 

@@ -66,9 +66,10 @@ static func overlaps(
 	forward: Vector3,
 	reach: float,
 	side: String = "R",
-	use_live_bone: bool = false
+	use_live_bone: bool = false,
+	attack_kind: String = "straight"
 ) -> bool:
-	return not _test_pair(attacker, victim, _flat_forward(forward), reach, side, use_live_bone).is_empty()
+	return not _test_pair(attacker, victim, _flat_forward(forward), reach, side, use_live_bone, attack_kind).is_empty()
 
 
 ## Подробный поиск ближайшего попадания: {} при промахе, либо {"target", "zone", "distance"}.
@@ -79,7 +80,8 @@ static func find_hit(
 	reach: float,
 	half_angle_deg: float,
 	side: String = "L",
-	use_live_bone: bool = false
+	use_live_bone: bool = false,
+	attack_kind: String = "straight"
 ) -> Dictionary:
 	if not is_instance_valid(attacker):
 		return {}
@@ -100,7 +102,7 @@ static func find_hit(
 			continue
 		if rad_to_deg(f.angle_to(to / dist)) > half_angle_deg:
 			continue
-		var hit := _test_pair(attacker, victim, f, reach, side, use_live_bone)
+		var hit := _test_pair(attacker, victim, f, reach, side, use_live_bone, attack_kind)
 		if hit.is_empty():
 			continue
 		if dist < best_dist:
@@ -118,9 +120,10 @@ static func nearest_hit(
 	reach: float,
 	half_angle_deg: float,
 	side: String = "L",
-	use_live_bone: bool = false
+	use_live_bone: bool = false,
+	attack_kind: String = "straight"
 ) -> Node3D:
-	var hit := find_hit(attacker, candidates, forward, reach, half_angle_deg, side, use_live_bone)
+	var hit := find_hit(attacker, candidates, forward, reach, half_angle_deg, side, use_live_bone, attack_kind)
 	return hit.get("target", null) as Node3D
 
 
@@ -144,14 +147,18 @@ static func _test_pair(
 	f: Vector3,
 	reach: float,
 	side: String,
-	use_live_bone: bool
+	use_live_bone: bool,
+	attack_kind: String = "straight"
 ) -> Dictionary:
 	if not is_instance_valid(attacker) or not is_instance_valid(victim):
 		return {}
 
 	var origin := attacker.global_position
-	var seg_a := Vector3(origin.x, origin.y + CHEST_HEIGHT, origin.z) + f * 0.10
-	var seg_b := Vector3(origin.x, origin.y + CHEST_HEIGHT, origin.z) + f * reach
+	var hook := attack_kind == "hook"
+	var strike_height := 1.10 if hook else CHEST_HEIGHT
+	var seg_a := Vector3(origin.x, origin.y + strike_height, origin.z) + f * 0.10
+	var seg_b := Vector3(origin.x, origin.y + strike_height, origin.z) + f * reach
+	var source := "reach_fallback"
 
 	if use_live_bone:
 		var hand := _live_hand_pos(attacker, side)
@@ -159,9 +166,16 @@ static func _test_pair(
 			var rel := hand - origin
 			var fwd_proj := rel.x * f.x + rel.z * f.z
 			# Используем живую кость кисти, когда рука реально выброшена вперёд в активном кадре.
-			if fwd_proj >= 0.44 and fwd_proj <= reach + 0.14:
+			if fwd_proj >= (0.25 if hook else 0.44) and fwd_proj <= reach + (0.0 if hook else 0.14):
 				seg_b = hand + f * KNUCKLE_EXTEND
 				seg_b.y = clampf(seg_b.y, origin.y + 0.65, origin.y + 1.68)
+				source = "live_hand"
+				if hook:
+					# New short hook may curve sideways but may never inherit
+					# the straight punch's +.14 m permissive reach tolerance.
+					var flat := Vector3(seg_b.x-origin.x, 0, seg_b.z-origin.z).limit_length(reach)
+					seg_b.x = origin.x+flat.x
+					seg_b.z = origin.z+flat.z
 
 	var target_pos := victim.global_position
 	var size := body_size(victim)
@@ -190,7 +204,29 @@ static func _test_pair(
 		"target": victim,
 		"zone": zone,
 		"distance": horiz,
+		# Approximate point on the existing arm segment, NOT an anatomical
+		# surface contact or measured normal. Incoming direction is explicitly
+		# WORLD, from attacker toward victim (horizontal, unit length).
+		"point_world": closest,
+		"direction_world": _flat_forward(target_pos-origin),
+		"approximate": true, "source": source, "attack_kind": attack_kind,
 	}
+
+
+## Compatible confirmed-contact adapter. Existing dummies/probes retain their
+## two-argument contract; the humanoids opt into zone + WORLD direction.
+## Return acceptance separately from geometric contact (e.g. dodge i-frames).
+static func deliver_hit(victim: Node3D, amount: float, hit: Dictionary) -> bool:
+	if not is_instance_valid(victim):
+		return false
+	if victim.has_method("receive_hit"):
+		var accepted: Variant = victim.call("receive_hit", amount, hit)
+		return bool(accepted) if accepted is bool else true
+	if victim.has_method("take_damage"):
+		var direction: Vector3 = hit.get("direction_world", Vector3.ZERO)
+		victim.call("take_damage", amount, direction)
+		return true
+	return false
 
 
 static func _live_hand_pos(attacker: Node3D, side: String) -> Vector3:

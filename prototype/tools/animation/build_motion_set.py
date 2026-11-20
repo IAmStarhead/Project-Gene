@@ -23,6 +23,7 @@ import numpy as np
 
 from rig_math import Rig, unit
 import locomotion
+import combat_locomotion
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / 'prototype/assets/heroine/female_A_rigged_safe.glb'
@@ -55,12 +56,28 @@ def body(rig, hip=(0, .835, .02), yaw=(-6, -4, -7), lean=(3, 2), roll=0, breath=
     p.bend('chest', x=lean[1] + breath, y=yaw[2], z=-roll * .35)
     p.bend('neck', x=-2)
     p.bend('head', x=-sum(lean) * .65 - breath * .5, y=-sum(yaw) * .85)
+    # The same quiet clavicular support in guard AND action endpoints.
+    # Relaxed locomotion has its own authored shoulder rhythm, unchanged.
+    for side, sign in [('L', 1), ('R', -1)]:
+        p.bend('shoulder.'+side, x=2, z=sign)
     return p
 
 
+# Guard elbow plane: authored wrist targets, times, lower-body keys and
+# gameplay hit-volume parameters stay fixed. The old 0.30 m pole pinned the
+# upper arm into the bodice; 0.38 moves the elbow ~35–40 mm out. Wrist origins
+# agree AT KEYS; interpolated wrist paths and world fist orientation can
+# change slightly (measured separately in report 43), not collision-driven IK.
+GUARD_ELBOW_SPREAD = .38
+
+
+def guard_pole(side):
+    return [GUARD_ELBOW_SPREAD*(1 if side == 'L' else -1), .99, .12]
+
+
 def guard_hands(p, y_offset=0, sway=0):
-    p.arm('L', [.145, 1.295 + y_offset, .265 + sway], roll=8)
-    p.arm('R', [-.145, 1.305 + y_offset, .205 - sway], roll=-8)
+    p.arm('L', [.145, 1.295 + y_offset, .265 + sway], pole=guard_pole('L'), roll=8)
+    p.arm('R', [-.145, 1.305 + y_offset, .205 - sway], pole=guard_pole('R'), roll=-8)
 
 
 def guard_feet(p):
@@ -248,18 +265,31 @@ def attack(rig, t, side):
            -7 + (24 if right else -6) * twist)
     p = body(rig, hip=(.018 * twist, .835 - .016 * twist, .02 + (.040 if right else .022) * twist),
              yaw=yaw, lean=(3 + 2 * twist, 2 + 2 * twist))
-    # The clavicle protracts slightly, instead of dragging the whole chest mesh.
-    p.bend('shoulder.' + side, x=5 * twist)
+    # Share forward reach with the clavicle instead of hinging the whole
+    # sleeve on the humerus. Lower body and action timing stay intact;
+    # the small, explicitly compensated visible reach change is below.
+    for which, sign in [('L', 1), ('R', -1)]:
+        active = which == side
+        p.bend('shoulder.'+which, x=2+(16 if active else 12)*twist,
+               z=sign*(1+(5 if active else 2)*twist))
     start = [.145, 1.295, .265] if side == 'L' else [-.145, 1.305, .205]
-    end = [.045, 1.305, .638] if side == 'L' else [-.035, 1.305, .677]
+    end = np.array([.045, 1.305, .655] if side == 'L' else [-.035, 1.305, .700])
+    # Keep a small anatomical elbow bend AFTER clavicular protraction.
+    # Otherwise sharing the shoulder reach shortened the jab by bending its
+    # elbow ~30 degrees at impact. This changes only the visible arm target,
+    # not attack range, active windows or the gameplay hit volume.
+    root = p.world('upper_arm.'+side)[:3, 3]
+    length = sum(np.linalg.norm(rig.positions[rig.index[name+'.'+side]])
+                 for name in ['forearm', 'hand'])-.0025
+    end[2] = root[2]+np.sqrt(max(0, length*length-np.sum((end[:2]-root[:2])**2)))
     wrist = mix(start, end, reach)
-    pole = mix([.30 if side == 'L' else -.30, .99, .12],
+    pole = mix(guard_pole(side),
                [.23 if side == 'L' else -.23, 1.15, .38], twist)
     p.arm(side, wrist, pole=pole, roll=(8 + 30 * twist) * (1 if side == 'L' else -1))
     other = 'L' if right else 'R'
     covered = [.145, 1.295, .265] if other == 'L' else [-.145, 1.305, .205]
     p.arm(other, np.asarray(covered) + [0, .008 * twist, .012 * twist],
-          roll=8 if other == 'L' else -8)
+          pole=guard_pole(other), roll=8 if other == 'L' else -8)
     p.foot('L', [.125, .08, .155], yaw=6 + (-6 if not right else 3) * twist)
     p.foot('R', [-.135, .08, -.135], pitch=(24 if right else 8) * twist,
            yaw=-10 + (16 if right else 2) * twist)
@@ -318,7 +348,7 @@ def dodge(rig, t, direction=(0, 1)):
         wrist = reference @ np.array([.145, 1.295, .265, 1] if side == 'L' else [-.145, 1.305, .205, 1])
         wrist[:3] += load*np.array([dx*.035 if lateral else sign*.018,
                                     -.025 if first else .010, .095 if first else .030])
-        pole = reference @ np.array([sign*.30, .99, .12, 1])
+        pole = reference @ np.r_[guard_pole(side), 1]
         pole[:3] += load*np.array([dx*.025, -.015, .025])
         p.arm(side, (chest @ wrist)[:3], pole=(chest @ pole)[:3], roll=8*sign)
     return p
@@ -340,7 +370,7 @@ def jump_start(rig, t):
                               ('R', -1, [-.145, 1.305, .205])]:
         wrist, elbow = swing_targets(p, side, 38, 72, .16)
         p.arm(side, mix(start, wrist, u),
-              pole=mix([sign*.30, .99, .12], elbow, u),
+              pole=mix(guard_pole(side), elbow, u),
               roll=(8 - 3*u) * sign)
     p.foot('L', [.125 - .005*u, .08 + .01*u, .155 - .035*u], pitch=28*u, yaw=6 - 3*u)
     p.foot('R', [-.135 + .005*u, .08 + .01*u, -.135 + .035*u], pitch=26*u, yaw=-10 + 5*u)
@@ -384,7 +414,7 @@ def land(rig, t):
                             ('R', -1, [-.145, 1.305, .205])]:
         wrist, elbow = swing_targets(p, side, 18 + 6*compress, 65 + 10*compress, .20)
         p.arm(side, mix(wrist, end, recover),
-              pole=mix(elbow, [sign*.30, .99, .12], recover),
+              pole=mix(elbow, guard_pole(side), recover),
               roll=(5 + 3*recover) * sign)
     guard_feet(p)
     return p
@@ -399,6 +429,54 @@ def hit(rig, t):
     guard_feet(p)
     return p
 
+
+
+def body_hook(rig, t):
+    """Approved Q: .22 preparation / .10 active / .30 recovery, left only.
+
+    Compact lateral arc at body height, flexed elbow and planted staggered
+    support. Knuckles stay inside the .60 m reach envelope. No root travel.
+    """
+    load = curve(t, [(0, 0), (.13, 1), (.22, 0), (.62, 0)])
+    strike = curve(t, [(0, 0), (.14, 0), (.22, 1), (.28, 1), (.32, .85), (.48, .12), (.62, 0)])
+    p = body(rig, hip=(.012*load-.018*strike, .835-.022*load-.012*strike, .02+.012*strike),
+             yaw=(-6+6*load-12*strike, -4+4*load-10*strike, -7+8*load-16*strike),
+             lean=(3+4*strike, 2+3*strike), roll=-2*strike)
+    p.bend('shoulder.L', x=2+9*strike, z=1+3*strike)
+    guard_hands(p)
+    wrist = np.array([trajectory(t, [(0, .145), (.13, .255), (.18, .245), (.22, .135),
+                                     (.27, .020), (.32, -.055), (.44, .08), (.62, .145)]),
+                      trajectory(t, [(0, 1.295), (.13, 1.12), (.22, 1.105), (.32, 1.11), (.48, 1.235), (.62, 1.295)]),
+                      trajectory(t, [(0, .265), (.13, .235), (.18, .385), (.22, .49), (.27, .51),
+                                     (.32, .49), (.44, .335), (.62, .265)])])
+    p.arm('L', wrist, pole=mix(guard_pole('L'), [.41, 1.11, .28], strike), roll=8+15*strike)
+    # The right hand continues to cover the face throughout the body hook.
+    p.arm('R', [-.145, 1.305, .205], pole=guard_pole('R'), roll=-8)
+    guard_feet(p)
+    return p
+
+
+HIT_DIRECTIONS = {'front': (0, 0, -1), 'back': (0, 0, 1),
+                  'left': (-1, 0, 0), 'right': (1, 0, 0)}
+
+
+def zone_hit(rig, t, zone, direction):
+    # Direction is world-independent MODEL incoming impulse: from attacker
+    # toward victim. A strike FROM anatomical left travels toward -X.
+    x, _, z = HIT_DIRECTIONS[direction]
+    f = curve(t, [(0, 0), (.055, 1), (.11, .8), (.32, 0)])
+    head = zone == 'head'
+    p = body(rig)
+    p.bend('spine', x=3+(z*2 if head else -z*6)*f,
+           y=-4+x*(2 if head else 6)*f, z=-x*(2 if head else 5)*f)
+    p.bend('chest', x=2+(z*3 if head else -z*9)*f,
+           y=-7+x*(-3 if head else 6)*f, z=-x*(2 if head else 8)*f)
+    p.bend('neck', x=-2+z*(8 if head else 2)*f)
+    p.bend('head', x=-3.25+z*(17 if head else 2)*f,
+           y=14.45-x*(15 if head else 2)*f, z=-x*(12 if head else 1)*f)
+    guard_hands(p, (.008 if head else -.012)*f, -.012*f)
+    guard_feet(p)
+    return p
 
 def definitions():
     return [
@@ -428,6 +506,18 @@ def definitions():
         ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
         ('land', LAND, False, land, {}),
         ('hit', .32, False, hit, {}),
+        ('attack_body_hook', .62, False, body_hook,
+         {'windup': .22, 'active_end': .32, 'impact': .22, 'side': 'L', 'reach': .60, 'kind': 'hook'}),
+        *[(f'hit_{zone}_{direction}', .32, False,
+           lambda r, t, z=zone, d=direction: zone_hit(r, t, z, d),
+           {'zone': zone, 'incoming_direction': direction})
+          for zone in ['head', 'torso'] for direction in HIT_DIRECTIONS],
+        *[(f'combat_{direction}_{tier}', combat_locomotion.parameters(direction, tier)['duration'], True,
+           lambda r, t, d=direction, g=tier: combat_locomotion.pose(r, t, d, g, body, guard_hands),
+           {**{k: v for k, v in combat_locomotion.parameters(direction, tier).items()
+                if k in ('speed', 'stride', 'duty')}, 'sample_fps': 120,
+            'direction': direction, 'tier': tier, 'lead': 'R' if direction in ('right', 'back') else 'L'})
+          for direction in combat_locomotion.DIRECTIONS for tier in combat_locomotion.TIERS],
     ]
 
 
@@ -481,7 +571,7 @@ def tres(data):
         lines += [f'[sub_resource type="Animation" id="Animation_{name}"]',
                   f'resource_name = "{name}"', f'length = {clip["duration"]}',
                   f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / clip.get("sample_fps", FPS):.10f}']
-        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps'):
+        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps', 'tier', 'reach', 'kind', 'zone', 'incoming_direction'):
             if key in clip:
                 lines.append(f'metadata/{key} = {json.dumps(clip[key])}')
         q = np.asarray(clip['rotations'])

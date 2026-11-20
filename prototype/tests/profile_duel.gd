@@ -10,6 +10,10 @@ func _initialize() -> void:
 
 func _run() -> void:
 	T.FOLEY_ENABLED = OS.get_environment("DUEL_SOUND") != "0"
+	var outfit := OS.get_environment("DUEL_OUTFIT")
+	if outfit in ["dress", "suit"]:
+		T.OUTFIT = outfit
+	print("DUEL outfit: ", T.OUTFIT)
 	print("DUEL sound enabled: ", T.FOLEY_ENABLED, " (headless dummy audio)")
 	var scene = load("res://scenes/main.tscn").instantiate()
 	root.add_child(scene)

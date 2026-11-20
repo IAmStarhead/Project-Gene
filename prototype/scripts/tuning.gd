@@ -9,6 +9,7 @@ class_name Tuning
 const WALK_SPEED := 1.15          ## Left Alt: спокойный шаг
 const JOG_SPEED := 2.9            ## без модификаторов: лёгкий бег
 const RUN_SPEED := 5.6            ## Shift: быстрый динамичный бег (приоритет над Alt)
+const DIRECTIONAL_RUN_SPEED := 3.4 ## clone directional gait calibration; not a player speed cap
 const COMBAT_WALK_SPEED := 1.65   ## калибровка боевых клипов/клона, не модификатор игрока
 const COMBAT_RUN_SPEED := 4.6
 const ACCELERATION := 16.0        ## как быстро набирается скорость
@@ -53,6 +54,14 @@ const ATTACK_DAMAGE := 24.0
 const ATTACK_STAMINA := 18.0
 const ATTACK_CANCEL_WINDOW := 0.22 ## сек до конца восстановления, когда можно отменить уворотом
 
+# Approved extra action, Q: LEFT body hook, old LMB/RMB numbers unchanged.
+const HOOK_WINDUP := .22
+const HOOK_ACTIVE := .10
+const HOOK_RECOVERY := .30
+const HOOK_REACH := .60
+const HOOK_DAMAGE := 18.0
+const HOOK_STAMINA := 18.0
+
 # ─────────────────────────────────────────────── ВВОД
 const INPUT_BUFFER := 0.16        ## сек, сколько помнится нажатие до конца текущего действия
 
@@ -96,10 +105,14 @@ const BRIGHTNESS_NAMES := ["приглушённо", "штатно", "ярко"]
 
 ## Пресет качества графики (клавиша F4 или Esc → Качество графики):
 ##   0 — низкое: 85% 3D-разрешения, без сглаживания/SSAO/отражений (макс. FPS, даже на iGPU)
-##   1 — среднее (940MX): 1280x720, без AA, мягкие тени 1 каскад, статичные отражения зала
+##   1 — среднее (940MX): 1280x720, лёгкий FXAA, мягкие тени 1 каскад, статичные отражения зала
 ##   2 — высокое: 1280x720, 2x MSAA, мягкий SSAO в углах, тени и отражения зала
 static var QUALITY := 1
 const QUALITY_NAMES := ["низкое", "среднее (940MX)", "высокое"]
+
+# Гардероб [O] общий для игры/клона/витрины; сессия начинается с платья.
+static var OUTFIT := "dress"
+const OUTFIT_NAMES := {"dress": "платье", "suit": "топ + штаны"}
 
 # ─────────────────────────────────────────────── ОКРУЖЕНИЕ
 const ROOM_WIDTH := 18.0

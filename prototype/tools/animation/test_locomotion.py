@@ -77,21 +77,20 @@ class WholeBodyTests(unittest.TestCase):
             payload['rotations'] = [[frame[i] for i in lower] for frame in c['rotations']]
             self.assertEqual(digest(payload), sha, name)
         # Garment repair: preserve ALL ordinary keys from 357ec4d, including
-        # the accepted reciprocal arm/head work, and all 10 non-dodge clips.
+        # the accepted reciprocal arm/head work.
         ordinary = {name: self.data['clips'][name] for name in expected}
         self.assertEqual(digest(ordinary), '6f4f046f014bdff54e43f33cc7457767259e712514d53a2b0289abc8c1a6d3b8')
-        unaffected = {name: c for name, c in self.data['clips'].items()
-                      if name not in expected and not name.startswith('dodge')}
-        self.assertEqual(digest(unaffected), 'f646e6b101a6554464db4c0a320813a9fe1b25980352f6f2bbad9a5aba5f9e9c')
-        # Only the six arm joints of evasion may change. Keep its head,
-        # thorax, pelvis, feet, metadata, contacts and times EXACTLY intact.
+        # Report 40 explicitly requests shoulder/arm repair in guard and
+        # actions. Preserve every OTHER bone, pelvis, time and gameplay
+        # marker from 2c9de18 across ALL 18 clips, not a looser pose tolerance.
         keep = [i for i, name in enumerate(self.rig.names)
-                if not name.startswith(('upper_arm.', 'forearm.', 'hand.'))]
-        dodges = {}
-        for name, clip in self.data['clips'].items():
-            if name.startswith('dodge'):
-                dodges[name] = clip | {'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
-        self.assertEqual(digest(dodges), 'a12c173f99b7a8dff1a6b131a29c11800e67b3f901e90b50e1d3611d1cc924c3')
+                if not name.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
+        protected = {name: clip | {'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
+                     for name, clip in self.data['clips'].items() if name in ['guard', 'idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run', 'attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'jump_start', 'jump_up', 'jump_down', 'land', 'hit']}
+        self.assertEqual(len(protected), 18, 'Retain ALL original clips in the exact frozen hash')
+        self.assertEqual(digest(protected), '1e5e906559a064e972a70dd7a2b6945d4768407f88d82065c935cde9229c3ef5')
+        dodges = {name: clip for name, clip in protected.items() if name.startswith('dodge')}
+        self.assertEqual(digest(dodges), '71103f883c1757d5d51ef2d381c7fb651ae6acdc613d065746e207da4c99571e')
 
     def test_dodge_hands_follow_the_chest_without_folding_into_the_shoulder(self):
         r = self.rig

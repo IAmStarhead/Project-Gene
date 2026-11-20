@@ -52,6 +52,8 @@ const BUF_NEVER := 999.0
 var _buf_dodge: float = BUF_NEVER
 var _buf_attack: float = BUF_NEVER
 var _buf_secondary: float = BUF_NEVER
+var _buf_hook: float = BUF_NEVER
+var _attack_kind := "straight"
 var _attack_side: String = "L"
 var _buf_dir: Vector3 = Vector3.ZERO
 
@@ -65,6 +67,7 @@ var _jump_started := false
 var _targets: Array = []
 var lock := LockOn.new()
 var _last_hit: String = ""
+var _last_received_hit := ""
 var show_details := false
 
 # Переиспользуемые структуры для автоподъёма по ступенькам (0 аллокаций в кадре).
@@ -193,6 +196,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_buf_attack = 0.0
 	elif event.is_action_pressed("attack_secondary"):
 		_buf_secondary = 0.0
+	elif event.is_action_pressed("attack_hook"):
+		_buf_hook = 0.0
 	elif event.is_action_pressed("dodge"):
 		_buf_dodge = 0.0
 		_buf_dir = _input_direction()
@@ -398,11 +403,13 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			"jump_started": _jump_started,
 			"floor_distance": floor_distance,
 			"combat": combat_mode,
+			"directional": lock != null and lock.active(),
 			"dodge_direction": _dodge_local_dir,
 			"walk_speed": T.WALK_SPEED,
 			"jog_speed": T.JOG_SPEED,
 			"sprint_speed": T.RUN_SPEED,
-			"attack_timing": Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY),
+			"attack_timing": _attack_timing(),
+			"attack_kind": _attack_kind,
 		})
 
 
@@ -410,6 +417,7 @@ func _update_buffers(delta: float) -> void:
 	_buf_dodge += delta
 	_buf_attack += delta
 	_buf_secondary += delta
+	_buf_hook += delta
 	_jump_buffer += delta
 	if is_on_floor():
 		_coyote = T.COYOTE_TIME
@@ -494,6 +502,9 @@ func _try_start_actions() -> void:
 		_attack_side = "R"
 		_start_attack()
 		_buf_secondary = BUF_NEVER
+	elif _buf_hook <= T.INPUT_BUFFER and _spend_stamina(T.HOOK_STAMINA):
+		_start_attack("hook")
+		_buf_hook = BUF_NEVER
 
 
 func _start_dodge() -> void:
@@ -538,9 +549,19 @@ func _process_dodge(delta: float) -> void:
 			_attack_side = "R"
 			_start_attack()
 			_buf_secondary = BUF_NEVER
+		elif _buf_hook <= T.INPUT_BUFFER and _spend_stamina(T.HOOK_STAMINA):
+			_start_attack("hook")
+			_buf_hook = BUF_NEVER
 
 
-func _start_attack() -> void:
+func _attack_timing() -> Vector3:
+	return Vector3(T.HOOK_WINDUP, T.HOOK_ACTIVE, T.HOOK_RECOVERY) if _attack_kind == "hook" else Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY)
+
+
+func _start_attack(kind: String = "straight") -> void:
+	_attack_kind = "hook" if kind == "hook" else "straight"
+	if _attack_kind == "hook":
+		_attack_side = "L"
 	combat_mode = true
 	_action = "attack"
 	_action_time = 0.0
@@ -560,9 +581,10 @@ func _start_attack() -> void:
 
 
 func _attack_phase() -> String:
-	if _action_time < T.ATTACK_WINDUP:
+	var timing := _attack_timing()
+	if _action_time < timing.x:
 		return "замах"
-	if _action_time < T.ATTACK_WINDUP + T.ATTACK_ACTIVE:
+	if _action_time < timing.x+timing.y:
 		return "удар"
 	return "возврат"
 
@@ -570,18 +592,19 @@ func _attack_phase() -> String:
 func _process_attack(delta: float) -> void:
 	var previous_time := _action_time
 	_action_time += delta
-	if previous_time < T.ATTACK_WINDUP and _action_time >= T.ATTACK_WINDUP and foley != null:
-		foley.swing()
 	velocity.x = move_toward(velocity.x, 0.0, T.DECELERATION * delta)
 	velocity.z = move_toward(velocity.z, 0.0, T.DECELERATION * delta)
 
-	var active_end := T.ATTACK_WINDUP + T.ATTACK_ACTIVE
-	var total := active_end + T.ATTACK_RECOVERY
+	var timing := _attack_timing()
+	if previous_time < timing.x and _action_time >= timing.x and foley != null:
+		foley.swing()
+	var active_end := timing.x+timing.y
+	var total := active_end+timing.z
 
 	# Проверяем попадание на всём активном участке (а также если длинный кадр перескочил окно),
 	# но наносим урон строго один раз за удар.
-	var in_window := _action_time >= T.ATTACK_WINDUP and _action_time <= active_end
-	var crossed_window := previous_time < active_end and _action_time >= T.ATTACK_WINDUP
+	var in_window := _action_time >= timing.x and _action_time <= active_end
+	var crossed_window := previous_time < active_end and _action_time >= timing.x
 	if not _hit_done and (in_window or crossed_window):
 		if _do_hit(in_window):
 			_hit_done = true
@@ -613,23 +636,27 @@ func _do_hit(use_live_bone: bool) -> bool:
 		self,
 		_targets,
 		forward,
-		T.ATTACK_REACH,
+		T.HOOK_REACH if _attack_kind == "hook" else T.ATTACK_REACH,
 		T.ATTACK_ANGLE,
 		_attack_side,
-		use_live_bone
+		use_live_bone,
+		_attack_kind
 	)
 	if hit.is_empty():
 		return false
-	if foley != null:
-		foley.impact()
 	var victim := hit["target"] as Node3D
 	var zone_name := HitCheck.zone_label(String(hit.get("zone", "torso")))
+	var damage := T.HOOK_DAMAGE if _attack_kind == "hook" else T.ATTACK_DAMAGE
 	if victim.has_method("is_passive") and bool(victim.call("is_passive")):
 		_last_hit = "%s (%s — бой ВЫКЛ, нажмите T)" % [victim.name, zone_name]
 	else:
-		_last_hit = "%s (%s, -%.0f)" % [victim.name, zone_name, T.ATTACK_DAMAGE]
-	if victim.has_method("take_damage"):
-		victim.take_damage(T.ATTACK_DAMAGE, forward)
+		_last_hit = "%s (%s, -%.0f)" % [victim.name, zone_name, damage]
+	var accepted := HitCheck.deliver_hit(victim, damage, hit)
+	if foley != null and accepted:
+		foley.impact()
+	_last_hit += " ~"+String(hit.get("source", "reach_fallback"))
+	if not accepted:
+		_last_hit += " (отклонён/i-frames)"
 	if is_instance_valid(rig) and rig.has_method("add_kick"):
 		rig.call("add_kick", -0.8)
 	return true
@@ -705,19 +732,24 @@ func _refresh_targets() -> void:
 
 
 func _update_health_regen(delta: float) -> void:
-	# Учитываем часть тика после истечения задержки; во время паузы физика не идёт.
 	var healing_time := maxf(0.0, delta - _health_cooldown)
 	_health_cooldown = maxf(0.0, _health_cooldown - delta)
 	if health > 0.0:
 		health = minf(T.MAX_HEALTH, health + T.HEALTH_REGEN * healing_time)
 
 
-func take_damage(amount: float, _from_dir: Vector3) -> void:
+func take_damage(amount: float, from_dir: Vector3) -> void:
+	receive_hit(amount, {"zone": "unknown", "direction_world": from_dir, "source": "legacy"})
+
+
+## Confirmed-zone API; point_world is approximate, direction_world is
+## attacker -> victim in WORLD axes. Legacy callers keep their two args.
+func receive_hit(amount: float, hit: Dictionary) -> bool:
 	if amount <= 0.0:
-		return
+		return false
 	if _invulnerable:
 		_last_hit = "уворот (неуязвимость)"
-		return
+		return false
 	combat_mode = true
 	if foley != null:
 		foley.hurt()
@@ -726,7 +758,8 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 	if is_instance_valid(rig) and rig.has_method("add_kick"):
 		rig.call("add_kick", 1.3)
 	if character != null and character.has_method("play_hit"):
-		character.play_hit()
+		character.play_hit(String(hit.get("zone", "unknown")), hit.get("direction_world", Vector3.ZERO))
+	_last_received_hit = "%s ~%s" % [HitCheck.zone_label(String(hit.get("zone", "unknown"))), hit.get("source", "legacy")]
 	if health <= 0.0:
 		health = T.MAX_HEALTH
 		_health_cooldown = 0.0
@@ -735,6 +768,14 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		rotation = Vector3.ZERO
 		yaw = 0.0
 		_action = ""
+		_action_time = 0.0
+		_attack_kind = "straight"
+		_hit_done = false
+		_buf_attack = BUF_NEVER
+		_buf_secondary = BUF_NEVER
+		_buf_hook = BUF_NEVER
+		_buf_dodge = BUF_NEVER
+		_jump_buffer = BUF_NEVER
 		_invulnerable = false
 		velocity = Vector3.ZERO
 		combat_mode = false
@@ -745,6 +786,7 @@ func take_damage(amount: float, _from_dir: Vector3) -> void:
 		if is_instance_valid(rig) and rig.has_method("snap_now"):
 			rig.call("snap_now")
 		_last_hit = "поражение → возрождение"
+	return true
 
 
 func _write_debug_label() -> void:
@@ -752,7 +794,7 @@ func _write_debug_label() -> void:
 		return
 	var state_text := "движение"
 	if _action == "attack":
-		state_text = "удар (%s): %s" % ["правая" if _attack_side == "R" else "левая", _attack_phase()]
+		state_text = "%s: %s" % [("Q хук в корпус" if _attack_kind == "hook" else "правая" if _attack_side == "R" else "левая"), _attack_phase()]
 	elif _action == "dodge":
 		state_text = "уворот" + (" [i-frames]" if _invulnerable else "")
 
@@ -778,8 +820,12 @@ func _write_debug_label() -> void:
 	lines.append("Отрисовка: %d вызовов  ·  %d примитивов" % [draws, prims])
 	lines.append("Графика [F4]: %s  ·  свет [B]: %s  ·  стиль [G]: %s" % [q_name, b_name, style_name])
 	lines.append("Режим [R]: %s  ·  %s  ·  захват: %s" % [stance_name(), state_text, lock_name])
+	lines.append("Костюм [O]: %s" % T.OUTFIT_NAMES[T.OUTFIT])
 	lines.append("Здоровье: %.0f/%.0f  ·  стамина: %.0f/%.0f" % [health, T.MAX_HEALTH, stamina, T.MAX_STAMINA])
 	lines.append("Последний контакт: %s" % (_last_hit if not _last_hit.is_empty() else "—"))
+	lines.append("Получено: %s" % (_last_received_hit if not _last_received_hit.is_empty() else "—"))
+	if character != null:
+		lines.append("Реакция: %s · входящее local %s" % [character._hit_zone, character._hit_direction])
 	if training_blade:
 		var limb_names := ["левая рука", "правая рука", "левая нога", "правая нога"]
 		lines.append("Манекен: %s · %s" % [limb_names[clampi(training_limb, 0, 3)], "рост заблокирован" if training_special else "рост включён"])

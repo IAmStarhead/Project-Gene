@@ -21,6 +21,11 @@ for (const [key, path] of [['appearance_sha256', '/assets/heroine/appearance/lab
   assert.equal(trace[key], createHash('sha256').update(body).digest('hex'),
     'Stale/missing native trace stamp: rerun record_garment.gd after regenerating the assets');
 }
+for (const [key, file] of [['model_sha256', '../assets/heroine/female_A_rigged_safe.glb'],
+  ['runtime_sha256', '../scripts/character_appearance.gd'], ['controller_sha256', '../scripts/character_anim.gd']]) {
+  assert.equal(trace[key], createHash('sha256').update(await readFile(new URL(file, import.meta.url))).digest('hex'),
+    'Stale native trace '+key+': rerecord after runtime/body edits');
+}
 const browser = await chromium.launch({ executablePath, headless: true, args: process.env.SOFTWARE_GL === '1'
   ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-zygote'] : [] });
 const html = `<!doctype html><meta charset="UTF-8">
