@@ -49,11 +49,56 @@ func _run() -> void:
 					{"grounded": true, "distance": 0.0, "directional": i < 25, "combat": not combat})
 			check(absf(character._phase-phase) < .00001 and character._move_weight == 0,
 				"wall/lock/stance transition freezes phase at zero real speed")
+	_relaxed_target_arm_scope(character)
 	character.free()
 	await _actual_controllers()
 	world.free()
 	print("GEN directional suite: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
+
+func _relaxed_target_arm_scope(character: Node3D) -> void:
+	# Regression for rendered-review frame dress-locked-walk/player:4:
+	# a lower directional pelvis + copied ordinary upper body let the OPEN
+	# left hand cut the skirt. The fix is local to relaxed target-facing arms,
+	# not a re-authoring of the accepted ordinary gait or a garment mask.
+	var base: Dictionary = character.sample_clip("combat_left_walk", .38)
+	var ordinary: Dictionary = character.sample_clip("walk_relaxed", .38)
+	var reference: Dictionary = character._replace_upper(base, ordinary)
+	character._move_weight = 1
+	var result: Dictionary = character._relaxed_target_upper(base, ordinary)
+	var other_bones_same := true
+	var input_unchanged := true
+	for i in character.skeleton.get_bone_count():
+		var name: String = character.skeleton.get_bone_name(i)
+		var before: Quaternion = reference["rotations"][i]
+		var after: Quaternion = result["rotations"][i]
+		if name.begins_with("upper_arm."):
+			check(absf(rad_to_deg(before.angle_to(after))-4) < .001,
+				"target-relaxed arm clearance is a bounded four-degree abduction: "+name)
+		else:
+			other_bones_same = other_bones_same and before.is_equal_approx(after)
+		var fresh: Dictionary = character.sample_clip("walk_relaxed", .38)
+		input_unchanged = input_unchanged and ordinary["rotations"][i].is_equal_approx(fresh["rotations"][i])
+	check(other_bones_same and result["hips"] == base["hips"],
+		"clearance leaves pelvis, accepted lower body, torso, wrists and elbow LOCAL rotations intact")
+	check(input_unchanged, "clearance does not mutate the sampled ordinary source pose")
+	character._move_weight = 0
+	var resting: Dictionary = character._relaxed_target_upper(base, ordinary)
+	var same := true
+	for i in character.skeleton.get_bone_count():
+		same = same and reference["rotations"][i].is_equal_approx(resting["rotations"][i])
+	check(same, "stationary target lock does not spread the relaxed arms")
+	character.reset_motion(false)
+	character._phase = .38
+	character._move_weight = 1
+	var free_pose: Dictionary = character._locomotion_pose()
+	var old_free: Dictionary = character._locomotion_set(false)
+	same = true
+	for i in character.skeleton.get_bone_count():
+		same = same and free_pose["rotations"][i].is_equal_approx(old_free["rotations"][i])
+	check(same and free_pose["hips"] == old_free["hips"],
+		"without lock the accepted ordinary gait remains exactly the legacy pose")
+
 
 func release_input() -> void:
 	for action in ["move_left", "move_right", "move_forward", "move_back", "run", "walk_slow"]:

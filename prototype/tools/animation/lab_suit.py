@@ -115,7 +115,10 @@ def build_suit(rig):
                 u = np.clip((y-ankle[1])/(hip[1]-ankle[1]), 0, 1)
                 center = ankle*(1-u)+hip*u
                 radial = vertices[i, [0, 2]]-center[[0, 2]]
-                desired = np.interp(y, [.125, .25, .47, .60, .76], [.058, .064, .073, .085, .100])
+                # Straight work-trouser opening, not a tight ankle tube.
+                # The old 58 mm throat was pierced by the heel/arch at
+                # sprint toe-off. Keep the original skin/cut and free foot.
+                desired = np.interp(y, [.125, .25, .47, .60, .76], [.078, .074, .073, .085, .100])
                 radius = np.linalg.norm(radial)
                 if radius > 1e-8:
                     vertices[i, [0, 2]] = center[[0, 2]]+radial*max(1., desired/radius)
@@ -147,7 +150,15 @@ def build_suit(rig):
         # Preserve source-surface clearance at shoulders, sleeve, crotch and
         # inner thigh. Torso panels may bridge anatomy, never mask more dress.
         gap = np.sum((vertices-rest)*normals, axis=1)
-        vertices += np.maximum(0, .007-gap)[:, None]*normals
+        minimum = np.full(len(rest), .007)
+        if kind == 'top':
+            # The top overlaps trousers, not bare skin: their 12 mm ease
+            # used to protrude through the 7 mm top as a jagged waist line.
+            # A local 20 mm shell at the actual waist (fading by 1.10 m),
+            # not a larger sleeve or additional body coverage.
+            u = np.clip((1.10-rest[:, 1])/.075, 0, 1)
+            minimum = .007+.013*u*u*(3-2*u)*(1-np.clip(arms, 0, 1))
+        vertices += np.maximum(0, minimum-gap)[:, None]*normals
         colors = np.tile(WHITE if kind == 'top' else TROUSERS, (len(vertices), 1))
         # Subtle technological panel seams, not armour plates.
         if kind == 'top':
@@ -156,15 +167,17 @@ def build_suit(rig):
         else:
             outer = (abs(rest[:, 0]) > .13) & (abs(rest[:, 2]-.02) < .003) & (rest[:, 1] < .74)
             colors[outer] = [.65, .70, .74]
-        # A sewn hem/waist is one continuous material ring, not the
-        # slightly wavy source-body cut driven by several torso weights.
+        # Sew a level REST hem/waist. The top's lower ring must retain its
+        # source hips/thigh blend: pinning it to hips alone let a raised
+        # trouser leg pass ~50 mm through that ring during a lateral dodge.
         for loop in loops:
             if arms[loop].mean() < .2 and rest[loop, 1].mean() < 1.10:
                 y = c['hem'] if kind == 'top' else c['waist']
                 if kind == 'top' or rest[loop, 1].mean() > .9:
                     vertices[loop, 1] = y
-                    weights[loop] = 0
-                    weights[loop, rig.index['hips']] = 1
+                    if kind == 'trousers':
+                        weights[loop] = 0
+                        weights[loop, rig.index['hips']] = 1
         vertices, weights, colors = vertices.tolist(), weights.tolist(), colors.tolist()
         groups = [kind]*len(tri)
         # Turned 2 mm edges. Facings stay a short distance inside the actual

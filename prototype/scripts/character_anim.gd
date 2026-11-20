@@ -335,8 +335,28 @@ func _locomotion_pose() -> Dictionary:
 	# Lock alone doesn't toggle R/T: retain relaxed hands/upper-body when
 	# the player deliberately stays in ordinary stance while targeting.
 	if _combat_blend < 1.0:
-		directional = _blend_pose(_replace_upper(directional, ordinary), directional, smoothstep(0, 1, _combat_blend))
+		directional = _blend_pose(_relaxed_target_upper(directional, ordinary), directional, smoothstep(0, 1, _combat_blend))
 	return _blend_pose(legacy, directional, smoothstep(0, 1, _directional_blend))
+
+
+func _relaxed_target_upper(base: Dictionary, ordinary: Dictionary) -> Dictionary:
+	var result := _replace_upper(base, ordinary)
+	# Target-facing steps have a LOWER, wider pelvis than the accepted free
+	# walk. Copying its lowered arms unchanged made the open left hand cut
+	# the dress on the fifth sampled Alt-side-step frame. A quiet 4-degree
+	# abduction is specific to this relaxed target-facing blend: no larger
+	# skirt/sleeve, new mask, raised guard, or edit to the ordinary free clips.
+	for side in ["L", "R"]:
+		var bone := skeleton.find_bone("upper_arm."+side)
+		var parent := skeleton.get_bone_parent(bone)
+		var parent_rotation := Quaternion.IDENTITY
+		while parent >= 0:
+			parent_rotation = result["rotations"][parent]*parent_rotation
+			parent = skeleton.get_bone_parent(parent)
+		var angle := deg_to_rad(4.0)*_move_weight*(1.0 if side == "L" else -1.0)
+		var spread := Quaternion(Vector3.BACK, angle)
+		result["rotations"][bone] = (parent_rotation.inverse()*spread*parent_rotation*result["rotations"][bone]).normalized()
+	return result
 
 
 func _directional_stride() -> float:

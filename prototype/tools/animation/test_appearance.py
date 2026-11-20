@@ -132,6 +132,36 @@ class AppearanceTests(unittest.TestCase):
         self.assertGreater(groups.count('cuff_facing'), 100)
         self.assertGreater(groups.count('outer'), 5000)
 
+    def test_turned_cuff_donors_stay_on_the_arm_instead_of_jumping_to_chest(self):
+        from test_motion_set import sample
+        from build_motion_set import OUTPUT as MOTIONS
+        g, r = self.data['gown'], self.rig
+        tri = np.asarray(g['indices']).reshape(-1, 3)
+        ids = np.unique(tri[np.array(g['face_groups']) == 'cuff_facing'])
+        p, j, w = [np.asarray(g[key]) for key in ['positions', 'joints', 'weights']]
+        for side, sign in [('L', 1), ('R', -1)]:
+            selected = ids[p[ids, 0]*sign > 0]
+            arm = [r.index[n+'.'+side] for n in ['upper_arm', 'forearm', 'hand']]
+            self.assertLess((w[selected]*~np.isin(j[selected], arm)).sum(axis=1).max(), .00001,
+                            'A sewn inner cuff must never inherit nearest CHEST weights across the rest axilla')
+        # A real 14 mm return may deform, but never becomes the historical
+        # visible 20x spear. Use actual poses, not construction names as an
+        # exemption for a visibly stretched facing.
+        faces = tri[np.array(g['face_groups']) == 'cuff_facing']
+        edges = np.unique(np.sort(np.concatenate([faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]]), axis=1), axis=0)
+        rest = np.linalg.norm(p[edges[:, 0]]-p[edges[:, 1]], axis=1)
+        edges, rest = edges[rest > .002], rest[rest > .002]
+        mesh = {'POSITION': p, 'JOINTS_0': j, 'WEIGHTS_0': w}
+        clips = json.loads((MOTIONS/'motion_set.json').read_text())['clips']
+        maximum = 1.
+        for name, c in clips.items():
+            for t in np.linspace(0, c['duration'], 13):
+                v = r.skin(*sample(c, t), mesh)
+                ratio = np.linalg.norm(v[edges[:, 0]]-v[edges[:, 1]], axis=1)/rest
+                maximum = max(maximum, float(ratio.max()))
+                self.assertLess(ratio.max(), 1.55, (name, 'turned cuff edge / rest edge, not fabric stress'))
+        print(f'\\n  Turned cuff local-edge ratio: {maximum:.4f}x (all clips, no chest donors)')
+
     def test_underarm_mask_stops_well_inside_the_tailored_cuff(self):
         coverage = self.data['coverage']
         # Report 40 forbids hiding the shoulder repair with a larger mask.

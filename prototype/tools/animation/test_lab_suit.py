@@ -57,6 +57,55 @@ class LabSuitTests(unittest.TestCase):
             self.assertLess(cuff['end'], .23)
             self.assertGreater(cuff['end'], .20)
 
+    def test_waist_layers_and_cuff_openings_do_not_reintroduce_known_seams(self):
+        s, r = self.suit, self.rig
+        p, j, w = [np.asarray(s[k]) for k in ['positions', 'joints', 'weights']]
+        hem = next(b['vertices'] for b in s['boundaries'] if abs(b['center'][1]-s['coverage']['hem']) < .005)
+        np.testing.assert_allclose(p[hem, 1], s['coverage']['hem'], atol=1e-7)
+        thighs = (w[hem]*np.isin(j[hem], [r.index['thigh.L'], r.index['thigh.R']])).sum(axis=1)
+        self.assertGreater(thighs.max(), .25,
+                           'A hips-only top hem was pierced by the raised trouser leg during dodge')
+        for boundary in s['boundaries']:
+            if abs(boundary['center'][1]-s['coverage']['ankle']) > .005:
+                continue
+            ids = boundary['vertices']
+            side = 'L' if np.mean(p[ids, 0]) > 0 else 'R'
+            hip, ankle = [r.rest_world[r.index[n+'.'+side], :3, 3] for n in ['thigh', 'foot']]
+            u = (s['coverage']['ankle']-ankle[1])/(hip[1]-ankle[1])
+            center = ankle*(1-u)+hip*u
+            radius = np.linalg.norm(p[ids][:, [0, 2]]-center[[0, 2]], axis=1)
+            self.assertGreater(radius.min(), .075, 'not the old tight 58 mm ankle tube pierced at sprint toe-off')
+            self.assertLess(radius.max(), .085, 'straight workwear opening, not a baggy oversized calf')
+        # At a common waist section the top must actually be OUTSIDE the
+        # trousers, not just called an overlapping sewn panel. 32 rays.
+        faces = np.asarray(s['indices']).reshape(-1, 3)
+        groups = np.asarray(s['face_groups'])
+        arm_ids = [i for i,n in enumerate(r.names) if n.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
+        arms = (w*np.isin(j,arm_ids)).sum(axis=1)
+        waist_faces = faces[(groups == 'top') & (arms[faces].mean(axis=1) < .15)]
+        def radius_at(tri, direction):
+            a, b, c = tri[:, 0], tri[:, 1], tri[:, 2]
+            ab, ac = b-a, c-a
+            cross = np.cross(np.broadcast_to(direction, ac.shape), ac)
+            det = np.einsum('ij,ij->i', ab, cross)
+            good = abs(det) > 1e-10
+            inv = np.divide(1, det, out=np.zeros(len(det)), where=good)
+            rel = np.array([0, .942, .02])-a
+            u = np.einsum('ij,ij->i', rel, cross)*inv
+            q = np.cross(rel, ab)
+            v = q@direction*inv
+            length = np.einsum('ij,ij->i', ac, q)*inv
+            good &= (u >= 0) & (v >= 0) & (u+v <= 1) & (length >= 0)
+            self.assertTrue(good.any(), 'closed panel at the actual waist section')
+            # First exit from the torso shell. A lowered sleeve can lie
+            # farther along the SAME ray; it is not extra waist inflation.
+            return length[good].min()
+        for angle in np.linspace(0, 2*np.pi, 32, endpoint=False):
+            direction = np.array([np.sin(angle), 0, np.cos(angle)])
+            gap = radius_at(p[waist_faces], direction)-radius_at(p[faces[groups == 'trousers']], direction)
+            self.assertGreater(gap, .004, 'previous suit had negative waist gap / visible jagged trouser burnthrough')
+            self.assertLess(gap, .025, 'local layered ease, not global inflation')
+
     def test_every_motion_keeps_the_suit_finite_and_attached(self):
         s, r = self.suit, self.rig
         mesh = {key: np.asarray(s[value]) for key, value in [

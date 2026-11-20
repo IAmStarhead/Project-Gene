@@ -34,6 +34,15 @@ def bodice(rig, waist, next_row):
     body_tree = cKDTree(body_positions)
     triangles = inverse[source['indices']]
     roots = {side: rig.rest_world[rig.index['upper_arm.'+side]] for side in ['L', 'R']}
+    # A turned sleeve must refit to its OWN arm surface. Euclidean nearest
+    # alone jumped across the narrow rest axilla to the chest and assigned
+    # chest weights to an inner cuff: a 14 mm facing became a visible spear
+    # after flexion. Use the same connectivity-separated arm lobe as skin.
+    arm_donors = {}
+    for side in ['L', 'R']:
+        chain = [rig.index[name+'.'+side] for name in ['upper_arm', 'forearm', 'hand']]
+        ids = np.flatnonzero(body_weights[:, chain].sum(axis=1) > .80)
+        arm_donors[side] = (ids, cKDTree(body_positions[ids]))
 
     def fields(point, weights):
         values = [point[1]-1.045, 1.433-point[1]]
@@ -237,7 +246,12 @@ def bodice(rig, waist, next_row):
                 # return cut the thicker proximal arm after flexion. Refit
                 # only that internal seam to the existing source surface;
                 # leave the visible cuff and the body mask unchanged.
-                _, nearest = body_tree.query(point)
+                if center[1] > 1.40:
+                    _, nearest = body_tree.query(point)
+                else:
+                    donors, tree = arm_donors[side]
+                    _, at = tree.query(point)
+                    nearest = donors[at]
                 n = body_normals[nearest]
                 n = n/max(np.linalg.norm(n), 1e-10)
                 gap = np.dot(point-body_positions[nearest], n)
