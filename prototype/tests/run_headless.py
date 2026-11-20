@@ -55,6 +55,8 @@ def main():
         expect_suite='GEN directional suite')
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_outfits.gd'],
         expect_suite='GEN wardrobe suite')
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_combat_zones.gd'],
+        expect_suite='GEN combat-zone suite')
 
 
 if __name__ == '__main__':

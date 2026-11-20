@@ -430,6 +430,54 @@ def hit(rig, t):
     return p
 
 
+
+def body_hook(rig, t):
+    """Approved Q: .22 preparation / .10 active / .30 recovery, left only.
+
+    Compact lateral arc at body height, flexed elbow and planted staggered
+    support. Knuckles stay inside the .60 m reach envelope. No root travel.
+    """
+    load = curve(t, [(0, 0), (.13, 1), (.22, 0), (.62, 0)])
+    strike = curve(t, [(0, 0), (.14, 0), (.22, 1), (.28, 1), (.32, .85), (.48, .12), (.62, 0)])
+    p = body(rig, hip=(.012*load-.018*strike, .835-.022*load-.012*strike, .02+.012*strike),
+             yaw=(-6+6*load-12*strike, -4+4*load-10*strike, -7+8*load-16*strike),
+             lean=(3+4*strike, 2+3*strike), roll=-2*strike)
+    p.bend('shoulder.L', x=2+9*strike, z=1+3*strike)
+    guard_hands(p)
+    wrist = np.array([trajectory(t, [(0, .145), (.13, .255), (.18, .245), (.22, .135),
+                                     (.27, .020), (.32, -.055), (.44, .08), (.62, .145)]),
+                      trajectory(t, [(0, 1.295), (.13, 1.12), (.22, 1.105), (.32, 1.11), (.48, 1.235), (.62, 1.295)]),
+                      trajectory(t, [(0, .265), (.13, .235), (.18, .385), (.22, .49), (.27, .51),
+                                     (.32, .49), (.44, .335), (.62, .265)])])
+    p.arm('L', wrist, pole=mix(guard_pole('L'), [.41, 1.11, .28], strike), roll=8+15*strike)
+    # The right hand continues to cover the face throughout the body hook.
+    p.arm('R', [-.145, 1.305, .205], pole=guard_pole('R'), roll=-8)
+    guard_feet(p)
+    return p
+
+
+HIT_DIRECTIONS = {'front': (0, 0, -1), 'back': (0, 0, 1),
+                  'left': (-1, 0, 0), 'right': (1, 0, 0)}
+
+
+def zone_hit(rig, t, zone, direction):
+    # Direction is world-independent MODEL incoming impulse: from attacker
+    # toward victim. A strike FROM anatomical left travels toward -X.
+    x, _, z = HIT_DIRECTIONS[direction]
+    f = curve(t, [(0, 0), (.055, 1), (.11, .8), (.32, 0)])
+    head = zone == 'head'
+    p = body(rig)
+    p.bend('spine', x=3+(z*2 if head else -z*6)*f,
+           y=-4+x*(2 if head else 6)*f, z=-x*(2 if head else 5)*f)
+    p.bend('chest', x=2+(z*3 if head else -z*9)*f,
+           y=-7+x*(-3 if head else 6)*f, z=-x*(2 if head else 8)*f)
+    p.bend('neck', x=-2+z*(8 if head else 2)*f)
+    p.bend('head', x=-3.25+z*(17 if head else 2)*f,
+           y=14.45-x*(15 if head else 2)*f, z=-x*(12 if head else 1)*f)
+    guard_hands(p, (.008 if head else -.012)*f, -.012*f)
+    guard_feet(p)
+    return p
+
 def definitions():
     return [
         ('guard', 2.8, True, idle, {}),
@@ -458,6 +506,12 @@ def definitions():
         ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
         ('land', LAND, False, land, {}),
         ('hit', .32, False, hit, {}),
+        ('attack_body_hook', .62, False, body_hook,
+         {'windup': .22, 'active_end': .32, 'impact': .22, 'side': 'L', 'reach': .60, 'kind': 'hook'}),
+        *[(f'hit_{zone}_{direction}', .32, False,
+           lambda r, t, z=zone, d=direction: zone_hit(r, t, z, d),
+           {'zone': zone, 'incoming_direction': direction})
+          for zone in ['head', 'torso'] for direction in HIT_DIRECTIONS],
         *[(f'combat_{direction}_{tier}', combat_locomotion.parameters(direction, tier)['duration'], True,
            lambda r, t, d=direction, g=tier: combat_locomotion.pose(r, t, d, g, body, guard_hands),
            {**{k: v for k, v in combat_locomotion.parameters(direction, tier).items()
@@ -517,7 +571,7 @@ def tres(data):
         lines += [f'[sub_resource type="Animation" id="Animation_{name}"]',
                   f'resource_name = "{name}"', f'length = {clip["duration"]}',
                   f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / clip.get("sample_fps", FPS):.10f}']
-        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps', 'tier'):
+        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps', 'tier', 'reach', 'kind', 'zone', 'incoming_direction'):
             if key in clip:
                 lines.append(f'metadata/{key} = {json.dumps(clip[key])}')
         q = np.asarray(clip['rotations'])

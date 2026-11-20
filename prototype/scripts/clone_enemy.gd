@@ -33,6 +33,7 @@ var _label: Label3D
 var _last_label_text := ""
 var _last_label_active := false
 var _last_deal: float = 0.0
+var _last_received_hit := ""
 var _idle_awake: float = 0.8
 
 var _step_params := PhysicsTestMotionParameters3D.new()
@@ -286,12 +287,15 @@ func _deal_damage(_dist: float) -> bool:
 	if rad_to_deg(forward.angle_to(dir)) > T.ATTACK_ANGLE:
 		_last_deal = 0.0
 		return false
-	if not HitCheck.overlaps(self, _player, forward, T.CLONE_REACH, _attack_side, false):
+	var hit := HitCheck.find_hit(self, [_player], forward, T.CLONE_REACH, T.ATTACK_ANGLE, _attack_side, false)
+	if hit.is_empty():
 		_last_deal = 0.0
 		return false
 	_last_deal = 1.2
-	if _player.has_method("take_damage"):
-		_player.take_damage(T.CLONE_DAMAGE, dir)
+	# Keep the old one-geometric-contact-per-attack policy: an i-frame
+	# rejects damage/reaction but cannot become a late hit as the dodge ends.
+	if not HitCheck.deliver_hit(_player, T.CLONE_DAMAGE, hit):
+		_last_deal = 0.0
 	return true
 
 
@@ -309,27 +313,41 @@ func _face(delta: float) -> void:
 	rotation.y = lerp_angle(rotation.y, want, 1.0 - exp(-10.0 * delta))
 
 
-func take_damage(amount: float, _from_dir: Vector3) -> void:
-	if mode == Mode.OFF:
-		# В мирном режиме только мигаем подписью (подтверждая контакт кулака), но не тратим ХП.
-		_flash = 0.65
-		return
-	health = maxf(0.0, health - amount)
-	_flash = 1.0
+func take_damage(amount: float, from_dir: Vector3) -> void:
+	receive_hit(amount, {"zone": "unknown", "direction_world": from_dir, "source": "legacy"})
+
+
+func hit_debug_text() -> String:
+	return "%s · %s · local %s" % [_last_received_hit, character._hit_zone, character._hit_direction]
+
+
+func receive_hit(amount: float, hit: Dictionary) -> bool:
+	_idle_awake = .8 # also wake a sleeping passive clone for its visible flinch
+	_last_received_hit = "%s ~%s" % [HitCheck.zone_label(String(hit.get("zone", "unknown"))), hit.get("source", "legacy")]
 	if character != null and character.has_method("play_hit"):
-		character.play_hit()
+		character.play_hit(String(hit.get("zone", "unknown")), hit.get("direction_world", Vector3.ZERO))
+	if mode == Mode.OFF:
+		# Training contact is visible, but still costs NO passive-clone HP.
+		_flash = .65
+		return true
+	health = maxf(0.0, health-amount)
+	_flash = 1.0
 	if health <= 0.0:
+		# Death/teleport must not retain a stale lock to the respawned actor.
+		for player in get_tree().get_nodes_in_group("player"):
+			if player.lock != null and player.lock.target == self:
+				player.lock.clear()
 		health = T.CLONE_HEALTH
 		global_position = _spawn_pos
 		mode = Mode.OFF
 		_attack_time = -1.0
 		_attack_hit_done = false
 		_recover = 0.0
-		_idle_awake = 0.8
 		velocity = Vector3.ZERO
 		if character != null and character.has_method("reset_motion"):
 			character.reset_motion(false)
 	_update_label()
+	return true
 
 
 func _update_label() -> void:

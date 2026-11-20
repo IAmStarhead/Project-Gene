@@ -43,6 +43,8 @@ var _air_launched := false
 var _air_launch_speed := 0.0
 var _land_time := 100.0
 var _hit_time := 100.0
+var _hit_zone := "unknown"
+var _hit_direction := Vector3(0, 0, -1) # model-local incoming attacker -> victim
 var _was_grounded := true
 var _state := ""
 var _last_pose: Dictionary = {}
@@ -173,8 +175,12 @@ func seek_clip(clip_name: StringName, time: float, preview_delta: float = 0.0) -
 
 ## Перевод игрового времени в клип: подготовка / активная фаза / возврат.
 ## У клона другая длительность подготовки, но контакт совпадает с уроном.
-func attack_clip_time(time: float, timing: Vector3, side: String = "R") -> float:
-	var clip := MOTIONS.get_animation("attack_right" if side == "R" else "attack_left")
+func attack_clip_name(side: String, kind: String = "straight") -> String:
+	return "attack_body_hook" if kind == "hook" else "attack_right" if side == "R" else "attack_left"
+
+
+func attack_clip_time(time: float, timing: Vector3, side: String = "R", kind: String = "straight") -> float:
+	var clip := MOTIONS.get_animation(attack_clip_name(side, kind))
 	var windup: float = clip.get_meta("windup")
 	var active_end: float = clip.get_meta("active_end")
 	if time <= timing.x:
@@ -248,7 +254,8 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		var distance: float = context.get("distance", planar * delta)
 		var stride := lerpf(lerpf(walk_stride, run_stride, _gait_blend),
 			float(MOTIONS.get_animation("sprint_relaxed").get_meta("stride")), _sprint_blend)
-		stride = lerpf(stride, _directional_stride(), _directional_blend)
+		if _directional_blend > 0.0:
+			stride = lerpf(stride, _directional_stride(), _directional_blend)
 		# Backward locomotion has its OWN authored positive-time contact
 		# sequence, not a reversed forward run. No phase reset on lock/R.
 		var direction := -1.0 if local_velocity.z < -0.05 and _directional_blend <= .001 else 1.0
@@ -257,10 +264,11 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	var pose := _locomotion_pose()
 	var state := "ground"
 	if action == "attack":
-		state = "attack_" + side
+		var kind: String = context.get("attack_kind", "straight")
+		state = "attack_"+side+("_hook" if kind == "hook" else "")
 		var timing: Vector3 = context.get("attack_timing", Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY))
-		var attack_pose := sample_clip("attack_right" if side == "R" else "attack_left",
-			attack_clip_time(action_time, timing, side))
+		var attack_pose := sample_clip(attack_clip_name(side, kind),
+			attack_clip_time(action_time, timing, side, kind))
 		pose = attack_pose if grounded else _replace_upper(_air_pose(context), attack_pose)
 	elif action == "dodge":
 		state = "dodge"
@@ -418,6 +426,8 @@ func reset_motion(combat: bool = true) -> void:
 	_air_launch_speed = 0.0
 	_land_time = 100.0
 	_hit_time = 100.0
+	_hit_zone = "unknown"
+	_hit_direction = Vector3(0, 0, -1)
 	_was_grounded = true
 	_state = ""
 	_transition_from = {}
@@ -426,19 +436,37 @@ func reset_motion(combat: bool = true) -> void:
 
 
 ## Визуальная реакция без введения нового игрового оглушения.
-func play_hit() -> void:
+## incoming_world is FROM attacker TOWARD victim, in WORLD coordinates.
+## Zone/zero/non-finite direction fallback is safe; no gameplay stun/state.
+func play_hit(zone: String = "unknown", incoming_world: Vector3 = Vector3.ZERO) -> void:
 	_hit_time = 0.0
+	_hit_zone = zone if zone in ["head", "torso", "legs"] else "unknown"
+	_hit_direction = Vector3(0, 0, -1)
+	if incoming_world.is_finite() and incoming_world.length_squared() > .00001:
+		_hit_direction = global_basis.inverse()*incoming_world
+		_hit_direction.y = 0
+		_hit_direction = _hit_direction.normalized() if _hit_direction.length_squared() > .00001 else Vector3(0, 0, -1)
+
+
+func _reaction_pose() -> Dictionary:
+	if _hit_zone not in ["head", "torso"]:
+		return sample_clip("hit", _hit_time) # legs have NO dedicated leg response yet
+	var prefix := "hit_"+_hit_zone+"_"
+	var along := sample_clip(prefix+("front" if _hit_direction.z <= 0 else "back"), _hit_time)
+	var across := sample_clip(prefix+("left" if _hit_direction.x <= 0 else "right"), _hit_time)
+	var amount := absf(_hit_direction.x)/maxf(absf(_hit_direction.x)+absf(_hit_direction.z), .000001)
+	return _blend_pose(along, across, amount)
 
 
 func _add_hit(pose: Dictionary, weight: float) -> Dictionary:
-	var reaction := sample_clip("hit", _hit_time)
+	var reaction := _reaction_pose()
 	var reference := sample_clip("guard", 0.0)
 	var result := _blend_pose(pose, pose, 0.0)
 	for i in _upper_body:
 		var rest: Quaternion = reference["rotations"][i]
 		var value: Quaternion = reaction["rotations"][i]
 		var difference := rest.inverse() * value
-		var amount := weight
+		var amount := weight*(.5 if _hit_zone == "legs" else 1.0)
 		var name := _bone_names[i]
 		if name.begins_with("shoulder.") or name.begins_with("upper_arm.") \
 				or name.begins_with("forearm.") or name.begins_with("hand."):

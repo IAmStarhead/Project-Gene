@@ -56,7 +56,7 @@ class MotionSetTests(unittest.TestCase):
         self.assertEqual(self.data['model_sha256'], hashlib.sha256(MODEL.read_bytes()).hexdigest())
         self.assertEqual(self.data['bones'], self.rig.names)
         self.assertEqual(len(self.rig.names), 21)
-        self.assertEqual(len(self.data['clips']), 30)
+        self.assertEqual(len(self.data['clips']), 39)
         self.assertTrue({'idle_relaxed', 'walk_relaxed', 'run_relaxed'} <= self.data['clips'].keys())
 
     def test_generated_files_are_reproducible(self):
@@ -89,7 +89,7 @@ class MotionSetTests(unittest.TestCase):
 
     def test_actions_return_to_same_guard(self):
         idle = self.globals('guard', 0)
-        for name in ['attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'land', 'hit']:
+        for name in ['attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'land', 'hit', 'attack_body_hook', *[f'hit_{z}_{d}' for z in ['head', 'torso'] for d in ['front', 'back', 'left', 'right']]]:
             end = self.globals(name, self.data['clips'][name]['duration'])
             np.testing.assert_allclose(end, idle, atol=2e-7, err_msg=name)
         for a, b in [('guard', 'jump_start'), ('jump_start', 'jump_up'),

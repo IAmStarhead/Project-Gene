@@ -62,7 +62,7 @@ func _build_overlay() -> void:
 	_hint.add_theme_constant_override("line_spacing", 3)
 	_hint.text = (
 		"WASD — бег · Shift — спринт · Left Alt — шаг\n"
-		+ "ЛКМ / ПКМ — удар · Пробел — уворот · F — прыжок\n"
+		+ "ЛКМ / ПКМ — прямые · Q — хук в корпус · Пробел — уворот · F — прыжок\n"
 		+ "Tab или СКМ — захват цели · колесо — смена цели"
 	)
 	_hint_panel.add_child(_hint)
