@@ -79,7 +79,10 @@ func update_camera() -> void:
 		focus = (player.global_position+scene.clone.global_position)*.5+Vector3(0,.84,0)
 		direction = {"pair":Vector3(0,.16,1),"pair-reverse":Vector3(0,.16,-1),
 			"duel":Vector3(1,.16,0),"duel-reverse":Vector3(-1,.16,0)}[view]
-		distance = 4.5
+		# Both actors remain visible during a REAL jump/step difference. The
+		# earlier fixed 4.5 m observer clipped the attacker's head at the apex.
+		var height := 1.75+absf(player.global_position.y-scene.clone.global_position.y)
+		distance = maxf(4.5, height*.6/tan(deg_to_rad(observer.fov*.5)))
 	elif view == "route":
 		# World-fixed side tracking along the clean FRONT corridor.
 		direction = Vector3(0,.12,1)
@@ -143,6 +146,14 @@ func reply() -> void:
 		result["yaw"] = scene.player.rotation.y
 		result["camera_yaw"] = scene.player.yaw
 		result["velocity"] = [scene.player.velocity.x,scene.player.velocity.y,scene.player.velocity.z]
+		# Conservative head/feet framing probes, NOT skin/silhouette bounds.
+		# Pair captures assert these without moving actors or scene geometry.
+		result["framing"] = []
+		for actor in [scene.player.character,scene.clone.character]:
+			for y in [-.03,1.75]:
+				var point: Vector3 = actor.global_transform*Vector3(0,y,0)
+				var screen := observer.unproject_position(point)
+				result["framing"].append([screen.x,screen.y,observer.is_position_behind(point)])
 		result["capture_conditions"] = "isolated driver: PRODUCTION lighting, medium quality, PBR, shadows retained; actual main.tscn and controllers; only starting fixtures, sampled observer camera and UI visibility differ"
 	else:
 		result["safe_rect"] = str(scene._controls.safe_rect())

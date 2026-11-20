@@ -94,6 +94,13 @@ try{
   assert(Math.max(...wall.map(f=>f.player.phase))-Math.min(...wall.map(f=>f.player.phase))<1e-5,'Actual wall freezes phase');
  }
  if(config.coverage==='combat'){
+  for(const f of frames){
+   assert.equal(f.framing.length,4,'Both actors head/feet must have framing probes');
+   for(const[x,y,behind]of f.framing){
+    assert(!behind&&x>8&&x<f.viewport[0]-8&&y>8&&y<f.viewport[1]-8,
+     'Pair observer clips a real jump/step, not acceptable combat footage');
+   }
+  }
   for(const outfit of ['dress','suit']){
    const f=frames.filter(f=>f.player?.outfit===outfit);
    assert(f.some(f=>f.attack_kind==='hook'&&f.action==='attack'),'Missing actual Q '+outfit);

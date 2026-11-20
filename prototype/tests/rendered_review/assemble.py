@@ -95,7 +95,7 @@ def assemble(manifest, output, ffmpeg=None, font_path=None):
         keys = ['take', 'label', 'ticks', 'steps', 'sha256', 'action', 'action_time',
                 'grounded', 'health', 'clone_health', 'stamina', 'lock_target', 'last_contact',
                 'received_contact', 'clone_received_contact', 'attack_kind', 'dodge_local',
-                'clone_grounded', 'hud_visible', 'yaw', 'camera_yaw', 'velocity']
+                'clone_grounded', 'hud_visible', 'yaw', 'camera_yaw', 'velocity', 'framing']
         row = {k: frame[k] for k in keys if k in frame}
         row.update({'frame': i, 'video_time': round(i/fps, 6)})
         for who in ['player', 'clone']:
