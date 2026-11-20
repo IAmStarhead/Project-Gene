@@ -187,6 +187,11 @@ func _update_ui() -> void:
 		_phase.modulate = Color.WHITE
 
 
+func _toggle_outfit() -> void:
+	T.OUTFIT = "suit" if T.OUTFIT == "dress" else "dress"
+	character.appearance.set_outfit(T.OUTFIT)
+
+
 func _exit_showcase() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
@@ -211,6 +216,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_UP: _select_clip(_selected - 1)
 			KEY_DOWN: _select_clip(_selected + 1)
 			KEY_ESCAPE, KEY_H: _exit_showcase()
+			KEY_O: _toggle_outfit()
 			KEY_R: _set_camera(0)
 			KEY_V: _controls.toggle_visible()
 			KEY_L:

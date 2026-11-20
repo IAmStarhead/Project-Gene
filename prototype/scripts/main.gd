@@ -92,6 +92,7 @@ func _build_overlay() -> void:
 	for pair in [
 		["R", "стойка"],
 		["T", "клон"],
+		["O", "костюм"],
 		["H", "витрина"],
 		["B", "свет"],
 		["F4", "графика"],
@@ -170,6 +171,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		T.TOON_ENABLED = not T.TOON_ENABLED
 		_apply_lighting()
 		_apply_style_to_characters()
+		_refresh_debug_if_open()
+	elif event.is_action_pressed("toggle_outfit"):
+		T.OUTFIT = "suit" if T.OUTFIT == "dress" else "dress"
+		for ch in [player.character, clone.character]:
+			if ch.appearance != null:
+				ch.appearance.set_outfit(T.OUTFIT)
 		_refresh_debug_if_open()
 	elif event.is_action_pressed("open_showcase"):
 		get_tree().change_scene_to_file("res://scenes/showcase.tscn")

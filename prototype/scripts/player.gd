@@ -670,6 +670,7 @@ func _write_debug_label() -> void:
 	lines.append("Отрисовка: %d вызовов  ·  %d примитивов" % [draws, prims])
 	lines.append("Графика [F4]: %s  ·  свет [B]: %s  ·  стиль [G]: %s" % [q_name, b_name, style_name])
 	lines.append("Режим [R]: %s  ·  %s  ·  захват: %s" % [stance_name(), state_text, lock_name])
+	lines.append("Костюм [O]: %s" % T.OUTFIT_NAMES[T.OUTFIT])
 	lines.append("Здоровье: %.0f/%.0f  ·  стамина: %.0f/%.0f" % [health, T.MAX_HEALTH, stamina, T.MAX_STAMINA])
 	lines.append("Последний контакт: %s" % (_last_hit if not _last_hit.is_empty() else "—"))
 	label.text = "\n".join(lines)

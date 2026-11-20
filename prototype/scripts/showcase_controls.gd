@@ -74,6 +74,7 @@ func build() -> void:
 	for pair in [["Спереди", 0.0], ["Сбоку", 90.0], ["Сзади", 180.0], ["3/4", 35.0]]:
 		cameras.add_child(button(pair[0], owner_scene._set_camera.bind(pair[1])))
 	cameras.add_child(button("Весь рост", func() -> void: fit_full_body = true))
+	cameras.add_child(button("Костюм [O]", owner_scene._toggle_outfit))
 	cameras.add_child(button("UI [V]", toggle_visible))
 
 	transport = owner_scene._panel()
@@ -116,7 +117,7 @@ func build() -> void:
 	stack.add_child(owner_scene._timeline)
 	var help := Label.new()
 	# These ASCII key names do not depend on an OS fallback arrow font.
-	help.text = "Space пауза · Left/Right кадр · Up/Down клип · L скорость · B свет · F4 графика · G стиль · V скрыть UI\nЛКМ + мышь — орбита · колесо — зум (кадрирование вручную)"
+	help.text = "Space пауза · Left/Right кадр · Up/Down клип · L скорость · B свет · F4 графика · G стиль · O костюм · V скрыть UI\nЛКМ + мышь — орбита · колесо — зум (кадрирование вручную)"
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	help.add_theme_font_size_override("font_size", 12)
 	stack.add_child(help)

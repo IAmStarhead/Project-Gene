@@ -223,6 +223,7 @@ $('speed').addEventListener('change', (event) => { speed = Number(event.target.v
 $('prev-frame').addEventListener('click', () => data && seek(time - 1 / data.fps));
 $('next-frame').addEventListener('click', () => data && seek(time + 1 / data.fps));
 $('clothes').addEventListener('change', (event) => appearance?.setVisible(event.target.checked));
+$('outfit').addEventListener('change', (event) => appearance?.setOutfit(event.target.value));
 $('skeleton').addEventListener('change', (event) => { if (helper) helper.visible = event.target.checked; });
 $('trail').addEventListener('change', () => data && buildTrail());
 document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
@@ -311,8 +312,8 @@ async function load() {
   selectClip('idle_relaxed');
   $('load-state').classList.add('hidden');
   window.motionLab = {
-    select: selectClip, seek, setView,
-    get appearance() { return { handOpen: appearance.handOpen, handVertices: appearance.handVertices, gownVertices: appearance.gown.geometry.attributes.position.count, gownIndexCount: appearance.gown.geometry.index.count, cloth: appearance.points.map((p) => p.toArray()) }; },
+    select: selectClip, seek, setView, setOutfit: (value) => appearance.setOutfit(value),
+    get appearance() { return { outfit: appearance.outfit, suitVertices: appearance.suit.geometry.attributes.position.count, bodyIndices: appearance.body.geometry.index.count, handOpen: appearance.handOpen, handVertices: appearance.handVertices, gownVertices: appearance.gown.geometry.attributes.position.count, gownIndexCount: appearance.gown.geometry.index.count, cloth: appearance.points.map((p) => p.toArray()) }; },
     get state() { return { selected, time, playing, clips: Object.keys(data.clips) }; },
     get joints() { return data.bones.map((name, i) => ({ name, position: bones[i].getWorldPosition(new THREE.Vector3()).toArray() })); },
     // Tests can pause/seek the exact source clips without synthesizing input events.

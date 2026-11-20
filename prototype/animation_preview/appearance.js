@@ -9,7 +9,7 @@ const fabric = new THREE.MeshStandardMaterial({ color: '#ffffff', vertexColors: 
 
 export class Appearance {
   constructor(model, boneNames, data) {
-    this.model = model; this.data = data; this.boneNames = boneNames;
+    this.model = model; this.data = data; this.boneNames = boneNames; this.outfit = "dress"; this.visible = true;
     model.traverse((object) => { if (object.isSkinnedMesh && object.name.includes('body')) this.body = object; });
     if (!this.body) throw new Error('Appearance: body not found');
     const body = this.body;
@@ -73,6 +73,35 @@ export class Appearance {
     this.gown.position.copy(body.position); this.gown.quaternion.copy(body.quaternion); this.gown.scale.copy(body.scale);
     body.parent.add(this.gown); this.gown.bind(body.skeleton, body.bindMatrix);
 
+    const suitGeometry = new THREE.BufferGeometry(), suitSource = data.suit;
+    for (const [name, key, width] of [['position', 'positions', 3], ['normal', 'normals', 3], ['color', 'colors', 3], ['uv', 'uv', 2], ['skinWeight', 'weights', 4]])
+      suitGeometry.setAttribute(name, new THREE.Float32BufferAttribute(suitSource[key].flat(), width));
+    suitGeometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(suitSource.joints.flat(), 4));
+    suitGeometry.setIndex(suitSource.indices);
+    this.suit = new THREE.SkinnedMesh(suitGeometry, this.material);
+    this.suit.name = 'LabTopAndTrousers'; this.suit.castShadow = true; this.suit.frustumCulled = false;
+    this.suit.position.copy(body.position); this.suit.quaternion.copy(body.quaternion); this.suit.scale.copy(body.scale);
+    body.parent.add(this.suit); this.suit.bind(body.skeleton, body.bindMatrix); this.suit.visible = false;
+    const c = suitSource.coverage, hideSuit = [];
+    for (let i = 0; i < pos.count; i++) {
+      let arm = 0; const forearm = [0, 0];
+      for (let k = 0; k < 4; k++) {
+        const name = boneNames[g.attributes.skinIndex.getComponent(i, k)], w = g.attributes.skinWeight.getComponent(i, k);
+        if (['shoulder.', 'upper_arm.', 'forearm.', 'hand.'].some((prefix) => name.startsWith(prefix))) arm += w;
+        if (['forearm.L', 'hand.L'].includes(name)) forearm[0] += w;
+        if (['forearm.R', 'hand.R'].includes(name)) forearm[1] += w;
+      }
+      const point = new THREE.Vector3().fromBufferAttribute(pos, i);
+      hideSuit.push(arm < .15 ? point.y > c.ankle+c.skin_overlap && point.y < c.neck-c.skin_overlap
+        : arm >= .85 && !c.wrists.some((w, side) => forearm[side] > .2 && point.clone().sub(vector(w.origin)).dot(vector(w.axis)) > w.end-c.skin_overlap));
+    }
+    const keptSuit = [];
+    for (let i = 0; i < this.fullIndex.count; i += 3) {
+      const ids = [0, 1, 2].map((j) => this.fullIndex.getX(i+j));
+      if (!ids.every((id) => hideSuit[id])) keptSuit.push(...ids);
+    }
+    this.suitIndex = new THREE.Uint32BufferAttribute(keptSuit, 1);
+
     const cloth = data.cloth;
     this.rest = cloth.positions.map(vector); this.segments = cloth.segments;
     this.circumferenceCoordinates=[];
@@ -104,9 +133,16 @@ export class Appearance {
   }
   setHands(amount) { this.handOpen = THREE.MathUtils.clamp(amount, 0, 1); this.body.morphTargetInfluences[0] = this.handOpen; }
   setVariant(clone) { this.material.color.setRGB(...(clone ? [.94, .96, 1.0] : [1, 1, 1])); }
+  setOutfit(outfit) {
+    this.outfit = outfit === 'suit' ? 'suit' : 'dress';
+    this.setVisible(this.visible);
+    if (this.outfit === 'dress') this.reset();
+  }
   setVisible(visible) {
-    this.gown.visible = this.skirt.visible = visible;
-    this.body.geometry.setIndex(visible ? this.coveredIndex : this.fullIndex);
+    this.visible = visible;
+    this.gown.visible = this.skirt.visible = visible && this.outfit === 'dress';
+    this.suit.visible = visible && this.outfit === 'suit';
+    this.body.geometry.setIndex(visible ? (this.outfit === 'suit' ? this.suitIndex : this.coveredIndex) : this.fullIndex);
   }
   transforms() {
     this.model.updateMatrixWorld(true);
@@ -302,11 +338,13 @@ export class Appearance {
     return curve[low-1].clone().lerp(curve[low],u);
   }
   reset() {
+    if (this.outfit === "suit") return;
     this.transforms(); this.accumulator = 0; this.fitGoals();
     this.points = this.goals.map((p) => p.clone());
     this.previous = this.points.map((p) => p.clone()); this.upload();
   }
   update(delta) {
+    if (this.outfit === "suit") return;
     this.transforms(); this.fitGoals(); this.accumulator += Math.min(delta, .05);
     const h = this.data.cloth.step;
     let stepped = false;

@@ -5,18 +5,23 @@
 ## Reuse the dynamic mesh surface instead of recreating it every frame.
 extends Node3D
 
+const T := preload("res://scripts/tuning.gd")
 const DATA_PATH := "res://assets/heroine/appearance/lab_uniform.json"
 const STEP := 1.0/60.0
 static var _data: Dictionary = {}
 static var _hand_grid: Dictionary = {}
 static var _body_cache: Dictionary = {}
 static var _gown_mesh: ArrayMesh
+static var _suit_mesh: ArrayMesh
 
 var actor: Node3D
 var skeleton: Skeleton3D
 var body: MeshInstance3D
 var gown: MeshInstance3D
 var skirt: MeshInstance3D
+var suit: MeshInstance3D
+var outfit := "dress"
+var _source_body: Mesh
 var hand_open := 0.0
 var clone_variant := false
 var collision_count := 0
@@ -84,14 +89,15 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	if body == null:
 		push_error("Lab uniform: imported body mesh not found")
 		return
-	var key := body.mesh.get_instance_id()
+	_source_body = body.mesh
+	var key := str(_source_body.get_instance_id())+":dress"
 	if not _body_cache.has(key):
-		_body_cache[key] = _body_with_relaxed_hands(body.mesh)
+		_body_cache[key] = _body_with_relaxed_hands(_source_body)
 	body.mesh = _body_cache[key]
 	_install_floor_probes()
 	body.custom_aabb = AABB(Vector3(-1, -.3, -1), Vector3(2, 2.6, 2.3))
 	if _gown_mesh == null:
-		_gown_mesh = _build_gown_mesh()
+		_gown_mesh = _build_gown_mesh(_data["gown"])
 	_material = StandardMaterial3D.new()
 	_material.resource_name = "Laboratory textile"
 	_material.vertex_color_use_as_albedo = true
@@ -107,6 +113,19 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	gown.set_meta("textile", true)
 	body.get_parent().add_child(gown)
 	gown.custom_aabb = body.custom_aabb
+	if _suit_mesh == null:
+		_suit_mesh = _build_gown_mesh(_data["suit"])
+	suit = MeshInstance3D.new()
+	suit.name = "LabTopAndTrousers"
+	suit.mesh = _suit_mesh
+	suit.skin = body.skin
+	suit.skeleton = body.skeleton
+	suit.transform = body.transform
+	suit.material_override = _material
+	suit.set_meta("textile", true)
+	body.get_parent().add_child(suit)
+	suit.custom_aabb = body.custom_aabb
+	suit.visible = false
 
 	skirt = MeshInstance3D.new()
 	skirt.name = "LabGownSkirt"
@@ -172,6 +191,7 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 		for value in row:
 			_meridian_lengths.append(float(value))
 	reset_cloth()
+	set_outfit(T.OUTFIT)
 
 
 static func _vector(values: Array) -> Vector3:
@@ -248,7 +268,37 @@ static func covered(point: Vector3, bones: PackedInt32Array, weights: PackedFloa
 
 
 
-func _body_with_relaxed_hands(source: Mesh) -> ArrayMesh:
+## The suit mask is a SEPARATE, garment-specific coverage inventory. The
+## frozen dress mask above is unchanged. Leave overlap inside neck/cuffs/
+## ankles, and never remove skin beyond the actual long-sleeve/trouser cut.
+static func suit_covered(point: Vector3, bones: PackedInt32Array, weights: PackedFloat32Array,
+		index: int, names: Array) -> bool:
+	var arm := 0.0
+	var forearms := Vector2.ZERO
+	for k in 4:
+		var name: String = names[bones[index*4+k]]
+		var value := weights[index*4+k]
+		if name.begins_with("shoulder.") or name.begins_with("upper_arm.") or name.begins_with("forearm.") or name.begins_with("hand."):
+			arm += value
+		if name in ["forearm.L", "hand.L"]:
+			forearms.x += value
+		if name in ["forearm.R", "hand.R"]:
+			forearms.y += value
+	var c: Dictionary = _data["suit"]["coverage"]
+	var overlap := float(c["skin_overlap"])
+	if arm < .15:
+		return point.y > float(c["ankle"])+overlap and point.y < float(c["neck"])-overlap
+	# Fully enclosed upper/lower arm only, with 20 mm retained at wrists.
+	if arm < .85:
+		return false
+	for side in 2:
+		var cuff: Dictionary = c["wrists"][side]
+		if forearms[side] > .2 and (point-_vector(cuff["origin"])).dot(_vector(cuff["axis"])) > float(cuff["end"])-overlap:
+			return false
+	return true
+
+
+func _body_with_relaxed_hands(source: Mesh, for_suit: bool = false) -> ArrayMesh:
 	var result := ArrayMesh.new()
 	result.add_blend_shape("RelaxedHands")
 	result.blend_shape_mode = Mesh.BLEND_SHAPE_MODE_RELATIVE
@@ -270,7 +320,8 @@ func _body_with_relaxed_hands(source: Mesh) -> ArrayMesh:
 			deltas.append(Vector3.ZERO if row.is_empty() else Vector3(row[6], row[7], row[8]))
 			normal_deltas.append(Vector3.ZERO if row.is_empty() else Vector3(row[9], row[10], row[11])-normals[i])
 			matched += 0 if row.is_empty() else 1
-			hide.append(1 if covered(vertices[i], bones, weights, i, names) else 0)
+			var hidden := suit_covered(vertices[i], bones, weights, i, names) if for_suit else covered(vertices[i], bones, weights, i, names)
+			hide.append(1 if hidden else 0)
 		var old_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
 		var kept := PackedInt32Array()
 		for i in range(0, old_indices.size(), 3):
@@ -293,8 +344,7 @@ func _body_with_relaxed_hands(source: Mesh) -> ArrayMesh:
 	return result
 
 
-static func _build_gown_mesh() -> ArrayMesh:
-	var source: Dictionary = _data["gown"]
+static func _build_gown_mesh(source: Dictionary) -> ArrayMesh:
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	var vertices := PackedVector3Array()
@@ -373,6 +423,23 @@ func sole_height() -> float:
 	return lowest
 
 
+func set_outfit(value: String) -> void:
+	var selected := "suit" if value == "suit" else "dress"
+	if selected == outfit:
+		return
+	outfit = selected
+	var key := str(_source_body.get_instance_id())+":"+outfit
+	if not _body_cache.has(key):
+		_body_cache[key] = _body_with_relaxed_hands(_source_body, outfit == "suit")
+	body.mesh = _body_cache[key]
+	body.set_blend_shape_value(0, hand_open)
+	gown.visible = outfit == "dress"
+	skirt.visible = outfit == "dress"
+	suit.visible = outfit == "suit"
+	if outfit == "dress":
+		reset_cloth()
+
+
 func set_variant(is_clone: bool) -> void:
 	clone_variant = is_clone
 	_material.albedo_color = Color(.94, .96, 1.0) if is_clone else Color.WHITE
@@ -385,6 +452,8 @@ func set_hands(amount: float) -> void:
 
 
 func reset_cloth() -> void:
+	if outfit == "suit":
+		return
 	_accumulator = 0
 	_last_origin = actor.global_position
 	_update_colliders()
@@ -778,6 +847,8 @@ func _drape_at_height(k: int, height: float) -> Vector3:
 
 
 func update_pose(delta: float, grounded: bool = true) -> void:
+	if outfit == "suit":
+		return # ordinary GPU skinning only; no hidden skirt CPU simulation
 	if _points.is_empty() or actor.global_position.distance_to(_last_origin) > 2.0:
 		reset_cloth()
 	_last_origin = actor.global_position

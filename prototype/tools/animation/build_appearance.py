@@ -17,6 +17,7 @@ import numpy as np
 from rig_math import Rig, accessor, read_glb
 from build_motion_set import ROOT, MODEL, definitions
 from garment import bodice, FABRIC, BINDING
+from lab_suit import build_suit
 
 OUTPUT = MODEL.parent / 'appearance' / 'lab_uniform.json'
 
@@ -145,7 +146,7 @@ def build():
                               'axis': rig.rest_world[rig.index['upper_arm.'+side], :3, 1].tolist(),
                               'start': -.045, 'end': .105, 'radius': .080, 'cuff': .158}
                              for side in ['L', 'R']]},
-            'gown': gown,
+            'gown': gown, 'suit': build_suit(rig),
             'cloth': {'positions': np.round(cloth, 7).tolist(), 'segments': segments,
                       'rings': len(levels), 'edges': [], 'iterations': 0, 'step': 1/60,
                       'solver': 'arc_length_drape_v4', 'surface_relaxations': 3, 'angular_relaxations': 2, 'surface_samples': True,

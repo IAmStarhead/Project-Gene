@@ -98,6 +98,10 @@ const BRIGHTNESS_NAMES := ["приглушённо", "штатно", "ярко"]
 static var QUALITY := 1
 const QUALITY_NAMES := ["низкое", "среднее (940MX)", "высокое"]
 
+# Гардероб [O] общий для игры/клона/витрины; сессия начинается с платья.
+static var OUTFIT := "dress"
+const OUTFIT_NAMES := {"dress": "платье", "suit": "топ + штаны"}
+
 # ─────────────────────────────────────────────── ОКРУЖЕНИЕ
 const ROOM_WIDTH := 18.0
 const ROOM_DEPTH := 18.0

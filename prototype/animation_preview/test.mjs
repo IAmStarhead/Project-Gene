@@ -76,6 +76,22 @@ try {
       assert(Math.abs(hand.position[0]) < .06 && hand.position[2] > .61, `Forward contact in ${name}`);
     }
   }
+  await page.locator('#outfit').selectOption('suit');
+  assert.equal((await page.evaluate(() => window.motionLab.appearance)).outfit, 'suit');
+  for (const [name, clip] of Object.entries(data.clips)) {
+    await page.evaluate((name) => window.motionLab.select(name), name);
+    for (const fraction of [0, .43, .87]) {
+      await page.evaluate((t) => window.motionLab.seek(t), clip.duration*fraction);
+      const a = await page.evaluate(() => window.motionLab.appearance);
+      assert.equal(a.outfit, 'suit');
+      assert(a.suitVertices > 6000 && a.suitVertices < 14000, 'real rigged top + trousers');
+      assert.equal(a.handOpen, name.endsWith('_relaxed') ? 1 : 0, 'same hand morph in the suit');
+      assert(a.bodyIndices > 1000, 'outfit masking cannot remove the entire body');
+      frames++;
+    }
+  }
+  await page.locator('#outfit').selectOption('dress');
+  assert.equal((await page.evaluate(() => window.motionLab.appearance)).outfit, 'dress');
   // Cloth is part of the selected pose: pause must freeze its history, and
   // explicit scrubbing must reset to a deterministic body-safe result.
   await page.evaluate(() => { window.motionLab.select('run_relaxed'); window.motionLab.seek(.2); });
