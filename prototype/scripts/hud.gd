@@ -19,6 +19,8 @@ var _stamina_fill: ColorRect
 var _stance_label: Label
 var _values_label: Label
 var _training_label: Label
+var _training_panel: PanelContainer
+var _quick_access: Control
 var _target_mark: Control
 var _health_lag_value := 1.0
 var _last_combat_state := -1
@@ -41,102 +43,139 @@ func _build_bars() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
+	# Статус вверху слева, быстрые ячейки внизу: ничего не изображает несуществующие предметы.
 	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.035, 0.035, 0.033, 0.90)
-	style.border_color = Color(0.63, 0.56, 0.40, 0.68)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(1)
-	style.content_margin_left = 10.0
-	style.content_margin_right = 10.0
-	style.content_margin_top = 7.0
-	style.content_margin_bottom = 8.0
-	panel.add_theme_stylebox_override("panel", style)
-
-	# GROW_DIRECTION_BEGIN держит нижнюю границу строго в 20 px от низа экрана при любом разрешении.
-	panel.anchor_left = 0.0
-	panel.anchor_right = 0.0
-	panel.anchor_top = 1.0
-	panel.anchor_bottom = 1.0
-	panel.offset_left = MARGIN
-	panel.offset_right = MARGIN
-	panel.offset_top = -MARGIN
-	panel.offset_bottom = -MARGIN
-	panel.grow_horizontal = Control.GROW_DIRECTION_END
-	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	panel.name = "StatusPanel"
+	panel.position = Vector2(MARGIN, 14)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_stylebox_override("panel", _card_style())
 	root.add_child(panel)
-
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 5)
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(column)
 
-	_stance_label = Label.new()
-	_stance_label.text = "СТОЙКА: ОБЫЧНАЯ  [R]"
-	_stance_label.add_theme_font_size_override("font_size", 13)
-	_stance_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.92, 0.92))
-	_stance_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(_stance_label)
+	var header := HBoxContainer.new()
+	column.add_child(header)
+	var brand := _text("GEN  /  СОСТОЯНИЕ", 12, Color(.98, .65, .36))
+	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(brand)
+	_stance_label = _text("СТОЙКА: ОБЫЧНАЯ  [R]", 11, Color(.75, .82, .83))
+	header.add_child(_stance_label)
 
-	_values_label = Label.new()
-	_values_label.text = "ЗДОРОВЬЕ  100   /   ВЫНОСЛИВОСТЬ  100"
-	_values_label.add_theme_font_size_override("font_size", 12)
-	_values_label.add_theme_color_override("font_color", Color(0.85, 0.93, 0.94))
-	_values_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_values_label = _text("ЗДОРОВЬЕ  100   /   ВЫНОСЛИВОСТЬ  100", 11, Color(.87, .92, .92))
 	column.add_child(_values_label)
-	_training_label = Label.new()
-	_training_label.add_theme_font_size_override("font_size", 12)
-	_training_label.add_theme_color_override("font_color", Color(1.0, .83, .48))
-	_training_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_training_label.visible = false
-	column.add_child(_training_label)
 
 	var health_row := _bar_row(HP_HEIGHT, true)
-	column.add_child(health_row["root"])
+	column.add_child(_named_bar("HP", health_row["root"]))
 	_health_lag = health_row["lag"]
 	_health_fill = health_row["fill"]
-	_health_lag.color = Color(0.97, 0.62, 0.52, 0.82)
-	_health_fill.color = Color(0.64, 0.17, 0.16, 1.0)
+	_health_lag.color = Color(1.0, .76, .51, .8)
+	_health_fill.color = Color(.96, .38, .12, 1.0)
 
 	var stamina_row := _bar_row(ST_HEIGHT, false)
-	column.add_child(stamina_row["root"])
+	column.add_child(_named_bar("ST", stamina_row["root"]))
 	_stamina_fill = stamina_row["fill"]
-	_stamina_fill.color = Color(0.37, 0.57, 0.36, 1.0)
+	_stamina_fill.color = Color(.70, .87, .88, 1.0)
+
+	var quick := Control.new()
+	quick.name = "QuickAccess"
+	_quick_access = quick
+	quick.anchor_top = 1.0
+	quick.anchor_bottom = 1.0
+	quick.position = Vector2(MARGIN, -207)
+	quick.size = Vector2(166, 187)
+	quick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(quick)
+	var quick_title := _text("БЫСТРЫЙ ДОСТУП  /  ПУСТО", 10, Color(.88, .93, .93))
+	var caption_style := StyleBoxFlat.new()
+	caption_style.bg_color = Color(.035, .055, .065, .86)
+	caption_style.content_margin_left = 4
+	caption_style.content_margin_right = 4
+	caption_style.content_margin_top = 1
+	caption_style.content_margin_bottom = 1
+	quick_title.add_theme_stylebox_override("normal", caption_style)
+	quick_title.position = Vector2(0, 0)
+	quick.add_child(quick_title)
+	var slots := preload("res://scripts/quick_slots.gd").new()
+	slots.name = "EmptySlots"
+	slots.position = Vector2(0, 21)
+	quick.add_child(slots)
+
+	var training_panel := PanelContainer.new()
+	training_panel.name = "TrainingPanel"
+	_training_panel = training_panel
+	training_panel.anchor_top = 1.0
+	training_panel.anchor_bottom = 1.0
+	training_panel.position = Vector2(205, -20)
+	training_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	training_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	training_panel.add_theme_stylebox_override("panel", _card_style())
+	root.add_child(training_panel)
+	_training_label = _text("", 12, Color(1.0, .76, .53))
+	training_panel.add_child(_training_label)
+	_training_label.visible = false
+	training_panel.visible = false
+
+
+func _card_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(.035, .055, .065, .90)
+	style.border_color = Color(.55, .67, .68, .72)
+	style.set_border_width_all(1)
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 9
+	style.content_margin_bottom = 9
+	return style
+
+
+func _text(text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	return label
+
+
+func _named_bar(name_text: String, bar: Control) -> HBoxContainer:
+	var container := HBoxContainer.new()
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.add_theme_constant_override("separation", 8)
+	var name_label := _text(name_text, 11, Color(.79, .87, .88))
+	name_label.custom_minimum_size.x = 22
+	container.add_child(name_label)
+	container.add_child(bar)
+	return container
 
 
 func _bar_row(bar_h: float, with_ticks: bool) -> Dictionary:
 	var row := Control.new()
 	row.custom_minimum_size = Vector2(BAR_WIDTH, bar_h)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
 	var back := ColorRect.new()
-	back.color = Color(0.12, 0.14, 0.19, 0.92)
+	back.color = Color(.12, .17, .18, .98)
 	back.size = Vector2(BAR_WIDTH, bar_h)
 	back.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(back)
-
 	var lag := ColorRect.new()
-	lag.color = Color(0.0, 0.0, 0.0, 0.0)
+	lag.color = Color(0, 0, 0, 0)
 	lag.size = Vector2(BAR_WIDTH, bar_h)
 	lag.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(lag)
-
 	var fill := ColorRect.new()
 	fill.size = Vector2(BAR_WIDTH, bar_h)
 	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(fill)
-
 	if with_ticks:
-		# Тонкие четвертные засечки — считывать остаток ХП в бою проще, чем по голой полоске.
-		for step in [0.25, 0.5, 0.75]:
+		for step in [.25, .5, .75]:
 			var tick := ColorRect.new()
-			tick.color = Color(0.05, 0.07, 0.11, 0.45)
-			tick.position = Vector2(BAR_WIDTH * step, 0.0)
-			tick.size = Vector2(1.0, bar_h)
+			tick.color = Color(.04, .07, .08, .48)
+			tick.position = Vector2(BAR_WIDTH * step, 0)
+			tick.size = Vector2(1, bar_h)
 			tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			row.add_child(tick)
-
 	return {"root": row, "lag": lag, "fill": fill}
 
 
@@ -169,9 +208,9 @@ func _process(delta: float) -> void:
 	var s_ratio := clampf(st / maxf(T.MAX_STAMINA, 1.0), 0.0, 1.0)
 	_stamina_fill.size.x = BAR_WIDTH * s_ratio
 	_stamina_fill.color = (
-		Color(0.37, 0.57, 0.36, 1.0)
+		Color(.70, .87, .88, 1.0)
 		if st >= T.ATTACK_STAMINA
-		else Color(0.76, 0.54, 0.28, 1.0)
+		else Color(.94, .62, .31, 1.0)
 	)
 
 	var in_combat := 1 if bool(player.get("combat_mode")) else 0
@@ -185,6 +224,10 @@ func _process(delta: float) -> void:
 			_stance_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.92, 0.90))
 
 	_training_label.visible = bool(player.get("training_blade"))
+	# В маленьком окне диагностика F3 занимает нижнюю часть экрана.
+	var compact_debug := bool(player.get("show_details")) and get_viewport().get_visible_rect().size.y < 560.0
+	_quick_access.visible = not compact_debug
+	_training_panel.visible = _training_label.visible and not compact_debug
 	if _training_label.visible:
 		var chosen: int = int(player.get("training_limb"))
 		var names := ["левая рука", "правая рука", "левая нога", "правая нога"]

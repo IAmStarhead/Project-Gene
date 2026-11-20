@@ -47,6 +47,30 @@ func _run() -> void:
 	check(is_instance_valid(player.foley) and is_instance_valid(clone.foley), "foley attached to both actors")
 	check(Foley.STEPS.size() == 8 and Foley.STEPS[0] is AudioStreamWAV, "barefoot assets imported")
 	check(player.hud.get("_values_label") != null, "HUD numeric labels")
+	var hud_root: Control = player.hud.get_child(0)
+	var status_panel: Control = hud_root.get_node("StatusPanel")
+	var quick: Control = hud_root.get_node("QuickAccess")
+	var slots: Control = quick.get_node("EmptySlots")
+	check(status_panel.position.y == 14.0 and quick.anchor_top == 1.0, "status at top, slots anchored at bottom")
+	check(slots.get("POSITIONS").size() == 4 and slots.get_child_count() == 0, "four empty quick slots without invented items")
+	check(scene._hint_panel.position.y > status_panel.position.y + status_panel.size.y, "startup hints do not overlap status")
+	var old_hp: float = player.health
+	var old_stamina: float = player.stamina
+	player.health = T.MAX_HEALTH * .5
+	player.stamina = T.MAX_STAMINA * .25
+	player.hud._process(0.0)
+	check(absf(player.hud._health_fill.size.x - player.hud.BAR_WIDTH * .5) < .01, "health bar reflects real health")
+	check(absf(player.hud._stamina_fill.size.x - player.hud.BAR_WIDTH * .25) < .01, "stamina bar reflects real stamina")
+	check(player.hud._values_label.text.contains("50") and player.hud._values_label.text.contains("25"), "HUD text matches values")
+	player.training_blade = true
+	player.hud._process(0.0)
+	check(player.hud._training_panel.visible and player.hud._training_label.visible, "blade guidance remains visible")
+	player.training_blade = false
+	player.hud._process(0.0)
+	check(not player.hud._training_panel.visible, "blade guidance hides when disabled")
+	player.health = old_hp
+	player.stamina = old_stamina
+	player.hud._process(0.0)
 	check(scene.menu.get("_items").has("camera") and scene.menu.get("_items").has("sound"), "pause controls")
 	var initial_energy: float = scene.room.get("_sun").light_energy
 	scene._on_menu_action("brightness")
