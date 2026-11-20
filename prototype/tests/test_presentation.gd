@@ -28,6 +28,19 @@ func _run() -> void:
 	var clone: CharacterBody3D = scene.clone
 	var rig = player.rig
 	check(is_instance_valid(rig) and is_instance_valid(rig.spring), "camera exists")
+	# Lock-on computes gameplay yaw first; the rig follows without changing it.
+	player.lock.target = clone
+	check(player.lock.active(), "clone can be tracked by lock-on")
+	var locked_yaw: float = player.lock.camera_yaw(.1, player.yaw)
+	var locked_pitch: float = player.lock.camera_pitch(.1, player.pitch)
+	check(is_finite(locked_yaw) and is_finite(locked_pitch), "lock-on yaw and pitch remain finite")
+	player.yaw = locked_yaw
+	player.pitch = locked_pitch
+	rig._advance_camera(.1)
+	check(absf(angle_difference(rig.rotation.y, locked_yaw)) < .08 and player.yaw == locked_yaw,
+		"visual camera promptly follows lock-on without modifying gameplay yaw")
+	player.lock.clear()
+	rig.snap_now()
 	check(absf(rig.spring.spring_length - T.CAMERA_DISTANCE) < 0.2, "camera initial distance")
 	check(rig.spring.collision_mask == 1 and rig.spring.shape is SphereShape3D, "sphere collides with world only")
 	var wall := StaticBody3D.new()
@@ -142,12 +155,12 @@ func _run() -> void:
 	check(not clone.profile_enabled, "clone profiling stops with F3")
 
 	player.velocity = Vector3(T.RUN_SPEED, 0, 0)
-	rig._process(1.0)
+	rig._advance_camera(1.0)
 	check(rig.spring.spring_length > T.CAMERA_DISTANCE + 0.2, "speed pulls camera back")
 	check(rig.camera.fov > 71.0, "speed increases FOV")
 	T.CAMERA_DYNAMIC = false
 	rig.add_kick(1.0)
-	rig._process(1.0)
+	rig._advance_camera(1.0)
 	check(absf(rig.camera.fov - 68.0) < 0.3, "reduced motion resets FOV")
 	check(absf(float(rig.get("_kick_deg"))) < 0.001, "reduced motion disables kick")
 	T.CAMERA_DYNAMIC = true

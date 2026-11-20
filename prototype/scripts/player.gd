@@ -8,6 +8,7 @@ const CameraRigScene := preload("res://scenes/camera_rig.tscn")
 const LockOn := preload("res://scripts/lock_on.gd")
 const HitCheck := preload("res://scripts/hit_check.gd")
 const Foley := preload("res://scripts/actor_foley.gd")
+const TrainingSword := preload("res://scripts/training_sword.gd")
 
 @onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
@@ -22,7 +23,8 @@ var pitch: float = -13.0    ## наклон камеры, градусы
 var health: float = T.MAX_HEALTH
 var stamina: float = T.MAX_STAMINA
 
-# Тестовый невидимый клинок действует ТОЛЬКО на подготовленный манекен.
+# Видимый тестовый меч по-прежнему действует ТОЛЬКО на подготовленный манекен.
+var training_sword: RefCounted
 var training_blade := false
 var training_limb := 0
 var training_special := false
@@ -118,6 +120,10 @@ func _ready() -> void:
 	_style_debug_label()
 	if character != null and character.has_method("reset_motion"):
 		character.reset_motion(combat_mode)
+	if character != null and character.skeleton != null:
+		training_sword = TrainingSword.new()
+		if not training_sword.setup(character.skeleton):
+			training_sword = null
 
 
 func _style_debug_label() -> void:
@@ -146,6 +152,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
 		if key == KEY_V:
 			training_blade = not training_blade
+			_sync_training_sword()
 			_sync_training_selection()
 			get_viewport().set_input_as_handled()
 			return
@@ -213,6 +220,18 @@ func _unhandled_input(event: InputEvent) -> void:
 func _sync_training_selection() -> void:
 	for manikin in get_tree().get_nodes_in_group("cut_manikin"):
 		manikin.highlight_limb(training_limb if training_blade else -1)
+
+
+func _sword_active() -> bool:
+	# The cut mode is captured when the attack starts. A V press mid-swing
+	# cannot make a non-cutting punch appear to be a sword strike or vice versa.
+	return _attack_blade if _action == "attack" else training_blade
+
+
+func _sync_training_sword() -> void:
+	if training_sword != null:
+		var hand: String = _attack_side if _action == "attack" and _attack_blade else String(training_sword.side)
+		training_sword.set_display(_sword_active(), hand)
 
 
 func toggle_combat_mode() -> void:
@@ -328,6 +347,7 @@ func _physics_process(delta: float) -> void:
 		apply_floor_snap()
 
 	var displacement := global_position - previous_position
+	_sync_training_sword()
 	_update_character_anim(delta, displacement)
 	if character != null and foley != null:
 		var phase: Variant = character.get("_phase")
@@ -435,6 +455,7 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			"sprint_speed": T.RUN_SPEED,
 			"attack_timing": _attack_timing(),
 			"attack_kind": _attack_kind,
+			"hold_weapon": _sword_active(),
 		})
 
 
@@ -597,6 +618,7 @@ func _start_attack(kind: String = "straight") -> void:
 	_attack_blade = training_blade
 	_attack_blade_limb = training_limb
 	_attack_blade_special = training_special
+	_sync_training_sword()
 	# При захвате цели доворачиваем корпус прямо к противнику перед выбросом руки.
 	if lock != null and lock.active():
 		var face: Array = []

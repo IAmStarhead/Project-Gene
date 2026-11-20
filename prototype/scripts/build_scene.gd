@@ -643,6 +643,10 @@ func style_character(root: Node, use_toon: bool = false) -> void:
 		# Динамический слой 2: персонаж виден камере и отбрасывает тени, но не запекается в отражение пола.
 		mi.layers = CHARACTER_VISUAL_LAYER
 
+		# Не превращаем материал импортированного меча в материал кожи.
+		if mi.has_meta("weapon_visual"):
+			continue
+
 		# Халат и живой подол (зона второго агента) — не меняем материал, оставляем мягкую тень.
 		if mi.has_meta("textile"):
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON

@@ -30,6 +30,7 @@ const CAMERA_DISTANCE := 2.75
 const CAMERA_HEIGHT := 1.42
 static var CAMERA_DYNAMIC := true    ## Esc: динамика/отклик камеры можно выключить
 static var FOLEY_ENABLED := true     ## Esc: звуки эффектов
+const CAMERA_TURN_SPEED := 32.0  ## быстрая визуальная доводка углов, без изменения ввода и направления движения
 const CAMERA_FOLLOW_SPEED := 15.0 ## плавность следования по горизонтали
 const CAMERA_FOLLOW_SPEED_Y := 11.0 ## плавность следования по высоте (ступеньки, прыжок)
 

@@ -314,7 +314,7 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 			skeleton.set_bone_pose_position(_hips_index, pose["hips"])
 	_last_pose = pose
 	if appearance != null:
-		var open_hand := 0.0 if action == "attack" else 1.0-_combat_blend
+		var open_hand := 0.0 if action == "attack" or context.get("hold_weapon", false) else 1.0-_combat_blend
 		appearance.set_hands(move_toward(appearance.hand_open, open_hand, delta*12.0))
 		appearance.update_pose(delta, grounded, grounded and planar < .03 and action == ""
 			and _hit_time >= clip_duration("hit") and context.get("cache_idle_cloth", true))

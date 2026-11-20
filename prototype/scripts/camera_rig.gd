@@ -1,7 +1,7 @@
 ## Отдельная камера от третьего лица на «пружинной руке» (SpringArm3D).
 ##
 ## Живёт в корне сцены и не наследует поворот героини:
-##   • вращается мгновенно по углам yaw/pitch игрока (без задержки в кадр);
+##   • быстро и плавно доворачивает визуальные углы к yaw/pitch игрока;
 ##   • плавно следует за позицией (раздельно по горизонтали и высоте — ступеньки не трясут экран);
 ##   • сталкивается ТОЛЬКО со статикой зала (слой 1), не цепляясь за героиню и клона;
 ##   • сферический зонд SpringArm3D не даёт камере заглядывать сквозь углы стен и капсул.
@@ -20,6 +20,7 @@ var _pos_smooth := Vector3.ZERO
 var _initialized := false
 var _kick_deg := 0.0
 var _hero_hidden := false
+var _last_frame_usec := -1
 
 
 func setup(follow: Node3D, init_yaw: float, pitch_deg: float) -> void:
@@ -56,7 +57,8 @@ func snap_now() -> void:
 	_pos_smooth = want
 	global_position = want
 	_initialized = true
-	_sync_angles()
+	_sync_angles(0.0, true)
+	_last_frame_usec = -1
 
 
 func add_kick(deg_amount: float) -> void:
@@ -66,6 +68,20 @@ func add_kick(deg_amount: float) -> void:
 
 
 func _process(delta: float) -> void:
+	# At very low FPS Godot may cap process delta when physics steps are
+	# capped. Use monotonic real time for presentation only, not movement.
+	_advance_camera(_camera_frame_delta(Time.get_ticks_usec(), delta))
+
+
+func _camera_frame_delta(now_usec: int, fallback: float) -> float:
+	var elapsed := clampf(fallback, 0.0, .25)
+	if _last_frame_usec >= 0 and now_usec >= _last_frame_usec:
+		elapsed = clampf(float(now_usec - _last_frame_usec) / 1000000.0, 0.0, .25)
+	_last_frame_usec = now_usec
+	return elapsed
+
+
+func _advance_camera(delta: float) -> void:
 	if not is_instance_valid(target):
 		return
 
@@ -82,7 +98,7 @@ func _process(delta: float) -> void:
 
 	global_position = _pos_smooth
 	# A small speed-dependent pullback and FOV keep a close idle framing while
-	# showing more of the room in a sprint. Mouse input is never delayed.
+	# showing more of the room in a sprint. Input and movement remain unfiltered.
 	var speed := 0.0
 	if target is CharacterBody3D:
 		var v: Vector3 = (target as CharacterBody3D).velocity
@@ -94,7 +110,7 @@ func _process(delta: float) -> void:
 	if not T.CAMERA_DYNAMIC:
 		_kick_deg = 0.0
 	_kick_deg *= exp(-20.0 * delta)
-	_sync_angles()
+	_sync_angles(delta)
 	_update_near_hide()
 
 
@@ -126,11 +142,13 @@ func _set_hero_visible(vis: bool) -> void:
 		ch.visible = vis
 
 
-func _sync_angles() -> void:
+func _sync_angles(delta: float, immediate: bool = false) -> void:
 	var y_val: Variant = target.get("yaw")
 	var p_val: Variant = target.get("pitch")
+	var weight := 1.0 if immediate else 1.0 - exp(-T.CAMERA_TURN_SPEED * maxf(delta, 0.0))
 	if y_val != null:
-		rotation.y = float(y_val)
+		# Shortest path over the -PI / PI seam, never a full revolution.
+		rotation.y = lerp_angle(rotation.y, float(y_val), weight)
 	if p_val != null:
 		var p_clamped := clampf(float(p_val) + _kick_deg, T.CAMERA_PITCH_MIN, T.CAMERA_PITCH_MAX)
-		rotation.x = deg_to_rad(p_clamped)
+		rotation.x = lerpf(rotation.x, deg_to_rad(p_clamped), weight)
