@@ -7,6 +7,7 @@ const CloneScene := preload("res://scenes/clone.tscn")
 const CutManikinScene := preload("res://scenes/cut_manikin.tscn")
 const ROOM_SCENE := preload("res://scenes/room.tscn")
 const PRELOAD_MENU := preload("res://scenes/pause_menu.tscn")
+const EquipmentMenu := preload("res://scripts/equipment_menu.gd")
 
 var room: Node3D
 var player: CharacterBody3D
@@ -17,6 +18,7 @@ var _hint: Label
 var _bar_panel: PanelContainer
 var _hint_age := 0.0
 var menu: Control
+var equipment: Control
 
 
 func _ready() -> void:
@@ -72,7 +74,7 @@ func _build_overlay() -> void:
 		"WASD — бег · Shift — спринт · Left Alt — шаг\n"
 		+ "ЛКМ / ПКМ — удар · Пробел — уворот · F — прыжок\n"
 		+ "Tab или СКМ — захват цели · колесо — смена цели\n"
-		+ "V — тестовый клинок у манекена"
+		+ "V — тестовый клинок · I — снаряжение"
 	)
 	_hint_panel.add_child(_hint)
 
@@ -114,6 +116,10 @@ func _build_overlay() -> void:
 	menu = PRELOAD_MENU.instantiate()
 	menu.action.connect(_on_menu_action)
 	layer.add_child(menu)
+	equipment = EquipmentMenu.new()
+	equipment.setup(player)
+	equipment.closed.connect(_close_equipment)
+	layer.add_child(equipment)
 
 
 func _make_card_style() -> StyleBoxFlat:
@@ -172,6 +178,12 @@ func _key_badge(key: String, caption: String) -> Control:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and not equipment.visible:
+		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+		if key == KEY_I and menu.enabled and not menu.visible:
+			_open_equipment(false)
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("cycle_quality"):
 		T.QUALITY = (T.QUALITY + 1) % T.QUALITY_NAMES.size()
 		_apply_quality()
@@ -192,8 +204,26 @@ func _unhandled_input(event: InputEvent) -> void:
 			clone.cycle_mode()
 
 
+func _open_equipment(from_pause: bool) -> void:
+	menu.enabled = false
+	menu.visible = false
+	equipment.open(from_pause)
+
+
+func _close_equipment(return_to_pause: bool) -> void:
+	menu.enabled = true
+	if return_to_pause:
+		menu.open()
+	else:
+		get_tree().paused = false
+		if DisplayServer.get_name() != "headless":
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
 func _on_menu_action(id: String) -> void:
 	match id:
+		"equipment":
+			_open_equipment(true)
 		"stance":
 			if is_instance_valid(player):
 				player.toggle_combat_mode()

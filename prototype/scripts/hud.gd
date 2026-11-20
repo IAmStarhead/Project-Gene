@@ -43,10 +43,10 @@ func _build_bars() -> void:
 
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.025, 0.055, 0.075, 0.88)
-	style.border_color = Color(0.36, 0.70, 0.76, 0.55)
+	style.bg_color = Color(0.035, 0.035, 0.033, 0.90)
+	style.border_color = Color(0.63, 0.56, 0.40, 0.68)
 	style.set_border_width_all(1)
-	style.set_corner_radius_all(4)
+	style.set_corner_radius_all(1)
 	style.content_margin_left = 10.0
 	style.content_margin_right = 10.0
 	style.content_margin_top = 7.0
@@ -97,12 +97,12 @@ func _build_bars() -> void:
 	_health_lag = health_row["lag"]
 	_health_fill = health_row["fill"]
 	_health_lag.color = Color(0.97, 0.62, 0.52, 0.82)
-	_health_fill.color = Color(0.78, 0.18, 0.23, 1.0)
+	_health_fill.color = Color(0.64, 0.17, 0.16, 1.0)
 
 	var stamina_row := _bar_row(ST_HEIGHT, false)
 	column.add_child(stamina_row["root"])
 	_stamina_fill = stamina_row["fill"]
-	_stamina_fill.color = Color(0.38, 0.78, 0.46, 1.0)
+	_stamina_fill.color = Color(0.37, 0.57, 0.36, 1.0)
 
 
 func _bar_row(bar_h: float, with_ticks: bool) -> Dictionary:
@@ -169,7 +169,7 @@ func _process(delta: float) -> void:
 	var s_ratio := clampf(st / maxf(T.MAX_STAMINA, 1.0), 0.0, 1.0)
 	_stamina_fill.size.x = BAR_WIDTH * s_ratio
 	_stamina_fill.color = (
-		Color(0.38, 0.78, 0.46, 1.0)
+		Color(0.37, 0.57, 0.36, 1.0)
 		if st >= T.ATTACK_STAMINA
 		else Color(0.76, 0.54, 0.28, 1.0)
 	)

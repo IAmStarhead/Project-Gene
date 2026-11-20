@@ -32,10 +32,10 @@ func _ready() -> void:
 
 	_panel = PanelContainer.new()
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.025, 0.055, 0.075, 0.98)
-	style.border_color = Color(0.36, 0.70, 0.76, 0.65)
+	style.bg_color = Color(0.035, 0.034, 0.032, 0.98)
+	style.border_color = Color(0.67, 0.59, 0.40, 0.70)
 	style.set_border_width_all(1)
-	style.set_corner_radius_all(8)
+	style.set_corner_radius_all(2)
 	style.content_margin_left = 26.0
 	style.content_margin_right = 26.0
 	style.content_margin_top = 12.0
@@ -46,7 +46,7 @@ func _ready() -> void:
 	center.add_child(_panel)
 
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 4)
+	col.add_theme_constant_override("separation", 2)
 	_panel.add_child(col)
 
 	var title := Label.new()
@@ -64,6 +64,7 @@ func _ready() -> void:
 	col.add_child(HSeparator.new())
 
 	_add_item(col, "resume", "Продолжить игру", "")
+	_add_item(col, "equipment", "Снаряжение", "I")
 	_add_item(col, "showcase", "Витрина анимаций", "H")
 	_add_item(col, "quality", "Качество графики", "F4")
 	_add_item(col, "brightness", "Освещение зала", "B")
@@ -83,13 +84,22 @@ func _ready() -> void:
 	hint.add_theme_font_size_override("font_size", 11)
 	hint.add_theme_color_override("font_color", Color(0.58, 0.64, 0.74))
 	col.add_child(hint)
+	resized.connect(_fit_panel)
+	call_deferred("_fit_panel")
+
+
+func _fit_panel() -> void:
+	var panel_size := _panel.get_combined_minimum_size()
+	var factor := minf(1.0, minf((size.x - 20.0) / panel_size.x, (size.y - 20.0) / panel_size.y))
+	_panel.pivot_offset = _panel.size * .5
+	_panel.scale = Vector2.ONE * maxf(.1, factor)
 
 
 func _add_item(parent: VBoxContainer, id: String, caption: String, key: String) -> void:
 	var row := Button.new()
 	row.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	row.custom_minimum_size = Vector2(460.0, 28.0)
-	row.add_theme_font_size_override("font_size", 15)
+	row.custom_minimum_size = Vector2(460.0, 24.0)
+	row.add_theme_font_size_override("font_size", 14)
 	row.focus_mode = Control.FOCUS_ALL
 	row.pressed.connect(_activate.bind(id))
 	row.focus_entered.connect(_on_focus.bind(row))
@@ -117,6 +127,7 @@ func refresh() -> void:
 		String(player.call("stance_name")) if player != null and player.has_method("stance_name") else "—"
 	)
 	_items["resume"]["button"].text = _row_text("resume", "")
+	_items["equipment"]["button"].text = _row_text("equipment", "")
 	_items["showcase"]["button"].text = _row_text("showcase", "")
 	_items["quit"]["button"].text = _row_text("quit", "")
 
@@ -197,17 +208,17 @@ func _input(event: InputEvent) -> void:
 func _make_theme() -> Theme:
 	var th := Theme.new()
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.09, 0.15, 0.18, 0.96)
-	normal.set_corner_radius_all(5)
+	normal.bg_color = Color(0.085, 0.08, 0.07, 0.96)
+	normal.set_corner_radius_all(1)
 	normal.content_margin_left = 10.0
 	normal.content_margin_right = 10.0
 	var hover := StyleBoxFlat.new()
-	hover.bg_color = Color(0.15, 0.29, 0.31, 0.98)
-	hover.set_corner_radius_all(5)
+	hover.bg_color = Color(0.22, 0.19, 0.13, 0.98)
+	hover.set_corner_radius_all(1)
 	hover.content_margin_left = 10.0
 	hover.content_margin_right = 10.0
 	var focus := hover.duplicate() as StyleBoxFlat
-	focus.border_color = Color(0.75, 0.85, 1.0, 0.90)
+	focus.border_color = Color(0.77, 0.68, 0.48, 0.90)
 	focus.set_border_width_all(2)
 	th.set_stylebox("normal", "Button", normal)
 	th.set_stylebox("hover", "Button", hover)

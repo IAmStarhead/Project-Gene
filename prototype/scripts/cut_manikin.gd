@@ -19,11 +19,11 @@ func _ready() -> void:
 	add_to_group("damageable") # Разрешаем обычный захват цели.
 	collision_layer = 4
 	collision_mask = 0
-	_body_material = _mat(Color(.43, .57, .62))
+	_body_material = _mat(Color(.38, .42, .40))
 	_cut_material = _mat(Color(.55, .13, .11))
 	_selected_material = _mat(Color(.96, .70, .20))
-	var base := _mat(Color(.18, .27, .30))
-	var joint := _mat(Color(.74, .63, .39))
+	var base := _mat(Color(.16, .18, .17))
+	var joint := _mat(Color(.60, .48, .28))
 	var collision := CollisionShape3D.new()
 	var collision_shape := CapsuleShape3D.new()
 	collision_shape.radius = .28
@@ -34,6 +34,14 @@ func _ready() -> void:
 	_capsule(self, .25, .66, Vector3(0, 1.13, 0), _body_material)
 	_capsule(self, .15, .30, Vector3(0, 1.70, 0), base)
 	_box(self, Vector3(.40, .18, .22), Vector3(0, .77, 0), base)
+	# Детали оболочки — декоративные, коллизии и четыре зоны среза прежние.
+	var plate := _mat(Color(.23, .26, .24))
+	_box(self, Vector3(.28, .32, .045), Vector3(0, 1.17, .235), plate)
+	_box(self, Vector3(.19, .025, .012), Vector3(0, 1.25, .264), joint)
+	_box(self, Vector3(.12, .015, .012), Vector3(0, 1.18, .264), joint)
+	_box(self, Vector3(.22, .045, .02), Vector3(0, 1.71, .142), joint)
+	_box(self, Vector3(.36, .025, .23), Vector3(0, .75, 0), joint)
+	_capsule(self, .065, .13, Vector3(0, 1.48, 0), joint)
 	# Верхняя точка каждой детали — фиксированное место будущего среза.
 	_add_limb(Vector3(-.36, 1.46, 0), .69, .083, joint)
 	_add_limb(Vector3(.36, 1.46, 0), .69, .083, joint)
@@ -82,6 +90,7 @@ func _add_limb(origin: Vector3, length: float, radius: float, joint: Material) -
 	whole.position = origin
 	add_child(whole)
 	_capsule(whole, radius, length, Vector3(0, -length / 2.0, 0), _body_material)
+	_box(whole, Vector3(radius * 1.4, .025, radius * 1.4), Vector3(0, -length * .58, 0), joint)
 	# Культя создана до удара и скрыта внутри целой конечности.
 	var stump := Node3D.new()
 	stump.position = origin

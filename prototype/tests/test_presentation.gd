@@ -64,6 +64,30 @@ func _run() -> void:
 	scene.menu.close()
 	check(not paused and not scene.menu.visible, "menu resumes")
 
+	check(scene.menu._items.has("equipment"), "equipment accessible from pause")
+	var key := InputEventKey.new()
+	key.pressed = true
+	key.keycode = KEY_I
+	key.physical_keycode = KEY_I
+	root.push_input(key)
+	check(paused and scene.equipment.visible and not scene.menu.enabled, "I opens equipment and pauses")
+	check(scene.equipment.category == 1 and scene.equipment.entry != null, "real clothing shown by default")
+	scene.equipment.tabs[0].pressed.emit()
+	check(scene.equipment.category == 0 and scene.equipment.entry == null and scene.equipment.grid.get_child_count() == 12, "weapon grid is empty")
+	scene.equipment.tabs[2].pressed.emit()
+	check(scene.equipment.category == 2 and scene.equipment.entry == null, "item grid is empty")
+	var escape := InputEventKey.new()
+	escape.pressed = true
+	escape.keycode = KEY_ESCAPE
+	root.push_input(escape)
+	check(not paused and not scene.equipment.visible and scene.menu.enabled, "escape from direct equipment resumes")
+	scene.menu.open()
+	scene.menu._activate("equipment")
+	check(paused and scene.equipment.visible and not scene.menu.visible, "pause opens equipment")
+	root.push_input(escape)
+	check(paused and scene.menu.visible and not scene.equipment.visible, "escape returns to pause without resuming")
+	scene.menu.close()
+
 	player.show_details = true
 	player._set_clone_profiling(true)
 	for i in 70:
