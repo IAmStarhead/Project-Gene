@@ -74,11 +74,13 @@ var show_details := false
 var _step_params := PhysicsTestMotionParameters3D.new()
 var _step_result := PhysicsTestMotionResult3D.new()
 
-# Честная телеметрия рендера в _process (не ограничена шагом физики 60 Гц).
+# Время между кадрами измеряем системными монотонными часами, не игровым delta.
+# Godot уменьшает delta при превышении лимита физических шагов за кадр.
 var _gpu_name := ""
 var _gpu_is_integrated := false
 var _perf_accum: float = 0.0
 var _perf_frames: int = 0
+var _perf_previous_usec: int = -1
 var _perf_worst: float = 0.0
 var _fps: float = 0.0
 var _avg_ms: float = 0.0
@@ -179,6 +181,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if label != null:
 			label.visible = show_details
 		if show_details:
+			_reset_perf_counter()
 			_write_debug_label()
 	elif event is InputEventMouseButton and event.pressed:
 		var mb := event as InputEventMouseButton
@@ -244,23 +247,45 @@ func _set_clone_profiling(enabled: bool) -> void:
 		clone.set_profiling(enabled)
 
 
-func _process(delta: float) -> void:
-	# Считаем реальное время отрисованного кадра и обновляем текст только при открытом F3.
-	if not show_details:
-		return
-	_perf_accum += delta
-	_perf_frames += 1
-	if delta > _perf_worst:
-		_perf_worst = delta
-	if _perf_accum >= 0.25:
-		_fps = float(_perf_frames) / _perf_accum
-		_avg_ms = (_perf_accum / float(_perf_frames)) * 1000.0
-		_worst_ms = _perf_worst * 1000.0
-		_perf_accum = 0.0
-		_perf_frames = 0
-		_perf_worst = 0.0
-		_write_debug_label()
+func _notification(what: int) -> void:
+	# Не включать проведённое в меню время в длительность первого кадра.
+	if what == NOTIFICATION_UNPAUSED:
+		_reset_perf_counter()
 
+
+func _reset_perf_counter() -> void:
+	_perf_previous_usec = -1
+	_perf_accum = 0.0
+	_perf_frames = 0
+	_perf_worst = 0.0
+	_fps = 0.0
+	_avg_ms = 0.0
+	_worst_ms = 0.0
+
+
+func _record_perf_time(now_usec: int) -> bool:
+	if _perf_previous_usec < 0 or now_usec <= _perf_previous_usec:
+		_perf_previous_usec = now_usec
+		return false
+	var elapsed := float(now_usec - _perf_previous_usec) / 1000000.0
+	_perf_previous_usec = now_usec
+	_perf_accum += elapsed
+	_perf_frames += 1
+	_perf_worst = maxf(_perf_worst, elapsed)
+	if _perf_accum < 0.25:
+		return false
+	_fps = float(_perf_frames) / _perf_accum
+	_avg_ms = 1000.0 * _perf_accum / float(_perf_frames)
+	_worst_ms = 1000.0 * _perf_worst
+	_perf_accum = 0.0
+	_perf_frames = 0
+	_perf_worst = 0.0
+	return true
+
+
+func _process(_delta: float) -> void:
+	if show_details and _record_perf_time(Time.get_ticks_usec()):
+		_write_debug_label()
 
 func _physics_process(delta: float) -> void:
 	if not _spawn_recorded:
@@ -798,8 +823,6 @@ func _write_debug_label() -> void:
 	elif _action == "dodge":
 		state_text = "уворот" + (" [i-frames]" if _invulnerable else "")
 
-	var engine_fps := Engine.get_frames_per_second()
-	var shown_fps := _fps if _fps > 0.1 else engine_fps
 	var draws := int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	var prims := int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
 	var phys_ms := Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
@@ -808,8 +831,9 @@ func _write_debug_label() -> void:
 	var style_name := "селлшейдинг" if T.TOON_ENABLED else "полуреализм"
 	var lock_name := String(lock.target.name) if (lock != null and lock.active()) else "нет"
 
+	var frame_stats := "FPS: %.0f  ·  кадр: %.1f мс (пик %.1f)" % [_fps, _avg_ms, _worst_ms] if _fps > 0.0 else "FPS: собираем замеры…"
 	var lines := PackedStringArray([
-		"FPS: %.0f  ·  кадр: %.1f мс (пик %.1f)  ·  физ: %.1f мс" % [shown_fps, _avg_ms, _worst_ms, phys_ms],
+		"%s  ·  физ: %.1f мс" % [frame_stats, phys_ms],
 		"Видеокарта: %s" % (_gpu_name if not _gpu_name.is_empty() else "—"),
 	])
 	if _gpu_is_integrated:

@@ -120,6 +120,16 @@ func _run() -> void:
 	check(paused and scene.menu.visible and not scene.equipment.visible, "escape returns to pause without resuming")
 	scene.menu.close()
 
+	# Synthetic wall-clock frames: slow rendering must not be reported as 30 FPS
+	# just because Godot caps process delta to two 60 Hz physics steps.
+	player._reset_perf_counter()
+	check(not player._record_perf_time(1000000), "FPS timer primes without inventing a frame")
+	check(not player._record_perf_time(1142857), "FPS timer waits for a measurement window")
+	check(player._record_perf_time(1285714), "FPS timer completes using wall-clock intervals")
+	check(absf(player._fps - 7.0) < .01 and absf(player._avg_ms - 142.857) < .01,
+		"7 FPS wall-clock frame intervals are not falsely reported as 30 FPS")
+	player._reset_perf_counter()
+	check(player._fps == 0.0 and player._perf_previous_usec == -1, "FPS reset does not include a pause")
 	player.show_details = true
 	player._set_clone_profiling(true)
 	for i in 70:
