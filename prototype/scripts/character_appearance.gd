@@ -651,10 +651,14 @@ func _fit_goals() -> void:
 	var hem_height:=PackedFloat32Array()
 	for k in _segments: hem_height.append(_goal_local[(_rings-1)*_segments+k].y)
 	var rounded:=hem_height.duplicate()
-	for iteration in 4:
+	for iteration in 8:
 		var source:=rounded.duplicate()
 		for k in _segments:
-			rounded[k]=minf(hem_height[k]+.045,maxf(source[k],source[(k+_segments-1)%_segments]*.25+source[k]*.5+source[(k+1)%_segments]*.25))
+			# Bound a hanging tip's negative curvature, rather than merely
+			# averaging its neighbours four times. Only LIFT along supported
+			# meridians; never enlarge the capsule or push through a knee.
+			var bridge := (source[(k+_segments-1)%_segments]+source[(k+1)%_segments])*.5-.0025
+			rounded[k]=minf(hem_height[k]+.060,maxf(source[k],bridge))
 	for k in _segments:
 		var lift:=rounded[k]-hem_height[k]
 		if lift < .000001: continue

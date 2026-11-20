@@ -9,7 +9,7 @@ from scipy.sparse.csgraph import connected_components
 from scipy.spatial import cKDTree
 
 from build_motion_set import MODEL, ROOT
-from rig_math import Rig
+from rig_math import Rig, accessor
 from test_motion_set import sample
 
 sys.path.insert(0, str(MODEL.parent))
@@ -135,6 +135,38 @@ class SkinWeightTests(unittest.TestCase):
             v = self.rig.skin(*sample(self.data['clips'][clip], time), self.mesh)[first]
             residual = np.linalg.norm((graph@v-v)[collar], axis=1)
             self.assertLess(residual.max(), .0037, (clip, 'collar graph residual'))
+
+    def test_multi_pose_fit_reduces_deformed_shoulder_roughness_without_new_skin_cuts(self):
+        from repair_shoulders import shoulder_weights
+        from check_garment_contacts import visible_body_triangles
+        import json
+        mesh, r = self.mesh, self.rig
+        attrs = self.gltf['meshes'][0]['primitives'][0]['attributes']
+        old_joints, old_weights, _ = shoulder_weights(mesh['POSITION'], mesh['indices'],
+            accessor(self.gltf, self.before, attrs['JOINTS_0']),
+            accessor(self.gltf, self.before, attrs['WEIGHTS_0']), r.names)
+        before = mesh | {'JOINTS_0': old_joints, 'WEIGHTS_0': old_weights}
+        coverage = json.loads((MODEL.parent/'appearance/lab_uniform.json').read_text())['coverage']
+        kept_before = {tuple(t) for t in visible_body_triangles(r, before, coverage)}
+        kept_after = {tuple(t) for t in visible_body_triangles(r, mesh, coverage)}
+        self.assertFalse(kept_before-kept_after, 'Fairing must not hide another skin triangle')
+        p, first, inverse = np.unique(mesh['POSITION'].round(6), axis=0,
+                                      return_index=True, return_inverse=True)
+        tri = inverse[mesh['indices']]
+        edges = np.unique(np.sort(np.concatenate([tri[:, [0, 1]], tri[:, [1, 2]], tri[:, [2, 0]]]), axis=1), axis=0)
+        edges = edges[edges[:, 0] != edges[:, 1]]
+        directed = np.concatenate([edges, edges[:, ::-1]])
+        c = 1/np.maximum(np.linalg.norm(p[directed[:, 0]]-p[directed[:, 1]], axis=1), .001)
+        c /= np.bincount(directed[:, 0], weights=c, minlength=len(p))[directed[:, 0]]
+        graph = coo_matrix((c, directed.T), shape=(len(p), len(p))).tocsr()
+        collar = (p[:, 1] > 1.30) & (p[:, 1] < 1.44) & (abs(p[:, 0]) > .04) & (abs(p[:, 0]) < .19)
+        for clip, time in [('attack_right', .16), ('attack_right', .19), ('attack_left', .18), ('guard', 0)]:
+            q, h = sample(self.data['clips'][clip], time)
+            errors = []
+            for m in [before, mesh]:
+                v = r.skin(q, h, m)[first]
+                errors.append(np.linalg.norm((graph@v-v)[collar], axis=1).mean())
+            self.assertLess(errors[1], errors[0]*.97, (clip, 'mean deformed collar roughness'))
 
     def test_relaxed_hands_do_not_cut_through_the_hips(self):
         import json

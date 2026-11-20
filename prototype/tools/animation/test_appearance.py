@@ -117,6 +117,21 @@ class AppearanceTests(unittest.TestCase):
         self.assertLess(np.ptp(fabric), .04)
         self.assertGreater(min(self.data['cloth']['binding']), .60, 'No near-black collar/binding')
 
+    def test_facing_contact_groups_are_explicit_and_do_not_enlarge_the_cuff(self):
+        gown = self.data['gown']
+        groups = gown['face_groups']
+        tri = np.asarray(gown['indices']).reshape(-1, 3)
+        self.assertEqual(len(groups), len(tri))
+        self.assertEqual(set(groups), {'outer', 'binding', 'cuff_facing', 'neck_facing', 'waist_adapter', 'badge'})
+        p = np.asarray(gown['positions'])
+        for a, b in gown['cuff_edges']:
+            for i in [a, b]:
+                side = 'L' if p[i, 0] > 0 else 'R'
+                root = self.rig.rest_world[self.rig.index['upper_arm.'+side]]
+                self.assertAlmostEqual(np.dot(p[i]-root[:3, 3], root[:3, 1]), .158, places=6)
+        self.assertGreater(groups.count('cuff_facing'), 100)
+        self.assertGreater(groups.count('outer'), 5000)
+
     def test_underarm_mask_stops_well_inside_the_tailored_cuff(self):
         coverage = self.data['coverage']
         # Report 40 forbids hiding the shoulder repair with a larger mask.

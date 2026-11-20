@@ -14,7 +14,7 @@
 материалы и исходный GLB не меняются. Правка подмышки — по связности сетки,
 а не отсечением руки координатной плоскостью; см. repair_shoulders.py.
 
-Использование из корня репозитория (нужен numpy):
+Использование из корня репозитория (numpy/scipy из tools/animation/requirements.txt):
     python prototype/assets/heroine/sanitize_glb.py вход.glb выход.glb
 
 Оригинал не изменяется. Проверка результата — валидатором Khronos.

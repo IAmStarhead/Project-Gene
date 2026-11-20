@@ -223,9 +223,9 @@ export class Appearance {
     }
     const hemHeight=Array.from({length:segments},(_,k)=>this.goalLocal[(c.rings-1)*segments+k].y);
     let rounded=hemHeight.slice();
-    for(let pass=0;pass<4;pass++){
+    for(let pass=0;pass<8;pass++){
       const source=rounded.slice();
-      rounded=source.map((v,k)=>Math.min(hemHeight[k]+.045,Math.max(v,source[(k+segments-1)%segments]*.25+v*.5+source[(k+1)%segments]*.25)));
+      rounded=source.map((v,k)=>Math.min(hemHeight[k]+.060,Math.max(v,(source[(k+segments-1)%segments]+source[(k+1)%segments])*.5-.0025)));
     }
     for(let k=0;k<segments;k++){
       const lift=rounded[k]-hemHeight[k];if(lift<.000001)continue;

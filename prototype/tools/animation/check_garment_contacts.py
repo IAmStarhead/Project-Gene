@@ -125,6 +125,15 @@ def main():
                 counts[label] += 1
                 names = sorted({rig.names[body_labels[c.index('body')]] for c in contacts})
                 hits[label] = {'contacts': len(contacts), 'approximate_body_parts': names}
+                if label == 'gown' and 'face_groups' in gown:
+                    groups = gown['face_groups']
+                    if len(groups) != len(gown_triangles):
+                        raise SystemExit('Gown face-group inventory does not match its triangles')
+                    hits[label]['garment_face_groups'] = dict(Counter(
+                        groups[c.index(next(n for n in c.names if n != 'body'))] for c in contacts))
+                    # Construction provenance ONLY. An outer face can be
+                    # occluded and an inner facing can be visible at a cuff.
+                    # Do not turn these groups into a visibility exemption.
                 if args.contact_details:
                     # IDs refer to these exact stamped meshes, not anatomical
                     # regions. Depth of overlapping open facings is NOT a

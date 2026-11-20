@@ -29,6 +29,9 @@ def bodice(rig, waist, next_row):
     np.add.at(normal, inverse, source['NORMAL'])
     normal /= np.maximum(np.linalg.norm(normal, axis=1, keepdims=True), 1e-10)
     p, dense = p[first].astype(float), dense[first]
+    body_positions, body_weights, body_normals = p.copy(), dense.copy(), normal.copy()
+    from scipy.spatial import cKDTree
+    body_tree = cKDTree(body_positions)
     triangles = inverse[source['indices']]
     roots = {side: rig.rest_world[rig.index['upper_arm.'+side]] for side in ['L', 'R']}
 
@@ -170,12 +173,15 @@ def bodice(rig, waist, next_row):
         vertices.append(np.asarray(point).tolist()); weights.append(np.asarray(values).tolist()); colors.append(color)
         return len(vertices)-1
 
-    def join(previous, ring):
+    face_groups = ['outer']*len(tri)
+
+    def join(previous, ring, group='binding'):
         # Preserve source-body winding along every boundary.
         directed = {(a, b) for t in tri for a, b in zip(t, np.roll(t, -1))}
         for k, a in enumerate(previous):
             b, c, d = previous[(k+1)%len(previous)], ring[k], ring[(k+1)%len(previous)]
             tri.extend([[b, a, c], [b, c, d]] if (a, b) in directed else [[a, b, c], [b, d, c]])
+            face_groups.extend([group, group])
 
     for loop in loops:
         center = rest[loop].mean(axis=0)
@@ -194,7 +200,7 @@ def bodice(rig, waist, next_row):
                 pos = waist[lo%len(waist)]*(1-u)+waist[(lo+1)%len(waist)]*u
                 values = np.zeros(len(rig.names)); values[rig.index['hips']] = 1
                 waist_ids.append(append(pos, values)); waist_at.append(lo+u)
-            join(loop, waist_ids)
+            join(loop, waist_ids, 'waist_adapter')
         else:
             if center[1] > 1.40:
                 label = neck_edges
@@ -223,8 +229,21 @@ def bodice(rig, waist, next_row):
                     n /= max(np.linalg.norm(n), 1e-10)
                 ring.append(append(np.asarray(vertices[i])-n*.0025, weights[i], BINDING))
             join(loop, ring)
-            facing = [append(np.asarray(vertices[i])+inward, weights[i]) for i in ring]
-            join(ring, facing)
+            facing = []
+            for i in ring:
+                point = np.asarray(vertices[i])+inward
+                # The turned edge is a DIFFERENT longitudinal skin sample.
+                # Copying cuff weights down a straight inner tube made the
+                # return cut the thicker proximal arm after flexion. Refit
+                # only that internal seam to the existing source surface;
+                # leave the visible cuff and the body mask unchanged.
+                _, nearest = body_tree.query(point)
+                n = body_normals[nearest]
+                n = n/max(np.linalg.norm(n), 1e-10)
+                gap = np.dot(point-body_positions[nearest], n)
+                point += n*max(0., .004-gap)
+                facing.append(append(point, body_weights[nearest]))
+            join(ring, facing, 'neck_facing' if center[1] > 1.40 else 'cuff_facing')
 
     # Preserve the small lab identification patch on the eased fabric.
     def front_surface(x, y):
@@ -258,6 +277,7 @@ def bodice(rig, waist, next_row):
             for k in range(width):
                 a = base+row*(width+1)+k; b = a+1; c = a+width+1; d = c+1
                 tri.extend([[a, b, c], [b, d, c]])
+                face_groups.extend(['badge', 'badge'])
 
     # Keep the pinned waist first for the native seam test and compact weights.
     order = waist_ids+[i for i in range(len(vertices)) if i not in set(waist_ids)]
@@ -296,7 +316,9 @@ def bodice(rig, waist, next_row):
         index = remap[waist_upper[i]]
         n = normals[index]*.6+n*.4
         normals[index] = n/np.linalg.norm(n)
-    return {'waist_vertices': len(waist_ids), 'waist_cloth_samples': np.round(waist_at, 8).tolist(),
+    assert len(face_groups) == len(tri)
+    return {'face_groups': face_groups,
+            'waist_vertices': len(waist_ids), 'waist_cloth_samples': np.round(waist_at, 8).tolist(),
             'waist_normals': np.round(seam_normals, 7).tolist(),
             'armhole_edges': [], 'cuff_edges': remap[np.asarray(cuff_edges)].tolist(),
             'neck_edges': remap[np.asarray(neck_edges)].tolist(),
