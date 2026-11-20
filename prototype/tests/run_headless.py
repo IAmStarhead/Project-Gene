@@ -57,6 +57,8 @@ def main():
         run(engine, ['--editor', '--import'], timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_animation.gd'],
         expect_suite='GEN native animation suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_idle_cache.gd'],
+        expect_suite='GEN idle-cache suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_presentation.gd'],
         expect_suite='Presentation suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_limb_demo.gd'],

@@ -316,7 +316,8 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	if appearance != null:
 		var open_hand := 0.0 if action == "attack" else 1.0-_combat_blend
 		appearance.set_hands(move_toward(appearance.hand_open, open_hand, delta*12.0))
-		appearance.update_pose(delta, grounded)
+		appearance.update_pose(delta, grounded, grounded and planar < .03 and action == ""
+			and _hit_time >= clip_duration("hit") and context.get("cache_idle_cloth", true))
 
 
 func sample_dodge(time: float, direction: Vector3) -> Dictionary:

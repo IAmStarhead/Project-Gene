@@ -64,6 +64,11 @@ var _segments := 32
 var _rings := 10
 var _accumulator := 0.0
 var _last_origin := Vector3.ZERO
+# Idle-only local contact cache. A miss is forced once any capsule endpoint
+# moves 2 mm; current-capsule clearance is still resolved on every tick.
+const IDLE_CACHE_TOLERANCE := .002
+var _idle_cache_capsules: Array = []
+var _idle_cache_goals := PackedVector3Array()
 var _material: StandardMaterial3D
 var _skirt_indices := PackedInt32Array()
 var _skirt_colors := PackedColorArray()
@@ -455,6 +460,8 @@ func reset_cloth() -> void:
 	if outfit == "suit":
 		return
 	_accumulator = 0
+	_idle_cache_capsules.clear()
+	_idle_cache_goals.clear()
 	_last_origin = actor.global_position
 	_update_colliders()
 	_fit_goals()
@@ -847,14 +854,28 @@ func _drape_at_height(k: int, height: float) -> Vector3:
 	return _curve_points[at-1].lerp(_curve_points[at],u)
 
 
-func update_pose(delta: float, grounded: bool = true) -> void:
+func update_pose(delta: float, grounded: bool = true, idle_cache: bool = false) -> void:
 	if outfit == "suit":
 		return # ordinary GPU skinning only; no hidden skirt CPU simulation
 	if _points.is_empty() or actor.global_position.distance_to(_last_origin) > 2.0:
 		reset_cloth()
 	_last_origin = actor.global_position
 	_update_colliders()
-	_fit_goals()
+	if idle_cache and _idle_cache_matches():
+		_goal_local = _idle_cache_goals.duplicate()
+		# Re-project against CURRENT leg capsules, not stale cached contacts.
+		_clear_filleted_surface()
+		for i in _goal_local.size():
+			_goal_radii[i] = Vector2(_goal_local[i].x, _goal_local[i].z-.02).length()
+			_goals[i] = _hips_transform*_goal_local[i]
+	else:
+		_fit_goals()
+		if idle_cache:
+			_idle_cache_goals = _goal_local.duplicate()
+			_idle_cache_capsules = _capsule_local.duplicate(true)
+		else:
+			_idle_cache_capsules.clear()
+			_idle_cache_goals.clear()
 	_accumulator += minf(delta, .05)
 	var stepped := false
 	while _accumulator >= STEP:
@@ -874,6 +895,17 @@ func update_pose(delta: float, grounded: bool = true) -> void:
 		# steps. Resolve its CURRENT collision volumes on those frames too.
 		_project_points(grounded)
 	_upload_skirt()
+
+
+func _idle_cache_matches() -> bool:
+	if _idle_cache_goals.size() != _rest.size() or _idle_cache_capsules.size() != _capsule_local.size():
+		return false
+	var limit := IDLE_CACHE_TOLERANCE*IDLE_CACHE_TOLERANCE
+	for i in _capsule_local.size():
+		for endpoint in 2:
+			if (_capsule_local[i][endpoint] as Vector3).distance_squared_to(_idle_cache_capsules[i][endpoint]) > limit:
+				return false
+	return true
 
 
 func _project_points(grounded: bool) -> void:
