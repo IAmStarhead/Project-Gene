@@ -51,6 +51,8 @@ def main():
         expect_suite='GEN native animation suite')
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_integration.gd'],
         expect_suite='GEN combined integration suite')
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_directional.gd'],
+        expect_suite='GEN directional suite')
 
 
 if __name__ == '__main__':

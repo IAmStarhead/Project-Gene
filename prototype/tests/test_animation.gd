@@ -74,7 +74,7 @@ func _run() -> void:
 func _test_native_tracks(character: Node3D) -> void:
 	var mirror: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(
 		"res://assets/heroine/animations/motion_set.json"))
-	check(Character.MOTIONS.get_animation_list().size() == 18, "all 18 native clips loaded")
+	check(Character.MOTIONS.get_animation_list().size() == 30, "all 18 legacy + 12 directional native clips loaded")
 	check(character.skeleton.get_bone_count() == 21, "the original 21-bone rig is retained")
 	var max_rotation_error := 0.0
 	var max_position_error := 0.0

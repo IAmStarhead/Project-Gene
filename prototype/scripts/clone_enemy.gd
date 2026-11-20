@@ -151,6 +151,7 @@ func _physics_process(delta: float) -> void:
 				"grounded": grounded_now,
 				"vertical_speed": velocity.y,
 				"combat": mode == Mode.ON,
+				"directional": mode == Mode.ON,
 				"attack_timing": Vector3(T.CLONE_WINDUP, T.CLONE_ACTIVE, T.CLONE_RECOVER),
 			})
 

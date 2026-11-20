@@ -16,6 +16,18 @@ const CLIPS := [
 	["dodge_left", "Уворот влево"], ["dodge_right", "Уворот вправо"], ["jump_start", "Отрыв от земли"],
 	["jump_up", "Подъём в прыжке"], ["jump_down", "Падение"],
 	["land", "Приземление"], ["hit", "Реакция на удар"],
+	["combat_forward_walk", "Вперёд · шаг"],
+	["combat_forward_jog", "Вперёд · бег"],
+	["combat_forward_sprint", "Вперёд · Shift"],
+	["combat_left_walk", "Стрейф влево · шаг"],
+	["combat_left_jog", "Стрейф влево · бег"],
+	["combat_left_sprint", "Стрейф влево · Shift"],
+	["combat_right_walk", "Стрейф вправо · шаг"],
+	["combat_right_jog", "Стрейф вправо · бег"],
+	["combat_right_sprint", "Стрейф вправо · Shift"],
+	["combat_back_walk", "Отход назад · шаг"],
+	["combat_back_jog", "Отход назад · бег"],
+	["combat_back_sprint", "Отход назад · Shift"],
 ]
 const SPEEDS := [0.25, 0.5, 1.0]
 

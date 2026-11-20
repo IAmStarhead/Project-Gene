@@ -56,7 +56,7 @@ class MotionSetTests(unittest.TestCase):
         self.assertEqual(self.data['model_sha256'], hashlib.sha256(MODEL.read_bytes()).hexdigest())
         self.assertEqual(self.data['bones'], self.rig.names)
         self.assertEqual(len(self.rig.names), 21)
-        self.assertEqual(len(self.data['clips']), 18)
+        self.assertEqual(len(self.data['clips']), 30)
         self.assertTrue({'idle_relaxed', 'walk_relaxed', 'run_relaxed'} <= self.data['clips'].keys())
 
     def test_generated_files_are_reproducible(self):
@@ -103,7 +103,10 @@ class MotionSetTests(unittest.TestCase):
         # Only the guarding humerus plane is edited. Keep EVERY hip key,
         # timing/meta field, other bone and the entire four ordinary clips.
         protected = {}
-        for name, clip in self.data['clips'].items():
+        legacy = ['guard', 'idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run', 'attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'jump_start', 'jump_up', 'jump_down', 'land', 'hit']
+        self.assertTrue(set(legacy) <= self.data['clips'].keys())
+        for name in legacy:
+            clip = self.data['clips'][name]
             ordinary = name in ('idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed')
             keep = [i for i, bone in enumerate(self.data['bones'])
                     if ordinary or bone not in ('upper_arm.L', 'upper_arm.R')]

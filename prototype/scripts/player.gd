@@ -341,6 +341,7 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			"jump_started": _jump_started,
 			"floor_distance": floor_distance,
 			"combat": combat_mode,
+			"directional": lock != null and lock.active(),
 			"dodge_direction": _dodge_local_dir,
 			"walk_speed": T.WALK_SPEED,
 			"jog_speed": T.JOG_SPEED,
@@ -404,6 +405,14 @@ func _process_move(delta: float) -> void:
 	elif Input.is_action_pressed("walk_slow"):
 		speed = T.WALK_SPEED
 
+	# Only target-facing Shift is capped sideways/backwards. Free movement,
+	# forward sprint and Alt/default speeds retain their existing values.
+	if locked and Input.is_action_pressed("run") and dir.length_squared() > .001:
+		var facing := lock.direction_to_target()
+		var along := dir.dot(facing)
+		var across := absf(dir.dot(facing.cross(Vector3.UP)))
+		var forward_weight := maxf(along, 0)/maxf(absf(along)+across, .000001)
+		speed = lerpf(T.DIRECTIONAL_RUN_SPEED, T.RUN_SPEED, forward_weight)
 	var target := dir * speed
 	var rate := (T.ACCELERATION if dir.length_squared() > 0.0 else T.DECELERATION) * _air_control()
 	velocity.x = move_toward(velocity.x, target.x, rate * delta)

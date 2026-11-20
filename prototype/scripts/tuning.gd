@@ -9,6 +9,7 @@ class_name Tuning
 const WALK_SPEED := 1.15          ## Left Alt: спокойный шаг
 const JOG_SPEED := 2.9            ## без модификаторов: лёгкий бег
 const RUN_SPEED := 5.6            ## Shift: быстрый динамичный бег (приоритет над Alt)
+const DIRECTIONAL_RUN_SPEED := 3.4 ## target-facing side/back Shift; forward/free remain 5.6
 const COMBAT_WALK_SPEED := 1.65   ## калибровка боевых клипов/клона, не модификатор игрока
 const COMBAT_RUN_SPEED := 4.6
 const ACCELERATION := 16.0        ## как быстро набирается скорость

@@ -31,6 +31,9 @@ var _phase := 0.0
 var _gait_blend := 0.0
 var _sprint_blend := 0.0
 var _move_weight := 0.0
+var _directional_blend := 0.0
+# +Z forward / +X anatomical left / -X right / -Z back, L1-normalised.
+var _direction_weights := Vector4(1, 0, 0, 0)
 var _combat_mode := true
 var _combat_blend := 1.0
 var _takeoff_pose: Dictionary = {}
@@ -211,6 +214,11 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	_was_grounded = grounded
 
 	var planar := Vector2(local_velocity.x, local_velocity.z).length()
+	_directional_blend = move_toward(_directional_blend, 1.0 if context.get("directional", false) else 0.0, delta*6.0)
+	if planar > .03:
+		var desired := Vector4(maxf(local_velocity.z, 0), maxf(local_velocity.x, 0), maxf(-local_velocity.x, 0), maxf(-local_velocity.z, 0))
+		desired /= maxf(absf(local_velocity.x)+absf(local_velocity.z), .000001)
+		_direction_weights = _direction_weights.lerp(desired, 1.0-exp(-delta*12.0))
 	var walk := MOTIONS.get_animation("walk")
 	var run := MOTIONS.get_animation("run")
 	var relaxed_walk := MOTIONS.get_animation("walk_relaxed")
@@ -225,6 +233,12 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	walk_speed = float(context.get("walk_speed", walk_speed))
 	run_speed = float(context.get("jog_speed", run_speed))
 	var sprint_speed: float = context.get("sprint_speed", T.RUN_SPEED)
+	# New directional cycles have metre-calibrated tiers for both actors;
+	# clone speeds remain its own physical 1.65/3.4, not player input modes.
+	walk_speed = lerpf(walk_speed, T.WALK_SPEED, _directional_blend)
+	run_speed = lerpf(run_speed, T.JOG_SPEED, _directional_blend)
+	var directional_max := lerpf(T.DIRECTIONAL_RUN_SPEED, T.RUN_SPEED, _direction_weights.x)
+	sprint_speed = lerpf(sprint_speed, directional_max, _directional_blend)
 	var want_gait := smoothstep(walk_speed + .20, run_speed, planar)
 	var want_sprint := smoothstep(run_speed + .30, sprint_speed, planar)
 	_gait_blend = move_toward(_gait_blend, want_gait, delta * 4.0)
@@ -234,7 +248,10 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		var distance: float = context.get("distance", planar * delta)
 		var stride := lerpf(lerpf(walk_stride, run_stride, _gait_blend),
 			float(MOTIONS.get_animation("sprint_relaxed").get_meta("stride")), _sprint_blend)
-		var direction := -1.0 if local_velocity.z < -0.05 else 1.0
+		stride = lerpf(stride, _directional_stride(), _directional_blend)
+		# Backward locomotion has its OWN authored positive-time contact
+		# sequence, not a reversed forward run. No phase reset on lock/R.
+		var direction := -1.0 if local_velocity.z < -0.05 and _directional_blend <= .001 else 1.0
 		_phase = fposmod(_phase + distance * direction / stride, 1.0)
 
 	var pose := _locomotion_pose()
@@ -300,14 +317,46 @@ func sample_dodge(time: float, direction: Vector3) -> Dictionary:
 
 
 func _locomotion_pose() -> Dictionary:
-	if _combat_blend <= 0.0:
-		return _locomotion_set(false)
-	if _combat_blend >= 1.0:
-		return _locomotion_set(true)
-	# Одна и та же фаза контакта ног. R не перезапускает шаг и не
-	# телепортирует руки; переход занимает треть секунды.
-	return _blend_pose(_locomotion_set(false), _locomotion_set(true),
-		smoothstep(0.0, 1.0, _combat_blend))
+	var ordinary := _locomotion_set(false)
+	var legacy := ordinary
+	if _combat_blend > 0.0:
+		legacy = _blend_pose(ordinary, _locomotion_set(true), smoothstep(0.0, 1.0, _combat_blend))
+	if _directional_blend <= 0.0:
+		return legacy
+	var directional := _directional_pose()
+	# Lock alone doesn't toggle R/T: retain relaxed hands/upper-body when
+	# the player deliberately stays in ordinary stance while targeting.
+	if _combat_blend < 1.0:
+		directional = _blend_pose(_replace_upper(directional, ordinary), directional, smoothstep(0, 1, _combat_blend))
+	return _blend_pose(legacy, directional, smoothstep(0, 1, _directional_blend))
+
+
+func _directional_stride() -> float:
+	var total := 0.0
+	var names := ["forward", "left", "right", "back"]
+	for i in 4:
+		var walk := float(MOTIONS.get_animation("combat_"+names[i]+"_walk").get_meta("stride"))
+		var jog := float(MOTIONS.get_animation("combat_"+names[i]+"_jog").get_meta("stride"))
+		var sprint := float(MOTIONS.get_animation("combat_"+names[i]+"_sprint").get_meta("stride"))
+		total += _direction_weights[i]*lerpf(lerpf(walk, jog, _gait_blend), sprint, _sprint_blend)
+	return total
+
+
+func _directional_pose() -> Dictionary:
+	var result: Dictionary = {}
+	var total := 0.0
+	var names := ["forward", "left", "right", "back"]
+	for i in 4:
+		var weight := _direction_weights[i]
+		if weight < .00001:
+			continue
+		var prefix: String = "combat_"+names[i]+"_"
+		var gait := _blend_pose(sample_clip(prefix+"walk", _phase*clip_duration(prefix+"walk")),
+			sample_clip(prefix+"jog", _phase*clip_duration(prefix+"jog")), _gait_blend)
+		gait = _blend_pose(gait, sample_clip(prefix+"sprint", _phase*clip_duration(prefix+"sprint")), _sprint_blend)
+		total += weight
+		result = gait if result.is_empty() else _blend_pose(result, gait, weight/total)
+	return _blend_pose(sample_clip("guard", fposmod(_clock, clip_duration("guard"))), result, _move_weight)
 
 
 func _locomotion_set(combat: bool) -> Dictionary:
@@ -362,6 +411,8 @@ func reset_motion(combat: bool = true) -> void:
 	_gait_blend = 0.0
 	_sprint_blend = 0.0
 	_move_weight = 0.0
+	_directional_blend = 0.0
+	_direction_weights = Vector4(1, 0, 0, 0)
 	_air_time = 0.0
 	_air_launched = false
 	_air_launch_speed = 0.0

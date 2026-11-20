@@ -59,7 +59,7 @@ def floor_probes(rig):
     mesh = {key: value[ids] for key, value in source.items() if key != 'indices'}
     sides = [np.flatnonzero(mesh['POSITION'][:, 0]*sign > 0) for sign in [1, -1]]
     authors = {name: (duration, author) for name, duration, _, author, _ in definitions()
-               if name in ['idle_relaxed', 'guard', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run']}
+               if name in ['idle_relaxed', 'guard', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run'] or name.startswith('combat_')}
     selected = set()
 
     def blend(a, b, u):
@@ -84,6 +84,12 @@ def floor_probes(rig):
              ('sprint_relaxed', 'run'), ('walk', 'run'),
              *[('idle_relaxed', name) for name in ['walk_relaxed', 'run_relaxed', 'sprint_relaxed']],
              ('guard', 'walk'), ('guard', 'run')]
+    for direction in ['forward', 'left', 'right', 'back']:
+        pairs.extend([(f'combat_{direction}_walk', f'combat_{direction}_jog'),
+                      (f'combat_{direction}_jog', f'combat_{direction}_sprint')])
+    for tier in ['walk', 'jog', 'sprint']:
+        for a, b in [('forward', 'left'), ('forward', 'right'), ('back', 'left'), ('back', 'right')]:
+            pairs.append((f'combat_{a}_{tier}', f'combat_{b}_{tier}'))
     for phase in np.linspace(0, 1, 49, endpoint=False):
         poses = {name: author(rig, phase*duration).export() for name, (duration, author) in authors.items()}
         for pose in poses.values():

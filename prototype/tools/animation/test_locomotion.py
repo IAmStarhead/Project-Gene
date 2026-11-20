@@ -86,7 +86,8 @@ class WholeBodyTests(unittest.TestCase):
         keep = [i for i, name in enumerate(self.rig.names)
                 if not name.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
         protected = {name: clip | {'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
-                     for name, clip in self.data['clips'].items()}
+                     for name, clip in self.data['clips'].items() if name in ['guard', 'idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run', 'attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'jump_start', 'jump_up', 'jump_down', 'land', 'hit']}
+        self.assertEqual(len(protected), 18, 'Retain ALL original clips in the exact frozen hash')
         self.assertEqual(digest(protected), '1e5e906559a064e972a70dd7a2b6945d4768407f88d82065c935cde9229c3ef5')
         dodges = {name: clip for name, clip in protected.items() if name.startswith('dodge')}
         self.assertEqual(digest(dodges), '71103f883c1757d5d51ef2d381c7fb651ae6acdc613d065746e207da4c99571e')

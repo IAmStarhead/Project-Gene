@@ -23,6 +23,7 @@ import numpy as np
 
 from rig_math import Rig, unit
 import locomotion
+import combat_locomotion
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / 'prototype/assets/heroine/female_A_rigged_safe.glb'
@@ -457,6 +458,12 @@ def definitions():
         ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
         ('land', LAND, False, land, {}),
         ('hit', .32, False, hit, {}),
+        *[(f'combat_{direction}_{tier}', combat_locomotion.parameters(direction, tier)['duration'], True,
+           lambda r, t, d=direction, g=tier: combat_locomotion.pose(r, t, d, g, body, guard_hands),
+           {**{k: v for k, v in combat_locomotion.parameters(direction, tier).items()
+                if k in ('speed', 'stride', 'duty')}, 'sample_fps': 120,
+            'direction': direction, 'tier': tier, 'lead': 'R' if direction in ('right', 'back') else 'L'})
+          for direction in combat_locomotion.DIRECTIONS for tier in combat_locomotion.TIERS],
     ]
 
 
@@ -510,7 +517,7 @@ def tres(data):
         lines += [f'[sub_resource type="Animation" id="Animation_{name}"]',
                   f'resource_name = "{name}"', f'length = {clip["duration"]}',
                   f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / clip.get("sample_fps", FPS):.10f}']
-        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps'):
+        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps', 'tier'):
             if key in clip:
                 lines.append(f'metadata/{key} = {json.dumps(clip[key])}')
         q = np.asarray(clip['rotations'])
