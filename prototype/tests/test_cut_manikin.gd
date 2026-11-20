@@ -41,8 +41,10 @@ func _run() -> void:
 	var clone = scene.clone
 	check(is_instance_valid(dummy) and dummy.is_in_group("damageable"), "manikin in game and lock target")
 	check(dummy.parts.size() == 4, "four prepared parts")
+	check(dummy.character.skeleton != null and dummy.character.appearance.clone_variant, "manikin uses clone model and clothes")
 	for part in dummy.parts:
-		check(part.whole.visible and not part.stump.visible, "prepared stump hidden while intact")
+		check(not part.nodes.is_empty() and part.nodes[0].visible and not part.stump.visible,
+			"prepared model parts visible, stump hidden while intact")
 	player.global_position = dummy.global_position + Vector3(0, .08, 1.0)
 	player.rotation.y = 0.0
 	player.yaw = 0.0
@@ -55,7 +57,7 @@ func _run() -> void:
 	key(KEY_N)
 	await physics_frame
 	check(player.training_limb == 1 and player.training_special, "2 selects arm and N selects special")
-	check(dummy.parts[1].whole.get_child(0).material_override == dummy._selected_material, "selected limb highlighted")
+	check(dummy.parts[1].nodes[0].material_overlay == dummy._selected_material, "selected limb highlighted")
 	await process_frame
 	check(player.hud.get("_training_label").visible, "blade controls visible on HUD")
 	var clone_health: float = clone.health
@@ -63,7 +65,7 @@ func _run() -> void:
 	for i in 45:
 		await physics_frame
 	check(dummy.parts[1].state == dummy.LimbState.BLOCKED, "real mouse attack cuts selected limb")
-	check(not dummy.parts[1].whole.visible and dummy.parts[1].stump.visible, "prepared stump shown")
+	check(not dummy.parts[1].nodes[0].visible and dummy.parts[1].stump.visible, "prepared stump shown")
 	check(is_instance_valid(dummy.parts[1].debris), "physical piece spawned")
 	check(is_equal_approx(clone.health, clone_health), "blade does not damage clone")
 	key(KEY_3)
@@ -75,6 +77,36 @@ func _run() -> void:
 		await physics_frame
 	check(dummy.parts[2].state == dummy.LimbState.GROWING, "ordinary blade cuts leg")
 	check(dummy.parts[1].state == dummy.LimbState.BLOCKED, "ordinary cut does not unblock prior injury")
+	# Standard punches do not knock it over. Q does, through the actual hit
+	# adapter, even while the dummy is missing a leg and an arm.
+	dummy.take_damage(24.0, Vector3.FORWARD)
+	check(dummy.state == dummy.FallState.STANDING, "ordinary 24-damage punch leaves mannequin standing")
+	player.training_blade = false
+	player.global_position = dummy.global_position + Vector3(0, .08, .75)
+	player.rotation.y = 0.0
+	player._start_attack("hook")
+	check(player._do_hit(false), "Q reaches the actual mannequin")
+	check(dummy.state == dummy.FallState.FALLING, "strong Q starts the separate rigid-body fall")
+	check(not dummy.sever(0, false, Vector3.FORWARD), "cannot cut while mannequin is falling")
+	for i in 35:
+		await physics_frame
+	check(absf(dummy.body_physics.rotation.x) + absf(dummy.body_physics.rotation.z) > .4,
+		"physical mannequin actually tilts during the fall")
+	check(dummy.parts[2].state == dummy.LimbState.GROWING and not dummy.parts[2].nodes[0].visible,
+		"severed leg stays absent during fall")
+	for i in 65:
+		await physics_frame
+	check(dummy.state == dummy.FallState.STANDING and dummy.body_physics.freeze,
+		"mannequin gets up with its leg still missing")
+	check(dummy.body_physics.transform.is_equal_approx(dummy._standing_transform), "standing transform restored")
+	check(dummy.parts[1].state == dummy.LimbState.BLOCKED and dummy.parts[2].state == dummy.LimbState.GROWING,
+		"fall and rise preserve both injury states")
+	dummy.parts[1].nodes[0].visible = true # emulate the room's graphics-style traversal
+	dummy.parts[2].nodes[0].visible = true
+	dummy.refresh_cut_visibility()
+	check(not dummy.parts[1].nodes[0].visible and not dummy.parts[2].nodes[0].visible,
+		"graphics style refresh cannot restore severed limbs")
+	player.training_blade = true
 	# Pause freezes regrowth and physics.
 	var before_pause: float = dummy.parts[2].time
 	paused = true
@@ -82,7 +114,9 @@ func _run() -> void:
 	check(is_equal_approx(dummy.parts[2].time, before_pause), "regrowth pauses")
 	paused = false
 	dummy._physics_process(dummy.GROW_TIME * .4)
-	check(dummy.parts[2].stages[0].visible and not dummy.parts[2].stump.visible, "prepared growth stage displayed")
+	check(dummy.parts[2].growth.visible and dummy.parts[2].growth.scale.x > .4
+		and is_equal_approx(dummy.parts[2].growth.scale.x, dummy.parts[2].time / dummy.GROW_TIME)
+		and dummy.parts[2].stump.visible, "ordinary injury visibly regrows from its prepared stump")
 	dummy._physics_process(dummy.GROW_TIME)
 	check(dummy.parts[2].state == dummy.LimbState.INTACT, "ordinary injury regrows")
 	check(dummy.parts[1].state == dummy.LimbState.BLOCKED, "special injury remains blocked")

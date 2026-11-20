@@ -65,6 +65,8 @@ def main():
         expect_suite='Limb demo suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_cut_manikin.gd'],
         expect_suite='Cut manikin suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_manikin_parts.gd'],
+        expect_suite='Manikin partition suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_integration.gd'],
         expect_suite='GEN combined integration suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_directional.gd'],

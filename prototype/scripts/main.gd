@@ -4,7 +4,7 @@ extends Node3D
 const T := preload("res://scripts/tuning.gd")
 const PlayerScene := preload("res://scenes/player.tscn")
 const CloneScene := preload("res://scenes/clone.tscn")
-const CutManikinScene := preload("res://scenes/cut_manikin.tscn")
+const CutManikinScene := preload("res://scenes/clone_manikin.tscn")
 const ROOM_SCENE := preload("res://scenes/room.tscn")
 const PRELOAD_MENU := preload("res://scenes/pause_menu.tscn")
 const EquipmentMenu := preload("res://scripts/equipment_menu.gd")
@@ -269,12 +269,17 @@ func _apply_lighting() -> void:
 func _apply_style_to_characters() -> void:
 	_style_actor(player)
 	_style_actor(clone)
+	_style_actor(cut_manikin)
+	if is_instance_valid(cut_manikin) and cut_manikin.has_method("refresh_cut_visibility"):
+		cut_manikin.refresh_cut_visibility()
 
 
 func _style_actor(who: Node3D) -> void:
 	if not is_instance_valid(room) or not is_instance_valid(who):
 		return
 	var ch: Node = who.get_node_or_null("Character")
+	if ch == null:
+		ch = who.get_node_or_null("FallingBody/Character")
 	if ch == null:
 		return
 	if room.has_method("style_character"):
