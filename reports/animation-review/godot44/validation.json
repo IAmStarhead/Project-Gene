@@ -1,0 +1,885 @@
+{
+  "report": 44,
+  "status": "prototype; NOT full artistic/garment/target-hardware acceptance",
+  "provenance": {
+    "branch": "arena/320aeafc-project-gene",
+    "branch_base_commit": "2e69a43d8d4d090c655b07d9a00928d907ac66fa",
+    "integration_reference_commit": "d67fef739d1dc60cd43bf1aec3360a4e5e68f2f0",
+    "final_production_code_commit": "e8a657ef898fa693e633bacf3e04fbf1bb9ded9e",
+    "review_harness_commit": "29b7c914a35f5f8292064175eb8bb2e342944058"
+  },
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+    "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+    "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+    "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+    "player_sha256": "eb5b658ccba7ae6299f6d45ae54e60bbd732fd4a9caf141d350d575147a38584",
+    "clone_sha256": "c31ac94c70624a5db80204b28c7de76ca62418d924419409da7592e182f66da2",
+    "hit_check_sha256": "de2e2968725c047a979658a6a6ce0a1c95f6cf5ef5114af550a6c74ee6531173",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "86aad34e22b918070547153381405ed2b87d1e6615ab607dbf042db21b2dfd70",
+    "world_sha256": "a0c8b2cf6a89f16f004e97c64189ef0fc3de31fce6734ebe0434fea2ec689cdd",
+    "lighting_sha256": "80d713bb894fdf20b7eb1e7af79238470d6339493ba6b12012e0ad65860f7748",
+    "showcase_sha256": "17ee42a752652f15739c3ddf991f3837e0d662fea9a88192469fb168a900b3f1",
+    "main_sha256": "68e9267def17f58cb2de0f8f705a21b61bc7e9f6b4b43c8d0a3c0d3caeaeb3f2",
+    "tuning_sha256": "7745e34b32f8fa4cd761f732303dc732200e94faabb8ec055f5fc93f174ef4c0",
+    "project_sha256": "24214372cef7fb037f890f507b2aee99f970bf9396e1518474abffc75adbc984"
+  },
+  "conditions": {
+    "native": "Godot 4.7.2 stable custom Linux headless; strict logs + exit status",
+    "render": "native Godot Compatibility WebGL2, Chromium ANGLE SwiftShader; medium production PBR/shadows",
+    "web_engine": "@ringozz/godot-web-wasm32@4.7.2-685 custom Emscripten package",
+    "windows_opengl33_940mx_tested": false,
+    "gpu_or_target_fps_claim": false,
+    "scope": "Fixtures BETWEEN takes, review observer/UI visibility, paused command stepping and omitted raster of intermediate physics frames; no production movement/scene/collider changes"
+  },
+  "native_tests": {
+    "source": {
+      "workspace_path": ".local/review/repair-44/native-fillet-verified.log",
+      "sha256": "c0f4bb2baffa3ef3e5b7910232fd5c12bf7ce891f30ac52b807f5b0eea8c44c5",
+      "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+    },
+    "strict_import_passed": true,
+    "suites": [
+      {
+        "suite": "GEN native animation suite",
+        "checks": 927,
+        "failures": 0
+      },
+      {
+        "suite": "GEN combined integration suite",
+        "checks": 55,
+        "failures": 0
+      },
+      {
+        "suite": "GEN directional suite",
+        "checks": 137,
+        "failures": 0
+      },
+      {
+        "suite": "GEN wardrobe suite",
+        "checks": 94,
+        "failures": 0
+      },
+      {
+        "suite": "GEN combat-zone suite",
+        "checks": 176,
+        "failures": 0
+      },
+      {
+        "suite": "GEN controller-transition suite",
+        "checks": 96,
+        "failures": 0
+      }
+    ],
+    "checks": 1485,
+    "failures": 0,
+    "controller_physics_frames": 2050,
+    "process_seconds": [
+      7.827,
+      243.123,
+      2.608,
+      98.209,
+      11.419,
+      3.337,
+      55.041
+    ],
+    "suite_timeout_seconds": 300,
+    "earlier_clean_cache_attempt": {
+      "source": {
+        "workspace_path": ".local/review/repair-44/native-fillet-clean.log",
+        "sha256": "76af84e54b3bb776b1a451c759e9ca45c1687406eae04dd2f09c99c1ff3944b4",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "clean_cache_import_passed": true,
+      "animation_suite_completed": false,
+      "timeout_seconds": 180,
+      "not_counted_as_a_pass": true
+    }
+  },
+  "python_tests": {
+    "animation": 56,
+    "review_tools": 7,
+    "all_passed": true,
+    "logs": [
+      {
+        "workspace_path": ".local/review/repair-44/python-fillet-final.log",
+        "sha256": "fab7b643e9bb4c50b738b6e333e75dbf773edb731823880e0cef4547356cbfbb",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      {
+        "workspace_path": ".local/review/repair-44/review-tools-final.log",
+        "sha256": "65e995e5580e9befef875163ccd1a3012e8999e8fb43e259cf069aabbf1f68de",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      }
+    ]
+  },
+  "generators": {
+    "motion_set_reproducible": true,
+    "appearance_reproducible": true,
+    "logs": [
+      {
+        "workspace_path": ".local/review/repair-44/generator-fillet-motion.log",
+        "sha256": "9f935610f745d9db6124a76fa6ebafefeb119664fd545dcc2a5b62dee68bcb0a",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      {
+        "workspace_path": ".local/review/repair-44/generator-fillet-appearance.log",
+        "sha256": "3fd033f1fd578fe723d791cd3f95ea0249c6422548fe1db9f632470d2fa6b3f0",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      }
+    ]
+  },
+  "browser": {
+    "clips": 39,
+    "sampled_poses": 312,
+    "two_outfits_controls_mobile_isolation_cloth_pause_seek_resume_passed": true,
+    "log": {
+      "workspace_path": ".local/review/repair-44/browser-fillet-general.log",
+      "sha256": "4a4abffa21ba832bc34f99d426523c69d3b111ded2bba8973ce0bb12180d0132",
+      "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+    },
+    "independent_live_js_cloth": {
+      "take_frames": 1467,
+      "seeks": 18,
+      "max_error_mm": 0.0254,
+      "unchanged_limit_mm": 0.25,
+      "recorded_native_vertices_only_used_for_comparison_not_injected": true,
+      "log": {
+        "workspace_path": ".local/review/repair-44/browser-fillet-parity.log",
+        "sha256": "bda329cd77aeb3bf7f32000cb236ce82636ae9cf903abbc8f9ed851ebf781360",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      }
+    }
+  },
+  "garment_metrics": {
+    "cloth_nodes": 320,
+    "boundary_nodes": 32,
+    "boundary_passes": 24,
+    "gain": 0.5,
+    "max_local_meridian_ratio": 1.0411,
+    "max_local_circumferential_ratio": 1.9268,
+    "max_material_meridian_length_ratio": 1.0175,
+    "max_material_perimeter_ratio": 1.573,
+    "sampled_capsule_gap_mm": 0.03,
+    "displayed_skirt_to_eligible_soft_skin_radial_gap_mm": 34.934,
+    "eligible_skin_vertex_pose_samples": 1003,
+    "these_are_sampled_geometric_lengths_not_physical_stress": true,
+    "boundary_second_difference_mm": [
+      {
+        "clip": "dodge_back",
+        "time": 0.24,
+        "before": 48.59,
+        "current": 36.433
+      },
+      {
+        "clip": "dodge_left",
+        "time": 0.24,
+        "before": 38.18,
+        "current": 32.833
+      },
+      {
+        "clip": "dodge_right",
+        "time": 0.24,
+        "before": 55.41,
+        "current": 35.953
+      },
+      {
+        "clip": "sprint_relaxed",
+        "time": 0.31,
+        "before": 34.39,
+        "current": 23.771
+      }
+    ]
+  },
+  "cpu_only_no_gpu_fps": {
+    "cloth_single_actor_before": {
+      "max_us": 37024,
+      "median_us": 18054,
+      "note": "headless sandbox CPU only, no GPU/FPS claim",
+      "p95_us": 21540,
+      "samples": 1467
+    },
+    "cloth_single_actor_current": {
+      "max_us": 52399,
+      "median_us": 27741,
+      "note": "headless sandbox CPU only, no GPU/FPS claim",
+      "p95_us": 34697,
+      "samples": 1467
+    },
+    "hidden_cloth_suit_current": {
+      "max_us": 30,
+      "median_us": 2,
+      "note": "headless sandbox CPU only, no GPU/FPS claim",
+      "p95_us": 3,
+      "samples": 1467
+    },
+    "two_actor_motion_workload_samples": 120,
+    "warmup_samples": 30,
+    "two_actor_dress_us": {
+      "median": 52283,
+      "p95": 61078,
+      "max": 81302
+    },
+    "two_actor_suit_us": {
+      "median": 1556,
+      "p95": 2474,
+      "max": 2685
+    },
+    "visible_mesh_triangles_per_actor": {
+      "dress": 35143,
+      "suit": 36307
+    }
+  },
+  "fcl_library_and_seeks": [
+    {
+      "outfit": "dress",
+      "sample_kind": "all_take_frames",
+      "trace": {
+        "workspace_path": ".local/review/repair-44/hem-boundary-all.json",
+        "sha256": "03923961fb4d9924705ad08615021df91989ce1bfee2c25c1d9a62a57971313e",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/hem-boundary-all-contacts.json",
+        "sha256": "519ff81609cca71781237451162647651f7eca9e234bcb0e4394e6786358b31a",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 1467,
+        "outfit": "dress",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "gown": 1467,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 1442,
+          "gown/forearm.L": 39,
+          "gown/forearm.R": 16,
+          "gown/upper_arm.L": 1465,
+          "gown/upper_arm.R": 1463
+        },
+        "seconds": 198.741,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "outfit": "dress",
+      "sample_kind": "seeks_only",
+      "trace": {
+        "workspace_path": ".local/review/repair-44/hem-boundary-all.json",
+        "sha256": "03923961fb4d9924705ad08615021df91989ce1bfee2c25c1d9a62a57971313e",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/fillet-dress-seek-contacts.json",
+        "sha256": "2135090f5ae792556ed6965338ebd9d2d1b540afe09577812a662ca948403eaf",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 18,
+        "outfit": "dress",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "gown": 18,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 18,
+          "gown/forearm.L": 1,
+          "gown/upper_arm.L": 18,
+          "gown/upper_arm.R": 15
+        },
+        "seconds": 2.817,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "outfit": "suit",
+      "sample_kind": "all_take_frames",
+      "trace": {
+        "workspace_path": ".local/review/repair-44/fillet-suit-all.json",
+        "sha256": "d2e1f59ca6806c6a994820c956dfa2b3398f022fbfd2d40b0f032ac97c9d87c9",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/fillet-suit-all-contacts.json",
+        "sha256": "62ba3d53612611a539ec5af70759ad063baa4976f9e6e3f368bb054e69097011",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 1467,
+        "outfit": "suit",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "suit": 1467
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 1467,
+          "suit/foot.L": 28,
+          "suit/foot.R": 54,
+          "suit/toe.L": 5,
+          "suit/toe.R": 6,
+          "suit/upper_arm.L": 1467,
+          "suit/upper_arm.R": 1467
+        },
+        "seconds": 221.786,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "outfit": "suit",
+      "sample_kind": "seeks_only",
+      "trace": {
+        "workspace_path": ".local/review/repair-44/fillet-suit-all.json",
+        "sha256": "d2e1f59ca6806c6a994820c956dfa2b3398f022fbfd2d40b0f032ac97c9d87c9",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/fillet-suit-seek-contacts.json",
+        "sha256": "fd4d86606240cbd2c38219c197cb7c08c110d202f90750d371a592fd172586b8",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 18,
+        "outfit": "suit",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "suit": 18
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 18,
+          "suit/foot.L": 1,
+          "suit/foot.R": 1,
+          "suit/upper_arm.L": 18,
+          "suit/upper_arm.R": 18
+        },
+        "seconds": 2.301,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    }
+  ],
+  "fcl_rendered_controller_snapshots": [
+    {
+      "scenario": "wardrobe",
+      "outfit": "dress",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-fillet/captures-wardrobe/contacts-dress.json",
+        "sha256": "43b3cde33e23ee651878987e932623aa0fdb6afe304d683611c251a68cd832f9",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 122,
+        "outfit": "dress",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "gown": 122,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 119,
+          "gown/upper_arm.L": 122,
+          "gown/upper_arm.R": 122
+        },
+        "seconds": 17.223,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "wardrobe",
+      "outfit": "suit",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-fillet/captures-wardrobe/contacts-suit.json",
+        "sha256": "8113d187c81a82e58f55b31a5c19daf97885b52e95dc3fa2cdbb66746789306f",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 122,
+        "outfit": "suit",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "suit": 122
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 122,
+          "suit/foot.L": 4,
+          "suit/foot.R": 7,
+          "suit/toe.L": 2,
+          "suit/toe.R": 2,
+          "suit/upper_arm.L": 122,
+          "suit/upper_arm.R": 122
+        },
+        "seconds": 18.416,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "strafe",
+      "outfit": "dress",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-wall-fillet/captures-strafe/contacts-dress.json",
+        "sha256": "2ea20079d56284c73b65adccb3762badd80efdde72f5d8ff4b2c0a0959ee0664",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 96,
+        "outfit": "dress",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "gown": 96,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 91,
+          "gown/upper_arm.L": 96,
+          "gown/upper_arm.R": 96
+        },
+        "seconds": 13.124,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "strafe",
+      "outfit": "suit",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-wall-fillet/captures-strafe/contacts-suit.json",
+        "sha256": "d23e05545915b3dc687b710df8e69219b9a314d7c609da6b28f62213bb6cdfec",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 80,
+        "outfit": "suit",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "suit": 80
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 80,
+          "suit/foot.L": 2,
+          "suit/foot.R": 1,
+          "suit/upper_arm.L": 80,
+          "suit/upper_arm.R": 80
+        },
+        "seconds": 12.354,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "combat",
+      "outfit": "dress",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-framed-fillet/captures-combat/contacts-dress.json",
+        "sha256": "378f6ea46b9f5c4a0286e8a85a7a2c7fd6ee3a3049729e63f73c6bc20db578c2",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 94,
+        "outfit": "dress",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "gown": 94,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 90,
+          "gown/forearm.L": 7,
+          "gown/upper_arm.L": 93,
+          "gown/upper_arm.R": 89
+        },
+        "seconds": 13.306,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "combat",
+      "outfit": "suit",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-framed-fillet/captures-combat/contacts-suit.json",
+        "sha256": "6bc8ab90141af78b77d7749d9426af31f70bf108f4699373c52adf4a8e215243",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 94,
+        "outfit": "suit",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "suit": 94
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 94,
+          "suit/upper_arm.L": 94,
+          "suit/upper_arm.R": 94
+        },
+        "seconds": 12.199,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "gaits",
+      "outfit": "dress",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-fillet/captures-gaits/contacts-dress.json",
+        "sha256": "d9a352369516f2792fac14e672e937587380a8d793a2dca66f4caec5f9a3879d",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 180,
+        "outfit": "dress",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "gown": 180,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 171,
+          "gown/forearm.L": 2,
+          "gown/forearm.R": 2,
+          "gown/upper_arm.L": 180,
+          "gown/upper_arm.R": 180
+        },
+        "seconds": 26.339,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    },
+    {
+      "scenario": "gaits",
+      "outfit": "suit",
+      "contact_result": {
+        "workspace_path": ".local/review/repair-44/runtime-fillet/captures-gaits/contacts-suit.json",
+        "sha256": "e804d555a04e2337de84524abdafe1f587446c20d2e5915fc487e71b46843eeb",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "summary": {
+        "frames": 180,
+        "outfit": "suit",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+        "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+        "intersecting_frames": {
+          "suit": 180
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 180,
+          "suit/foot.L": 8,
+          "suit/foot.R": 7,
+          "suit/toe.L": 3,
+          "suit/toe.R": 3,
+          "suit/upper_arm.L": 180,
+          "suit/upper_arm.R": 180
+        },
+        "seconds": 26.701,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+      }
+    }
+  ],
+  "fcl_limits": "Triangle intersection against PRODUCTION visible-body indices. Counts are NOT signed depth, visibility, cloth/hand/wall collision, self-collision or an unsampled-pose guarantee. Library sampling is NOT controller coverage. Both actors may repeat poses.",
+  "videos": [
+    {
+      "video": "wardrobe.mp4",
+      "video_sha256": "5101f66f3eaff82e403811fc8275538bb96927c8f5422774d56473a99056ae4f",
+      "sidecar_sha256": "6a2bc3677a3a486ddd20993f411ee07a5b3579bbd90e0f47ff30537a4ba25b9b",
+      "frames": 122,
+      "distinct_source_pngs": 122,
+      "seconds": 12.2,
+      "viewport": [
+        800,
+        450
+      ],
+      "video_pixels": [
+        800,
+        552
+      ],
+      "capture_hz": 10,
+      "physics_hz": 60,
+      "simulation_playback_rate": 1,
+      "full_decode_passed": true,
+      "engine_page_errors": [],
+      "capture_manifest": {
+        "workspace_path": ".local/review/repair-44/runtime-fillet/captures-wardrobe/manifest.json",
+        "sha256": "dcf0852f0701942839d38fcfb3c5903219d11ff2b7bcabd81e76e06f9f6b1911",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "pack_provenance": {
+        "pck_sha256": "647b4ba6c58ad49aa433631a99b83b2d76ec4fdf81cf2d4600894b2c21d71efd",
+        "strict_import_and_pack_pass": true,
+        "isolated_project_sha256": "c16b0a879fc336a80e9c3bbdcf4901692283144019b9d2f276c999783fc27529",
+        "driver": "game",
+        "driver_sha256": "bcf25836aeebdc762e5ad914b20006eb6dc7ccc64c86371f36bfebe913c584df",
+        "baseline_appearance_commit": null,
+        "diagnostic_note": null
+      }
+    },
+    {
+      "video": "strafe.mp4",
+      "video_sha256": "d968d6b1efdc8233ec747b2fcaa0ca6a0f9181dcd25769e40a435f82cbcf1cf3",
+      "sidecar_sha256": "4efe673173f3d95971bd93a4bf2c5d3d27dd416261aeb96ad5c5e8ab41d1d822",
+      "frames": 88,
+      "distinct_source_pngs": 88,
+      "seconds": 8.8,
+      "viewport": [
+        800,
+        450
+      ],
+      "video_pixels": [
+        800,
+        552
+      ],
+      "capture_hz": 10,
+      "physics_hz": 60,
+      "simulation_playback_rate": 1,
+      "full_decode_passed": true,
+      "engine_page_errors": [],
+      "capture_manifest": {
+        "workspace_path": ".local/review/repair-44/runtime-wall-fillet/captures-strafe/manifest.json",
+        "sha256": "042dbd28e4e0e9db5d4ca174e75ad84a8044185d204585cb0c28bd6a7ae1da05",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "pack_provenance": {
+        "pck_sha256": "1715da81237f5cbb88e176d2521766058d4f2024b3deffe4fb7ab72dfc56481e",
+        "strict_import_and_pack_pass": true,
+        "isolated_project_sha256": "c16b0a879fc336a80e9c3bbdcf4901692283144019b9d2f276c999783fc27529",
+        "driver": "game",
+        "driver_sha256": "712ce9fb49aebd8c7b52fa95e79173053b459046c9a9c26efb7e85aa1aef6cd3",
+        "baseline_appearance_commit": null,
+        "diagnostic_note": null
+      },
+      "observer_fix_only_all_actor_snapshots_exactly_equal": true,
+      "unchanged_pngs": 74
+    },
+    {
+      "video": "combat.mp4",
+      "video_sha256": "965b679cf7943614f89a736851ad28f9cb4411d2309441b5d06771ce6b52dd73",
+      "sidecar_sha256": "fdc1127e0465395f36a664c0b3c1a5579e1203b4a56a39211e17f378dcb4591e",
+      "frames": 94,
+      "distinct_source_pngs": 94,
+      "seconds": 9.4,
+      "viewport": [
+        800,
+        450
+      ],
+      "video_pixels": [
+        800,
+        552
+      ],
+      "capture_hz": 10,
+      "physics_hz": 60,
+      "simulation_playback_rate": 1,
+      "full_decode_passed": true,
+      "engine_page_errors": [],
+      "capture_manifest": {
+        "workspace_path": ".local/review/repair-44/runtime-framed-fillet/captures-combat/manifest.json",
+        "sha256": "c1c544623b903794b3f0c3288267f410a501ab4ee2921c34dcbe6d630bfc9bc1",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "pack_provenance": {
+        "pck_sha256": "aa736bc7ea9a4f6e49094e5adb6bed0dae1ebc20f62adbe9b148c8c4187a5c9f",
+        "strict_import_and_pack_pass": true,
+        "isolated_project_sha256": "c16b0a879fc336a80e9c3bbdcf4901692283144019b9d2f276c999783fc27529",
+        "driver": "game",
+        "driver_sha256": "01e207c05989b36ff496a8b1fdc61423517d40a407a0a3f83febbcf124cb288f",
+        "baseline_appearance_commit": null,
+        "diagnostic_note": null
+      },
+      "observer_fix_only_all_actor_snapshots_exactly_equal": true,
+      "unchanged_pngs": 88,
+      "four_head_feet_framing_probes_with_8px_margin_passed_in_all_frames": true
+    },
+    {
+      "video": "gaits.mp4",
+      "video_sha256": "a449cafcf9e784a77e7152710feb4b15051a1cf5d3f6120191149a5d3fc80dcb",
+      "sidecar_sha256": "d966786c0c06c57a266c827eaf72ce2da7f3d983a76520a7715c7929769bed2f",
+      "frames": 180,
+      "distinct_source_pngs": 178,
+      "seconds": 18,
+      "viewport": [
+        800,
+        450
+      ],
+      "video_pixels": [
+        800,
+        552
+      ],
+      "capture_hz": 10,
+      "physics_hz": 60,
+      "simulation_playback_rate": 1,
+      "full_decode_passed": true,
+      "engine_page_errors": [],
+      "capture_manifest": {
+        "workspace_path": ".local/review/repair-44/runtime-fillet/captures-gaits/manifest.json",
+        "sha256": "8a5dfd8b97c79e1b7d479fa49c866a71624aed91dfb5d6566e7521ce2c9c886f",
+        "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+      },
+      "pack_provenance": {
+        "pck_sha256": "647b4ba6c58ad49aa433631a99b83b2d76ec4fdf81cf2d4600894b2c21d71efd",
+        "strict_import_and_pack_pass": true,
+        "isolated_project_sha256": "c16b0a879fc336a80e9c3bbdcf4901692283144019b9d2f276c999783fc27529",
+        "driver": "game",
+        "driver_sha256": "bcf25836aeebdc762e5ad914b20006eb6dc7ccc64c86371f36bfebe913c584df",
+        "baseline_appearance_commit": null,
+        "diagnostic_note": null
+      }
+    }
+  ],
+  "visual_review": {
+    "full_video_decode": true,
+    "continuous_manual_1x_playback_of_all_videos": false,
+    "method": "Selected ordered 10 Hz frame ranges viewed on contact sheets; not the same as continuous 1x manual playback. Camera fixes reviewed again. Both sides/back on all four contact diagnostics and matched shoulder/hem/wardrobe sheets viewed.",
+    "reviewed_video_frame_ranges_zero_based": {
+      "wardrobe": [
+        [
+          12,
+          23
+        ],
+        [
+          36,
+          59
+        ],
+        [
+          72,
+          83
+        ],
+        [
+          96,
+          119
+        ]
+      ],
+      "strafe": [
+        [
+          0,
+          11
+        ],
+        [
+          24,
+          35
+        ],
+        [
+          48,
+          59
+        ],
+        [
+          72,
+          87
+        ]
+      ],
+      "combat": [
+        [
+          0,
+          11
+        ],
+        [
+          24,
+          59
+        ],
+        [
+          72,
+          93
+        ]
+      ],
+      "gaits": [
+        [
+          60,
+          83
+        ],
+        [
+          156,
+          179
+        ]
+      ]
+    },
+    "static_sheets_viewed": [
+      "shoulder-comparison.jpg",
+      "hem-comparison.jpg",
+      "hem-back-comparison.jpg",
+      "wardrobe-comparison.jpg",
+      "contacts-1.jpg",
+      "contacts-2.jpg",
+      "contacts-3.jpg",
+      "contacts-4.jpg"
+    ],
+    "residuals": "Shoulder/collar/armhole ridges; supported-knee skirt tent/faceting/stretch; gown forearm and trouser foot/toe crossings; no universal floor/contact/terrain guarantee."
+  },
+  "comparisons": {
+    "appearance_only_pairs": 23,
+    "exact_pose_camera_and_coverage_match": true,
+    "mixed_baseline": "d67fef7 appearance + CURRENT motion/driver, NOT historical gameplay",
+    "published_pairs": 12,
+    "wardrobe_exact_current_gameplay_pose_pairs": 61,
+    "contact_cases": 8,
+    "contact_views": 24,
+    "red_overlay_expansion_mm": 0.5
+  },
+  "production_smoke": {
+    "unmodified_production_main_scene": true,
+    "screenshots": 7,
+    "engine_page_errors": [],
+    "wall_time_wait_seconds": 2.5,
+    "state_assertions_not_inferred_from_pixel_difference": true,
+    "source": {
+      "workspace_path": ".local/review/repair-44/production-fillet/screenshots/manifest.json",
+      "sha256": "e263f3e937b648ddeceff569933511a35feb8c906a54f34a763d5a47424a6bed",
+      "availability": "ignored raw evidence in this workspace; regenerate with rendered_review README on a new clone"
+    },
+    "visually_inspected_screenshots": [
+      "03-game-suit-O.png",
+      "04-showcase-retains-suit-H.png",
+      "07-return-game-retains-dress.png"
+    ],
+    "limitations": "Fixed-wait keyboard/UI smoke, not deterministic state-retention or target performance acceptance; native wardrobe assertions are separate."
+  },
+  "not_accepted": [
+    "complete artistic garment repair",
+    "universal collisions",
+    "Windows/OpenGL3.3/940MX performance",
+    "anatomical hitboxes",
+    "separate leg-injury reaction",
+    "continuous manual 1x gameplay review"
+  ]
+}

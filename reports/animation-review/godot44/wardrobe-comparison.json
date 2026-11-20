@@ -1,0 +1,68 @@
+{
+  "file": "wardrobe-comparison.jpg",
+  "sha256": "a3e40c67a32b551f8455040606f65e8bf15862550eb83c1724888e91aa9d8a0e",
+  "manifest_sha256": "dcf0852f0701942839d38fcfb3c5903219d11ff2b7bcabd81e76e06f9f6b1911",
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+    "motion_set_sha256": "adc496cffd60e5b1d0d545710f375ca430c39581a07ccfd4655836e1b6f6e899",
+    "runtime_sha256": "c0ed14b253f339716d3236bfc15453a26d2afe1c73e513c4ce26b90857f02885",
+    "controller_sha256": "40266efe3b4e748e2f78f9ea24604ad4a721f1776e8caca13b5e4af48b92b7c8",
+    "player_sha256": "eb5b658ccba7ae6299f6d45ae54e60bbd732fd4a9caf141d350d575147a38584",
+    "clone_sha256": "c31ac94c70624a5db80204b28c7de76ca62418d924419409da7592e182f66da2",
+    "hit_check_sha256": "de2e2968725c047a979658a6a6ce0a1c95f6cf5ef5114af550a6c74ee6531173",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "86aad34e22b918070547153381405ed2b87d1e6615ab607dbf042db21b2dfd70",
+    "world_sha256": "a0c8b2cf6a89f16f004e97c64189ef0fc3de31fce6734ebe0434fea2ec689cdd",
+    "lighting_sha256": "80d713bb894fdf20b7eb1e7af79238470d6339493ba6b12012e0ad65860f7748",
+    "showcase_sha256": "17ee42a752652f15739c3ddf991f3837e0d662fea9a88192469fb168a900b3f1",
+    "main_sha256": "68e9267def17f58cb2de0f8f705a21b61bc7e9f6b4b43c8d0a3c0d3caeaeb3f2",
+    "tuning_sha256": "7745e34b32f8fa4cd761f732303dc732200e94faabb8ec055f5fc93f174ef4c0",
+    "project_sha256": "24214372cef7fb037f890f507b2aee99f970bf9396e1518474abffc75adbc984"
+  },
+  "exact_pose_pairs_checked": 61,
+  "max_rotations_hips_positions_difference": 0,
+  "sources": [
+    {
+      "take": "dress-idle",
+      "sha256": "22b6f4a6d6080be92479141c8db32ccbff74ba8c50bd69745c2be09bf973de45",
+      "frame": 0
+    },
+    {
+      "take": "suit-idle",
+      "sha256": "0a00c4579276de8ff550a1f54bcbc8f0c44cda42b3cb477b7bc9b90dfe0c9b8b",
+      "frame": 61
+    },
+    {
+      "take": "dress-jog",
+      "sha256": "f1a633967512d43af83ddffd751cdbac49f6a79583920640b1ca8caec71212ac",
+      "frame": 13
+    },
+    {
+      "take": "suit-jog",
+      "sha256": "782c807236264df3093c73249a7072105b49bb467f48b96696265bc4cb56a094",
+      "frame": 74
+    },
+    {
+      "take": "dress-sprint",
+      "sha256": "dcb9b882793de0ef4972fa692e421ec3c930d96561afc2d453397eefec3b93a7",
+      "frame": 18
+    },
+    {
+      "take": "suit-sprint",
+      "sha256": "b3d40d83b33ea0a5de3e0fa7dff52a4722c41e15e78bcf06f839e17a36284425",
+      "frame": 79
+    },
+    {
+      "take": "dress-dodge-back",
+      "sha256": "bd39fcc88b5e344e8c45bcf2cb9ac2d5124ca8b231d1d955da6846f09cdb5549",
+      "frame": 42
+    },
+    {
+      "take": "suit-dodge-back",
+      "sha256": "779cd23b488b98fd842d8dd91b7a8a58e7865ad6b64bd0a185eaf0a636215347",
+      "frame": 103
+    }
+  ],
+  "conditions": "Current game controllers; identical route and observer view, production medium PBR lighting. Both actors pose/position/phase/hand state EXACTLY equal in all 61 pairs. Uniform 800x450 -> 480x270; no crop/retouch. NOT historical before/after or GPU FPS."
+}
