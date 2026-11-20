@@ -60,11 +60,13 @@ func _build_bars() -> void:
 	var brand := _text("GEN  /  СОСТОЯНИЕ", 12, Color(.98, .65, .36))
 	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(brand)
+	header.visible = false
 	_stance_label = _text("СТОЙКА: ОБЫЧНАЯ  [R]", 11, Color(.75, .82, .83))
 	header.add_child(_stance_label)
 
 	_values_label = _text("ЗДОРОВЬЕ  100   /   ВЫНОСЛИВОСТЬ  100", 11, Color(.87, .92, .92))
 	column.add_child(_values_label)
+	_values_label.visible = false
 
 	var health_row := _bar_row(HP_HEIGHT, true)
 	column.add_child(_named_bar("HP", health_row["root"]))
@@ -83,7 +85,7 @@ func _build_bars() -> void:
 	_quick_access = quick
 	quick.anchor_top = 1.0
 	quick.anchor_bottom = 1.0
-	quick.position = Vector2(MARGIN, -207)
+	quick.position = Vector2(MARGIN, -186)
 	quick.size = Vector2(166, 187)
 	quick.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(quick)
@@ -96,10 +98,11 @@ func _build_bars() -> void:
 	caption_style.content_margin_bottom = 1
 	quick_title.add_theme_stylebox_override("normal", caption_style)
 	quick_title.position = Vector2(0, 0)
+	quick_title.visible = false
 	quick.add_child(quick_title)
 	var slots := preload("res://scripts/quick_slots.gd").new()
 	slots.name = "EmptySlots"
-	slots.position = Vector2(0, 21)
+	slots.position = Vector2.ZERO
 	quick.add_child(slots)
 
 	var training_panel := PanelContainer.new()
@@ -146,6 +149,7 @@ func _named_bar(name_text: String, bar: Control) -> HBoxContainer:
 	var name_label := _text(name_text, 11, Color(.79, .87, .88))
 	name_label.custom_minimum_size.x = 22
 	container.add_child(name_label)
+	name_label.visible = false
 	container.add_child(bar)
 	return container
 
@@ -227,7 +231,7 @@ func _process(delta: float) -> void:
 	# В маленьком окне диагностика F3 занимает нижнюю часть экрана.
 	var compact_debug := bool(player.get("show_details")) and get_viewport().get_visible_rect().size.y < 560.0
 	_quick_access.visible = not compact_debug
-	_training_panel.visible = _training_label.visible and not compact_debug
+	_training_panel.visible = false # Управление и состояние клинка — только в паузе / F3.
 	if _training_label.visible:
 		var chosen: int = int(player.get("training_limb"))
 		var names := ["левая рука", "правая рука", "левая нога", "правая нога"]

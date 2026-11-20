@@ -780,4 +780,7 @@ func _write_debug_label() -> void:
 	lines.append("Режим [R]: %s  ·  %s  ·  захват: %s" % [stance_name(), state_text, lock_name])
 	lines.append("Здоровье: %.0f/%.0f  ·  стамина: %.0f/%.0f" % [health, T.MAX_HEALTH, stamina, T.MAX_STAMINA])
 	lines.append("Последний контакт: %s" % (_last_hit if not _last_hit.is_empty() else "—"))
+	if training_blade:
+		var limb_names := ["левая рука", "правая рука", "левая нога", "правая нога"]
+		lines.append("Манекен: %s · %s" % [limb_names[clampi(training_limb, 0, 3)], "рост заблокирован" if training_special else "рост включён"])
 	label.text = "\n".join(lines)

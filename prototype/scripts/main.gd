@@ -61,6 +61,7 @@ func _build_overlay() -> void:
 	# Краткая памятка под полосами HUD; плавно гаснет через 18 с.
 	_hint_panel = PanelContainer.new()
 	_hint_panel.position = Vector2(20.0, 135.0)
+	_hint_panel.visible = false
 	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint_panel.add_theme_stylebox_override("panel", _make_card_style())
 	root.add_child(_hint_panel)
@@ -82,6 +83,7 @@ func _build_overlay() -> void:
 	# уходить за правый край окна, а тёмная подложка читается на фоне светлого потолка.
 	var bar_panel := PanelContainer.new()
 	_bar_panel = bar_panel
+	bar_panel.visible = false
 	bar_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bar_panel.add_theme_stylebox_override("panel", _make_card_style())
 	bar_panel.anchor_left = 1.0
@@ -133,22 +135,6 @@ func _make_card_style() -> StyleBoxFlat:
 	style.content_margin_top = 6.0
 	style.content_margin_bottom = 6.0
 	return style
-
-
-func _process(delta: float) -> void:
-	if _bar_panel != null:
-		# The right-hand shortcut strip must not cover the status on narrow screens.
-		_bar_panel.visible = get_viewport().get_visible_rect().size.x >= 960.0
-	if _hint_panel != null and is_instance_valid(player) and bool(player.get("show_details")):
-		# F3 занимает место памятки; показатели диагностики не должны перекрываться.
-		_hint_panel.visible = false
-	if _hint_panel == null or not _hint_panel.visible:
-		return
-	_hint_age += delta
-	if _hint_age >= 18.0:
-		_hint_panel.visible = false
-	elif _hint_age > 16.0:
-		_hint_panel.modulate.a = clampf((18.0 - _hint_age) / 2.0, 0.0, 1.0)
 
 
 func _key_badge(key: String, caption: String) -> Control:

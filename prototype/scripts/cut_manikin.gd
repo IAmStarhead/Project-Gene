@@ -115,6 +115,7 @@ func _add_limb(origin: Vector3, length: float, radius: float, joint: Material) -
 
 func _make_label() -> void:
 	_label = Label3D.new()
+	_label.visible = false
 	_label.text = "МАНЕКЕН ДЛЯ КЛИНКА [V]"
 	_label.position = Vector3(0, 1.98, 0)
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED

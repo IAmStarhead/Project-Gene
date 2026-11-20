@@ -53,7 +53,7 @@ func _run() -> void:
 	var slots: Control = quick.get_node("EmptySlots")
 	check(status_panel.position.y == 14.0 and quick.anchor_top == 1.0, "status at top, slots anchored at bottom")
 	check(slots.get("POSITIONS").size() == 4 and slots.get_child_count() == 0, "four empty quick slots without invented items")
-	check(scene._hint_panel.position.y > status_panel.position.y + status_panel.size.y, "startup hints do not overlap status")
+	check(not scene._hint_panel.visible and not scene._bar_panel.visible and not player.hud._values_label.visible, "gameplay has no text hints")
 	var old_hp: float = player.health
 	var old_stamina: float = player.stamina
 	player.health = T.MAX_HEALTH * .5
@@ -64,7 +64,7 @@ func _run() -> void:
 	check(player.hud._values_label.text.contains("50") and player.hud._values_label.text.contains("25"), "HUD text matches values")
 	player.training_blade = true
 	player.hud._process(0.0)
-	check(player.hud._training_panel.visible and player.hud._training_label.visible, "blade guidance remains visible")
+	check(not player.hud._training_panel.visible and player.hud._training_label.visible, "blade guidance stays off gameplay screen")
 	player.training_blade = false
 	player.hud._process(0.0)
 	check(not player.hud._training_panel.visible, "blade guidance hides when disabled")
@@ -79,6 +79,14 @@ func _run() -> void:
 	scene.room.rebuild_lighting(T.TOON_ENABLED)
 	scene.menu.open()
 	check(paused and scene.menu.visible, "menu pauses")
+	check(scene.menu._items.has("controls"), "pause offers controls")
+	scene.menu._activate("controls")
+	check(scene.menu._controls_panel.visible and not scene.menu._panel.visible and paused, "controls open within pause")
+	var back_key := InputEventKey.new()
+	back_key.pressed = true
+	back_key.keycode = KEY_ESCAPE
+	root.push_input(back_key)
+	check(not scene.menu._controls_panel.visible and scene.menu._panel.visible and paused, "escape returns from controls to pause")
 	scene._on_menu_action("sound")
 	check(not T.FOLEY_ENABLED, "menu toggles sound")
 	scene._on_menu_action("sound")

@@ -68,6 +68,7 @@ func _ready() -> void:
 
 func _make_label() -> void:
 	var l := Label3D.new()
+	l.visible = false
 	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	l.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	l.layers = 2

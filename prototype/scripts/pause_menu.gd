@@ -6,6 +6,8 @@ signal action(action_id: String)
 const T := preload("res://scripts/tuning.gd")
 
 var _panel: PanelContainer
+var _controls_panel: PanelContainer
+var _controls_back: Button
 var _items := {}
 var _selected := 0
 var _buttons: Array[Button] = []
@@ -65,6 +67,7 @@ func _ready() -> void:
 
 	_add_item(col, "resume", "Продолжить игру", "")
 	_add_item(col, "equipment", "Снаряжение", "I")
+	_add_item(col, "controls", "Управление", "")
 	_add_item(col, "showcase", "Витрина анимаций", "H")
 	_add_item(col, "quality", "Качество графики", "F4")
 	_add_item(col, "brightness", "Освещение зала", "B")
@@ -76,6 +79,7 @@ func _ready() -> void:
 	_add_item(col, "quit", "Выйти из игры", "")
 
 	refresh()
+	_build_controls(center, style)
 
 	var hint := Label.new()
 	hint.text = "Совет: нажмите F3 в игре, чтобы увидеть точный FPS, время кадра и активную видеокарту."
@@ -86,6 +90,48 @@ func _ready() -> void:
 	col.add_child(hint)
 	resized.connect(_fit_panel)
 	call_deferred("_fit_panel")
+
+
+func _build_controls(center: Control, panel_style: StyleBoxFlat) -> void:
+	_controls_panel = PanelContainer.new()
+	_controls_panel.visible = false
+	_controls_panel.add_theme_stylebox_override("panel", panel_style)
+	center.add_child(_controls_panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 8)
+	_controls_panel.add_child(col)
+	var title := Label.new()
+	title.text = "УПРАВЛЕНИЕ"
+	title.add_theme_font_size_override("font_size", 24)
+	col.add_child(title)
+	var info := Label.new()
+	info.custom_minimum_size = Vector2(500, 0)
+	info.add_theme_font_size_override("font_size", 14)
+	info.add_theme_constant_override("line_spacing", 6)
+	info.text = "\n".join([
+		"WASD  —  движение    ·    Shift  —  спринт    ·    Alt  —  шаг",
+		"Мышь  —  камера    ·    ЛКМ / ПКМ  —  удары",
+		"Пробел  —  уворот    ·    F  —  прыжок",
+		"Tab / СКМ  —  захват цели    ·    колесо  —  смена цели",
+		"R  —  стойка    ·    T  —  бой клона",
+		"V  —  тестовый клинок манекена",
+		"1–4  —  конечность    ·    N  —  материал    ·    K  —  сброс",
+		"I  —  снаряжение    ·    H  —  витрина анимаций",
+		"B  —  свет    ·    G  —  стиль    ·    F4  —  графика",
+		"F3  —  диагностика    ·    Esc  —  пауза",
+	])
+	col.add_child(info)
+	_controls_back = Button.new()
+	_controls_back.text = "НАЗАД  /  ESC"
+	_controls_back.pressed.connect(_close_controls)
+	col.add_child(_controls_back)
+
+
+func _close_controls() -> void:
+	_controls_panel.visible = false
+	_panel.visible = true
+	if _items.has("controls"):
+		_items["controls"]["button"].grab_focus()
 
 
 func _fit_panel() -> void:
@@ -128,6 +174,7 @@ func refresh() -> void:
 	)
 	_items["resume"]["button"].text = _row_text("resume", "")
 	_items["equipment"]["button"].text = _row_text("equipment", "")
+	_items["controls"]["button"].text = _row_text("controls", "")
 	_items["showcase"]["button"].text = _row_text("showcase", "")
 	_items["quit"]["button"].text = _row_text("quit", "")
 
@@ -151,6 +198,8 @@ func _clone_label() -> String:
 
 
 func open() -> void:
+	_controls_panel.visible = false
+	_panel.visible = true
 	visible = true
 	refresh()
 	_selected = 0
@@ -169,6 +218,11 @@ func close() -> void:
 
 
 func _activate(id: String) -> void:
+	if id == "controls":
+		_panel.visible = false
+		_controls_panel.visible = true
+		_controls_back.grab_focus()
+		return
 	if id == "resume":
 		close()
 		return
@@ -185,6 +239,11 @@ func _activate(id: String) -> void:
 
 func _input(event: InputEvent) -> void:
 	if not enabled:
+		return
+	if visible and _controls_panel.visible:
+		if event.is_action_pressed("ui_cancel"):
+			_close_controls()
+			get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed("ui_cancel"):
 		if visible:
