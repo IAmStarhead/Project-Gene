@@ -32,6 +32,7 @@ const CAMERA_HEIGHT := 1.42
 const CAMERA_SHOULDER := -0.58   ## камера левее героини; ограничивается коллизией со стенами
 static var CAMERA_DYNAMIC := true    ## Esc: динамика/отклик камеры можно выключить
 static var FOLEY_ENABLED := true     ## Esc: звуки эффектов
+static var MUSIC_LEVEL := 1          ## Esc: 0 — выкл, 1 — тихо, 2 — обычная; на текущую сессию
 const CAMERA_TURN_SPEED := 32.0  ## быстрая визуальная доводка углов, без изменения ввода и направления движения
 const CAMERA_FOLLOW_SPEED := 15.0 ## плавность следования по горизонтали
 const CAMERA_FOLLOW_SPEED_Y := 11.0 ## плавность следования по высоте (ступеньки, прыжок)

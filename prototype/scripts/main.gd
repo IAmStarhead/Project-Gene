@@ -8,6 +8,7 @@ const CutManikinScene := preload("res://scenes/clone_manikin.tscn")
 const ROOM_SCENE := preload("res://scenes/room.tscn")
 const PRELOAD_MENU := preload("res://scenes/pause_menu.tscn")
 const EquipmentMenu := preload("res://scripts/equipment_menu.gd")
+const AmbientMusic := preload("res://scripts/ambient_music.gd")
 
 var room: Node3D
 var player: CharacterBody3D
@@ -19,9 +20,14 @@ var _bar_panel: PanelContainer
 var _hint_age := 0.0
 var menu: Control
 var equipment: Control
+var music: Node
 
 
 func _ready() -> void:
+	music = AmbientMusic.new()
+	music.name = "AmbientMusic"
+	music.add_to_group("ambient_music")
+	add_child(music)
 	room = ROOM_SCENE.instantiate()
 	add_child(room)
 
@@ -248,6 +254,8 @@ func _on_menu_action(id: String) -> void:
 				clone.cycle_mode()
 		"camera":
 			T.CAMERA_DYNAMIC = not T.CAMERA_DYNAMIC
+		"music":
+			music.set_level((T.MUSIC_LEVEL + 1) % 3)
 		"sound":
 			T.FOLEY_ENABLED = not T.FOLEY_ENABLED
 			if not T.FOLEY_ENABLED:

@@ -63,6 +63,8 @@ def main():
         expect_suite='Secondary motion suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_presentation.gd'],
         expect_suite='Presentation suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_music.gd'],
+        expect_suite='Ambient music suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_floor_finish.gd'],
         expect_suite='Floor finish suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_camera_smoothing.gd'],

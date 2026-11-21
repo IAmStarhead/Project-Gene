@@ -76,6 +76,7 @@ func _ready() -> void:
 	_add_item(col, "clone", "Бой клона", "T")
 	_add_item(col, "camera", "Динамика камеры", "")
 	_add_item(col, "sound", "Звуки", "")
+	_add_item(col, "music", "Музыка", "")
 	_add_item(col, "quit", "Выйти из игры", "")
 
 	refresh()
@@ -169,6 +170,9 @@ func refresh() -> void:
 	_items["clone"]["button"].text = _row_text("clone", _clone_label())
 	_items["camera"]["button"].text = _row_text("camera", "вкл" if T.CAMERA_DYNAMIC else "выкл")
 	_items["sound"]["button"].text = _row_text("sound", "вкл" if T.FOLEY_ENABLED else "выкл")
+	var music_nodes := get_tree().get_nodes_in_group("ambient_music")
+	var music_available := not music_nodes.is_empty() and bool(music_nodes[0].get("available"))
+	_items["music"]["button"].text = _row_text("music", ["выкл", "тихо", "обычная"][clampi(T.MUSIC_LEVEL, 0, 2)] if music_available else "недоступна")
 	var player := get_tree().get_first_node_in_group("player")
 	_items["stance"]["button"].text = _row_text(
 		"stance",
