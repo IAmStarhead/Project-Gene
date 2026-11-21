@@ -61,6 +61,8 @@ def main():
         expect_suite='GEN idle-cache suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_presentation.gd'],
         expect_suite='Presentation suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_floor_finish.gd'],
+        expect_suite='Floor finish suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_camera_smoothing.gd'],
         expect_suite='Camera smoothing suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_camera_jump_air.gd'],

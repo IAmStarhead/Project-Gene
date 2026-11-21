@@ -96,7 +96,8 @@ func _ready() -> void:
 func _make_materials() -> void:
 	var headless := DisplayServer.get_name() == "headless"
 
-	# Белый эпоксидный пол с тонкими швами: отражает световые панели, даёт чёткое чувство скорости.
+	# Светлый пол с тонкими швами и мягким блеском защитного покрытия.
+	# Одна PBR-поверхность, без второго отражающего прохода и зеркальной камеры.
 	_floor_mat = StandardMaterial3D.new()
 	if not headless:
 		_floor_mat.albedo_color = Color.WHITE
@@ -106,9 +107,12 @@ func _make_materials() -> void:
 		_floor_mat.uv1_scale = Vector3(0.55, 0.55, 0.55)
 	else:
 		_floor_mat.albedo_color = Color(0.86, 0.878, 0.90)
-	_floor_mat.roughness = 0.28
-	_floor_mat.metallic = 0.02
-	_floor_mat.metallic_specular = 0.42
+	_floor_mat.roughness = 0.20
+	_floor_mat.metallic = 0.0
+	_floor_mat.metallic_specular = 0.72
+	_floor_mat.clearcoat_enabled = true
+	_floor_mat.clearcoat = 0.24
+	_floor_mat.clearcoat_roughness = 0.32
 
 	# Модульные стеновые панели чистой лаборатории — матово-сатиновые, чуть светлее пола.
 	_wall_mat = StandardMaterial3D.new()

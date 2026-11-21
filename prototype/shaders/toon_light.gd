@@ -163,8 +163,8 @@ static func configure_probe(
 	if probe == null:
 		return
 	var q := clampi(quality, 0, 2)
-	# Однократный снимок зала (UPDATE_ONCE): 0 мс нагрузки в кадре, мягкие реалистичные
-	# отражения потолочных световых панелей на белом полу, стекле криокапсул и в глазах.
+	# Однократный снимок зала (UPDATE_ONCE): без постоянной пересъёмки сцены.
+	# Отражения всё равно сэмплируются материалами при рендере; стоимость не измерена.
 	probe.visible = (q >= 1) and (not showcase) and (DisplayServer.get_name() != "headless")
 	probe.update_mode = ReflectionProbe.UPDATE_ONCE
 	probe.box_projection = true
@@ -173,7 +173,7 @@ static func configure_probe(
 	probe.ambient_mode = ReflectionProbe.AMBIENT_DISABLED
 	# Слой 1 — только статичная архитектура; персонажи на слое 2 не застывают в отражении пола.
 	probe.cull_mask = 1
-	probe.intensity = 0.28
+	probe.intensity = 0.75
 	probe.size = room_size + Vector3(1.2, 1.2, 1.2)
 	probe.max_distance = 28.0
 
