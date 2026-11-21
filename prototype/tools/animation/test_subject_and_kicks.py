@@ -83,28 +83,19 @@ class SubjectAndKickTests(unittest.TestCase):
         frozen = {k:self.appearance[k] for k in ['gown','cloth','coverage','hands','floor_probes','model_sha256','hips_inverse_bind']}
         self.assertEqual(digest(frozen),FROZEN['dress_appearance_sha256'])
 
-    def test_single_fitted_shell_has_bounded_local_ease_and_no_loose_waist_layer(self):
+    def test_light_two_piece_subject_outfit_and_preserved_skin(self):
         s = self.appearance['suit']
-        count = s['fit']['shell_vertices']
-        p = np.asarray(s['positions'])[:count]
-        source,n = np.asarray(s['fit']['source_positions']),np.asarray(s['fit']['source_normals'])
-        delta = p-source
-        self.assertLessEqual(np.linalg.norm(delta,axis=1).max(),.009001)
-        self.assertGreaterEqual(np.einsum('ij,ij->i',delta,n).min(),.00545)
-        self.assertEqual(len(s['boundaries']),5)
-        self.assertEqual(Counter(b['opening'] for b in s['boundaries']),{'neck':1,'wrist':2,'ankle':2})
-        self.assertNotIn('top',s['face_groups'])
-        self.assertNotIn('trousers',s['face_groups'])
-        self.assertIn('subject_print',s['face_groups'])
+        self.assertEqual(Counter(b['opening'] for b in s['boundaries']),
+                         {'neck':1, 'armhole':2, 'top_hem':1, 'waist':1, 'leg_hem':2})
+        self.assertTrue({'top','shorts'}.issubset(s['face_groups']))
+        self.assertGreaterEqual(s['fit']['ease_m'], .01)
+        self.assertLessEqual(s['fit']['max_source_offset_m'], .016)
         colors = np.asarray(s['colors'])
-        self.assertGreater(np.ptp(colors,axis=0).min(),.35,'petrol/sage/ochre subject textile, not white staff scrubs')
-
-    def test_fitted_garment_does_not_expand_the_body_hiding_mask(self):
-        old,new = FROZEN['old_suit_coverage'],self.appearance['suit']['coverage']
-        self.assertGreaterEqual(new['ankle'],old['ankle'])
-        self.assertLessEqual(new['neck'],old['neck'])
-        self.assertEqual(new['skin_overlap'],old['skin_overlap'])
-        self.assertEqual(new['wrists'],old['wrists'])
+        self.assertGreater(colors.min(), .60)
+        self.assertLess(np.ptp(colors,axis=1).max(),.061)
+        coverage = s['coverage']
+        self.assertGreater(coverage['top_low'],coverage['shorts_high'])
+        self.assertGreaterEqual(coverage['skin_overlap'],.018)
 
     def test_kick_contacts_timings_weight_transfer_and_return(self):
         r = self.rig

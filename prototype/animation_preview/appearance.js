@@ -84,16 +84,15 @@ export class Appearance {
     body.parent.add(this.suit); this.suit.bind(body.skeleton, body.bindMatrix); this.suit.visible = false;
     const c = suitSource.coverage, hideSuit = [];
     for (let i = 0; i < pos.count; i++) {
-      let arm = 0; const forearm = [0, 0];
+      let arm = 0;
       for (let k = 0; k < 4; k++) {
         const name = boneNames[g.attributes.skinIndex.getComponent(i, k)], w = g.attributes.skinWeight.getComponent(i, k);
         if (['shoulder.', 'upper_arm.', 'forearm.', 'hand.'].some((prefix) => name.startsWith(prefix))) arm += w;
-        if (['forearm.L', 'hand.L'].includes(name)) forearm[0] += w;
-        if (['forearm.R', 'hand.R'].includes(name)) forearm[1] += w;
       }
       const point = new THREE.Vector3().fromBufferAttribute(pos, i);
-      hideSuit.push(arm < .15 ? point.y > c.ankle+c.skin_overlap && point.y < c.neck-c.skin_overlap
-        : arm >= .85 && !c.wrists.some((w, side) => forearm[side] > .2 && point.clone().sub(vector(w.origin)).dot(vector(w.axis)) > w.end-c.skin_overlap));
+      const top = point.y > c.top_low+c.skin_overlap && point.y < c.neck-c.skin_overlap;
+      const shorts = point.y > c.shorts_low+c.skin_overlap && point.y < c.shorts_high-c.skin_overlap;
+      hideSuit.push(arm < .15 && (top || shorts));
     }
     const keptSuit = [];
     for (let i = 0; i < this.fullIndex.count; i += 3) {

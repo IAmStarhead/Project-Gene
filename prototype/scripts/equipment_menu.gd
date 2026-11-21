@@ -22,7 +22,7 @@ var hp: Label
 var stamina: Label
 var entry: Button
 var outfit_label: Label
-var selected_outfit := "dress"
+var selected_outfit := "suit"
 var layout: MarginContainer
 
 
@@ -108,7 +108,7 @@ func _ready() -> void:
 	right.add_child(_section("НА ГЕРОИНЕ"))
 	outfit_label = _label("", 16, TEXT)
 	right.add_child(outfit_label)
-	var note := _label("Смена костюма в игре: O. Характеристики одежды пока не реализованы.", 13, MUTED)
+	var note := _label("Доступна форма испытуемого. Платье временно выключено, но сохранено.", 13, MUTED)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	right.add_child(note)
 	page.add_child(_line())
@@ -221,10 +221,10 @@ func select_category(index: int) -> void:
 		child.queue_free()
 	entry = null
 	for i in 12:
-		if category == 1 and i < 2:
-			var outfit := "dress" if i == 0 else "suit"
-			var outfit_button := _button("ПЛАТЬЕ" if i == 0 else "ФОРМА", 11)
-			outfit_button.tooltip_text = "Лабораторное платье" if i == 0 else "Облегающая форма испытуемого"
+		if category == 1 and i == 0:
+			var outfit := "suit"
+			var outfit_button := _button("ФОРМА", 11)
+			outfit_button.tooltip_text = "Топ без рукавов и шорты испытуемого"
 			outfit_button.custom_minimum_size = Vector2(70, 50)
 			outfit_button.pressed.connect(_select_clothing.bind(outfit))
 			grid.add_child(outfit_button)
@@ -249,7 +249,7 @@ func select_category(index: int) -> void:
 func _select_clothing(outfit: String) -> void:
 	selected_outfit = outfit
 	heading.text = "Лабораторное платье" if outfit == "dress" else "Форма испытуемого"
-	description.text = ("Надето. " if T.OUTFIT == outfit else "Доступно. ") + "Переключить одежду в игре — O. Характеристики пока не реализованы."
+	description.text = "Надето. Светлый топ и шорты. Платье временно недоступно; характеристики одежды пока не реализованы."
 	icon.queue_redraw()
 
 

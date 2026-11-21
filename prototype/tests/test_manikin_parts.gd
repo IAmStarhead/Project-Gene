@@ -98,9 +98,9 @@ func _run() -> void:
 	var mannequin = load("res://scenes/clone_manikin.tscn").instantiate()
 	root.add_child(mannequin)
 	await physics_frame
-	check(mannequin.character.appearance.outfit == "dress" and mannequin.character.appearance.gown.visible
-		and not mannequin.character.appearance.suit.visible,
-		"mannequin remains in the cuttable dress when the player chose the suit")
+	check(mannequin.character.appearance.outfit == "suit" and not mannequin.character.appearance.gown.visible
+		and mannequin.character.appearance.suit.visible,
+		"mannequin wears the cuttable subject outfit")
 	check(mannequin.sever(0, true, Vector3.FORWARD) and not mannequin.parts[0].nodes[0].visible,
 		"the arm is actually removed after entering from the suit state")
 	mannequin.queue_free()

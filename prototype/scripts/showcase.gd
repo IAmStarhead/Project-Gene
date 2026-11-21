@@ -204,7 +204,7 @@ func _update_ui() -> void:
 
 
 func _toggle_outfit() -> void:
-	T.OUTFIT = "suit" if T.OUTFIT == "dress" else "dress"
+	T.OUTFIT = "suit"
 	character.appearance.set_outfit(T.OUTFIT)
 
 

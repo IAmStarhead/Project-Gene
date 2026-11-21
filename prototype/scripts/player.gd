@@ -960,7 +960,7 @@ func _write_debug_label() -> void:
 	lines.append("Отрисовка: %d вызовов  ·  %d примитивов" % [draws, prims])
 	lines.append("Графика [F4]: %s  ·  свет [B]: %s  ·  стиль [G]: %s" % [q_name, b_name, style_name])
 	lines.append("Режим [R]: %s  ·  %s  ·  захват: %s" % [stance_name(), state_text, lock_name])
-	lines.append("Костюм [O]: %s" % T.OUTFIT_NAMES[T.OUTFIT])
+	lines.append("Костюм: %s" % T.OUTFIT_NAMES[T.OUTFIT])
 	var selected := Moves.slot_profile(selected_attack_slot)
 	lines.append("Выбор [1–0]: %d · %s → ЛКМ" % [(selected_attack_slot+1)%10,
 		"пусто" if selected.is_empty() else String(selected.title)])

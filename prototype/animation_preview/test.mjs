@@ -92,7 +92,7 @@ try {
       await page.evaluate((t) => window.motionLab.seek(t), clip.duration*fraction);
       const a = await page.evaluate(() => window.motionLab.appearance);
       assert.equal(a.outfit, 'suit');
-      assert(a.suitVertices > 5000 && a.suitVertices < 14000, 'real rigged continuous fitted subject shell');
+      assert(a.suitVertices > 3000 && a.suitVertices < 14000, 'real rigged continuous fitted subject shell');
       assert.equal(a.handOpen, name.endsWith('_relaxed') ? 1 : 0, 'same hand morph in the suit');
       assert(a.bodyIndices > 1000, 'outfit masking cannot remove the entire body');
       frames++;

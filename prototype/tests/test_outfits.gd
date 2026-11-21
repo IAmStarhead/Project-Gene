@@ -27,25 +27,27 @@ func _run() -> void:
 	world = Node3D.new()
 	root.add_child(world)
 	current_scene = world
-	T.OUTFIT = "dress"
+	T.OUTFIT = "suit"
 	var main := MainScene.instantiate()
 	world.add_child(main)
 	main.player.set_physics_process(false)
 	main.clone.set_physics_process(false)
 	main.player.rig.set_process(false)
-	check(main.player.character.appearance.outfit == "dress" and main.clone.character.appearance.outfit == "dress",
-		"a new session starts in the retained dress")
+	check(main.player.character.appearance.outfit == "suit" and main.clone.character.appearance.outfit == "suit",
+		"new session starts in the subject outfit")
+	check(main.cut_manikin.character.appearance.outfit == "suit" and not main.cut_manikin.character.appearance.gown.visible,
+		"cuttable mannequin also wears the subject outfit")
 	var original: Mesh = main.player.character.appearance.body.mesh
 	main._unhandled_input(action("toggle_outfit"))
-	check(T.OUTFIT == "suit", "O selects fitted subject jumpsuit")
+	check(T.OUTFIT == "suit", "O cannot enable temporarily disabled dress")
 	for character in [main.player.character, main.clone.character]:
 		var a: Node3D = character.appearance
 		check(a.suit.visible and not a.gown.visible and not a.skirt.visible and a.outfit == "suit",
 			"both actual actors switch geometry, not just a wardrobe label")
 		check(a.suit.skin == a.body.skin and a.suit.skeleton == a.body.skeleton,
 			"outfit binds the original imported skeleton")
-		check(a.suit.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size() > 5000,
-			"real continuous fitted shell geometry installed")
+		check(a.suit.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size() > 3000,
+			"real fitted top and shorts geometry installed")
 		a.set_hands(.75)
 		check(absf(a.body.get_blend_shape_value(0)-.75) < .000001,
 			"switching body coverage preserves the manual RelaxedHands morph")
@@ -61,13 +63,15 @@ func _run() -> void:
 	showcase.set_process(false)
 	check(showcase.character.appearance.outfit == "suit", "showcase inherits session wardrobe")
 	showcase._toggle_outfit()
-	check(T.OUTFIT == "dress" and showcase.character.appearance.gown.visible,
-		"showcase wardrobe control returns to retained dress")
+	check(T.OUTFIT == "suit" and not showcase.character.appearance.gown.visible,
+		"showcase cannot enable temporarily disabled dress")
 	showcase.free()
 	for ch in [main.player.character, main.clone.character]:
-		ch.appearance.set_outfit("dress")
+		ch.appearance.set_outfit("dress") # internal diagnostic: preserved, not exposed in the game
+		check(ch.appearance.gown.visible and not ch.appearance.suit.visible, "retained dress remains recoverable")
+		ch.appearance.set_outfit("suit")
 	check(main.player.character.appearance.body.mesh == original,
-		"round trip restores EXACT cached dress body index buffer (no mask growth)")
+		"internal dress round trip restores EXACT cached suit body index buffer")
 	check(main.clone.character.appearance.clone_variant, "wardrobe does not remove clone fabric tint")
 	# Identical two-actor pose/control workload; only wardrobe differs.
 	for outfit in ["dress", "suit"]:
@@ -88,7 +92,7 @@ func _run() -> void:
 		triangles += a.suit.mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX].size()/3 if outfit == "suit" else a.gown.mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX].size()/3+576
 		print("Wardrobe %s: two-actor CPU median %d us p95 %d us max %d us; per-actor visible mesh triangles %d. Headless sandbox, NOT GPU FPS." % [outfit, timings[timings.size()/2], timings[int(timings.size()*.95)], timings[-1], triangles])
 	main.free()
-	T.OUTFIT = "dress"
+	T.OUTFIT = "suit"
 	world.free()
 	await process_frame
 	print("GEN wardrobe suite: %d checks, %d failures" % [checks, failures])

@@ -3,6 +3,7 @@
 extends SceneTree
 
 const Character := preload("res://scripts/character_anim.gd")
+const T := preload("res://scripts/tuning.gd")
 var checks := 0
 var failures := 0
 func _initialize() -> void:
@@ -16,6 +17,7 @@ func run() -> void:
 	var world := Node3D.new()
 	root.add_child(world)
 	current_scene = world
+	T.OUTFIT = "dress" # Exercise the retained solver although dress is disabled in UI.
 	var a := Node3D.new()
 	var b := Node3D.new()
 	a.set_script(Character)

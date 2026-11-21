@@ -279,28 +279,19 @@ static func covered(point: Vector3, bones: PackedInt32Array, weights: PackedFloa
 static func suit_covered(point: Vector3, bones: PackedInt32Array, weights: PackedFloat32Array,
 		index: int, names: Array) -> bool:
 	var arm := 0.0
-	var forearms := Vector2.ZERO
 	for k in 4:
 		var name: String = names[bones[index*4+k]]
-		var value := weights[index*4+k]
 		if name.begins_with("shoulder.") or name.begins_with("upper_arm.") or name.begins_with("forearm.") or name.begins_with("hand."):
-			arm += value
-		if name in ["forearm.L", "hand.L"]:
-			forearms.x += value
-		if name in ["forearm.R", "hand.R"]:
-			forearms.y += value
+			arm += weights[index*4+k]
 	var c: Dictionary = _data["suit"]["coverage"]
 	var overlap := float(c["skin_overlap"])
-	if arm < .15:
-		return point.y > float(c["ankle"])+overlap and point.y < float(c["neck"])-overlap
-	# Fully enclosed upper/lower arm only, with 20 mm retained at wrists.
-	if arm < .85:
+	# Only remove the interior, leaving exposed arms, legs and a generous
+	# skin overlap around every opening. Never reuse the old full-suit mask.
+	if arm >= .15:
 		return false
-	for side in 2:
-		var cuff: Dictionary = c["wrists"][side]
-		if forearms[side] > .2 and (point-_vector(cuff["origin"])).dot(_vector(cuff["axis"])) > float(cuff["end"])-overlap:
-			return false
-	return true
+	var in_top := point.y > float(c["top_low"])+overlap and point.y < float(c["neck"])-overlap
+	var in_shorts := point.y > float(c["shorts_low"])+overlap and point.y < float(c["shorts_high"])-overlap
+	return in_top or in_shorts
 
 
 func _body_with_relaxed_hands(source: Mesh, for_suit: bool = false) -> ArrayMesh:

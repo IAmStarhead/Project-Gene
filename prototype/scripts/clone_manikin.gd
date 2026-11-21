@@ -65,9 +65,8 @@ func _ready() -> void:
 	character.set_script(CharacterScript)
 	body_physics.add_child(character)
 	character.appearance.set_variant(true)
-	# The fixed cut partitions are authored against the dress variant. Do
-	# not accidentally keep a full, uncut suit after returning from a menu.
-	character.appearance.set_outfit("dress")
+	# Манекен тоже носит форму; детали формы разбиваются для отсечения ниже.
+	character.appearance.set_outfit("suit")
 	character.seek_clip("idle_relaxed", 0.0)
 	character.skeleton.force_update_all_bone_transforms()
 
@@ -82,7 +81,7 @@ func _ready() -> void:
 		parts.append({"state": LimbState.INTACT, "time": 0.0, "debris": null,
 			"nodes": [], "stump": null, "growth": null})
 	_prepare_visual_parts(character.appearance.body)
-	_prepare_visual_parts(character.appearance.gown)
+	_prepare_visual_parts(character.appearance.suit)
 	for i in 4:
 		_add_stump(i)
 

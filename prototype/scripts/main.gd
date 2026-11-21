@@ -197,7 +197,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _toggle_outfit() -> void:
-	T.OUTFIT = "suit" if T.OUTFIT == "dress" else "dress"
+	# Платье временно выключено, но все исходные ресурсы остаются в проекте.
+	T.OUTFIT = "suit"
 	for actor in [player, clone]:
 		if is_instance_valid(actor) and actor.character != null and actor.character.appearance != null:
 			actor.character.appearance.set_outfit(T.OUTFIT)

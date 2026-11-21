@@ -42,6 +42,9 @@ func _run() -> void:
 	world = Node3D.new()
 	root.add_child(world)
 	current_scene = world
+	# The retained dress is disabled in normal UI, but its cloth regressions
+	# must continue exercising the real dress rather than the default outfit.
+	T.OUTFIT = "dress"
 	var character := make_character()
 	check(character.skeleton != null, "actual GLB imported with Skeleton3D")
 	if character.skeleton == null:
@@ -69,6 +72,7 @@ func _run() -> void:
 	await _test_actual_physics()
 	await _test_modifier_and_dodge_physics()
 	world.free()
+	T.OUTFIT = "suit"
 	print("GEN native animation suite: %d checks, %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)
 

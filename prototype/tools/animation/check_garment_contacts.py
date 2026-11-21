@@ -55,14 +55,9 @@ def suit_body_triangles(rig, mesh, coverage):
     arm_ids = [i for i, n in enumerate(rig.names) if n.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
     arms = (weights*np.isin(joints, arm_ids)).sum(axis=1)
     overlap = coverage['skin_overlap']
-    hidden = (arms < .15) & (p[:, 1] > coverage['ankle']+overlap) & (p[:, 1] < coverage['neck']-overlap)
-    sleeves = arms >= .85
-    for cuff in coverage['wrists']:
-        ids = [rig.index[n+'.'+cuff['side']] for n in ['forearm', 'hand']]
-        forearm = (weights*np.isin(joints, ids)).sum(axis=1)
-        along = (p-cuff['origin'])@cuff['axis']
-        sleeves &= ~((forearm > .2) & (along > cuff['end']-overlap))
-    hidden |= sleeves
+    top = (p[:, 1] > coverage['top_low']+overlap) & (p[:, 1] < coverage['neck']-overlap)
+    shorts = (p[:, 1] > coverage['shorts_low']+overlap) & (p[:, 1] < coverage['shorts_high']-overlap)
+    hidden = (arms < .15) & (top | shorts)
     return mesh['indices'][~hidden[mesh['indices']].all(axis=1)]
 
 
