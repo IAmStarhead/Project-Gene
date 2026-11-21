@@ -651,7 +651,7 @@ func _test_appearance(character: Node3D) -> void:
 			var native: Vector3 = character.global_transform.affine_inverse()*character.skeleton.global_transform*(skin_pose*gown_points[i])
 			seam_gap = maxf(seam_gap, native.distance_to(pinned))
 	check(seam_gap < .00001, "native Skin and pinned cloth have a shared waist seam without overlapping surfaces")
-	check(appearance.body.mesh.get_blend_shape_count() == 1
+	check(appearance.body.mesh.get_blend_shape_count() == 5
 		and appearance.body.mesh.get_meta("hand_vertices") >= 3400,
 		"post-import mesh contains the existing fingers' real relaxed shape")
 	character.reset_motion(false)

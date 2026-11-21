@@ -88,7 +88,7 @@ func _run() -> void:
 					var bind := bones[v * 4 + k]
 					var b := sk.find_bone(part.skin.get_bind_name(bind))
 					var transform := sk.global_transform * sk.get_bone_global_pose(b) * part.skin.get_bind_pose(bind)
-					expected += (transform * (vertices[v] + delta[v])) * weights[v * 4 + k]
+					expected += (transform * delta[v]) * weights[v * 4 + k]
 				max_error = maxf(max_error, points[v].distance_to(expected - origin))
 			check(max_error < .0001, "detached mesh follows current bone pose and open-hand blend")
 	clone.queue_free()

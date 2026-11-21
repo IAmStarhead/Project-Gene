@@ -50,8 +50,9 @@ func _ready() -> void:
 	var source: MeshInstance3D = character.appearance._find_body(original)
 	dressed_body = character.appearance.body.mesh
 	full_body = ArrayMesh.new()
-	full_body.add_blend_shape("RelaxedHands")
-	full_body.blend_shape_mode = Mesh.BLEND_SHAPE_MODE_RELATIVE
+	for i in dressed_body.get_blend_shape_count():
+		full_body.add_blend_shape(dressed_body.get_blend_shape_name(i))
+	full_body.blend_shape_mode = dressed_body.blend_shape_mode
 	for surface in dressed_body.get_surface_count():
 		var arrays: Array = dressed_body.surface_get_arrays(surface)
 		arrays[Mesh.ARRAY_INDEX] = source.mesh.surface_get_arrays(surface)[Mesh.ARRAY_INDEX]

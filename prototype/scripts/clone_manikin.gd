@@ -89,8 +89,9 @@ func _ready() -> void:
 func _prepare_visual_parts(source: MeshInstance3D) -> void:
 	var groups := PartMesh.prepare(source.mesh, source.skin)
 	source.mesh = groups[0]
-	if source.mesh.get_blend_shape_count() > 0:
-		source.set_blend_shape_value(0, character.appearance.hand_open)
+	var hand_shape: int = source.find_blend_shape_by_name("RelaxedHands")
+	if hand_shape >= 0:
+		source.set_blend_shape_value(hand_shape, character.appearance.hand_open)
 	for i in 4:
 		var mesh: ArrayMesh = groups[i + 1]
 		if mesh.get_surface_count() == 0:
@@ -107,8 +108,9 @@ func _prepare_visual_parts(source: MeshInstance3D) -> void:
 			node.set_meta("textile", true)
 		node.custom_aabb = source.custom_aabb
 		source.get_parent().add_child(node)
-		if mesh.get_blend_shape_count() > 0:
-			node.set_blend_shape_value(0, character.appearance.hand_open)
+		var hand_index: int = node.find_blend_shape_by_name("RelaxedHands")
+		if hand_index >= 0:
+			node.set_blend_shape_value(hand_index, character.appearance.hand_open)
 		parts[i].nodes.append(node)
 
 

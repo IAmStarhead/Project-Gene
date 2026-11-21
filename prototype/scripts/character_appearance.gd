@@ -8,6 +8,7 @@ extends Node3D
 const T := preload("res://scripts/tuning.gd")
 const DATA_PATH := "res://assets/heroine/appearance/lab_uniform.json"
 const STEP := 1.0/60.0
+const SoftMotion := preload("res://scripts/soft_motion.gd")
 static var _data: Dictionary = {}
 static var _hand_grid: Dictionary = {}
 static var _body_cache: Dictionary = {}
@@ -23,6 +24,7 @@ var suit: MeshInstance3D
 var outfit := "dress"
 var _source_body: Mesh
 var hand_open := 0.0
+var soft_motion := SoftMotion.new()
 var clone_variant := false
 var collision_count := 0
 var _hips := -1
@@ -119,7 +121,7 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	body.get_parent().add_child(gown)
 	gown.custom_aabb = body.custom_aabb
 	if _suit_mesh == null:
-		_suit_mesh = _build_gown_mesh(_data["suit"])
+		_suit_mesh = _build_gown_mesh(_data["suit"], true)
 	suit = MeshInstance3D.new()
 	suit.name = "SubjectJumpsuit"
 	suit.mesh = _suit_mesh
@@ -297,7 +299,11 @@ static func suit_covered(point: Vector3, bones: PackedInt32Array, weights: Packe
 func _body_with_relaxed_hands(source: Mesh, for_suit: bool = false) -> ArrayMesh:
 	var result := ArrayMesh.new()
 	result.add_blend_shape("RelaxedHands")
-	result.blend_shape_mode = Mesh.BLEND_SHAPE_MODE_RELATIVE
+	result.add_blend_shape("SoftChestUp")
+	result.add_blend_shape("SoftChestDown")
+	result.add_blend_shape("SoftHipsUp")
+	result.add_blend_shape("SoftHipsDown")
+	result.blend_shape_mode = Mesh.BLEND_SHAPE_MODE_NORMALIZED
 	var names: Array = []
 	for i in skeleton.get_bone_count():
 		names.append(skeleton.get_bone_name(i))
@@ -313,8 +319,8 @@ func _body_with_relaxed_hands(source: Mesh, for_suit: bool = false) -> ArrayMesh
 		var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
 		for i in vertices.size():
 			var row := _hand_row(vertices[i], normals[i])
-			deltas.append(Vector3.ZERO if row.is_empty() else Vector3(row[6], row[7], row[8]))
-			normal_deltas.append(Vector3.ZERO if row.is_empty() else Vector3(row[9], row[10], row[11])-normals[i])
+			deltas.append(vertices[i] + (Vector3.ZERO if row.is_empty() else Vector3(row[6], row[7], row[8])))
+			normal_deltas.append(normals[i] if row.is_empty() else Vector3(row[9], row[10], row[11]))
 			matched += 0 if row.is_empty() else 1
 			var hidden := suit_covered(vertices[i], bones, weights, i, names) if for_suit else covered(vertices[i], bones, weights, i, names)
 			hide.append(1 if hidden else 0)
@@ -329,10 +335,10 @@ func _body_with_relaxed_hands(source: Mesh, for_suit: bool = false) -> ArrayMesh
 		blend[Mesh.ARRAY_VERTEX] = deltas
 		blend[Mesh.ARRAY_NORMAL] = normal_deltas
 		if arrays[Mesh.ARRAY_TANGENT] != null:
-			var tangents := PackedFloat32Array()
-			tangents.resize(vertices.size()*4)
-			blend[Mesh.ARRAY_TANGENT] = tangents
-		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [blend])
+			blend[Mesh.ARRAY_TANGENT] = arrays[Mesh.ARRAY_TANGENT]
+		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays,
+			[blend, _soft_shape(arrays, true, 2.0), _soft_shape(arrays, true, -2.0),
+			 _soft_shape(arrays, false, 2.0), _soft_shape(arrays, false, -2.0)])
 		result.surface_set_material(surface, source.surface_get_material(surface))
 	if matched < 2500:
 		push_error("RelaxedHands: only %d imported hand vertices matched" % matched)
@@ -340,7 +346,24 @@ func _body_with_relaxed_hands(source: Mesh, for_suit: bool = false) -> ArrayMesh
 	return result
 
 
-static func _build_gown_mesh(source: Dictionary) -> ArrayMesh:
+# Absolute blend targets, including unchanged normals: Compatibility encodes
+# normals as unit vectors, so a zero relative normal becomes a bogus direction.
+static func _soft_shape(arrays: Array, chest: bool, direction: float) -> Array:
+	var result: Array = []
+	result.resize(Mesh.ARRAY_MAX)
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var positions := PackedVector3Array()
+	positions.resize(vertices.size())
+	for i in vertices.size():
+		positions[i] = vertices[i] + SoftMotion.shape_delta(vertices[i], chest) * direction
+	result[Mesh.ARRAY_VERTEX] = positions
+	result[Mesh.ARRAY_NORMAL] = arrays[Mesh.ARRAY_NORMAL]
+	if arrays[Mesh.ARRAY_TANGENT] != null:
+		result[Mesh.ARRAY_TANGENT] = arrays[Mesh.ARRAY_TANGENT]
+	return result
+
+
+static func _build_gown_mesh(source: Dictionary, soft: bool = false) -> ArrayMesh:
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	var vertices := PackedVector3Array()
@@ -374,7 +397,17 @@ static func _build_gown_mesh(source: Dictionary) -> ArrayMesh:
 		indices[i+2] = temp
 	arrays[Mesh.ARRAY_INDEX] = indices
 	var result := ArrayMesh.new()
-	result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	if soft:
+		result.add_blend_shape("SoftChestUp")
+		result.add_blend_shape("SoftChestDown")
+		result.add_blend_shape("SoftHipsUp")
+		result.add_blend_shape("SoftHipsDown")
+		result.blend_shape_mode = Mesh.BLEND_SHAPE_MODE_NORMALIZED
+		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays,
+			[_soft_shape(arrays, true, 2.0), _soft_shape(arrays, true, -2.0),
+			 _soft_shape(arrays, false, 2.0), _soft_shape(arrays, false, -2.0)])
+	else:
+		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return result
 
 
@@ -429,6 +462,7 @@ func set_outfit(value: String) -> void:
 		_body_cache[key] = _body_with_relaxed_hands(_source_body, outfit == "suit")
 	body.mesh = _body_cache[key]
 	body.set_blend_shape_value(0, hand_open)
+	reset_soft_motion()
 	gown.visible = outfit == "dress"
 	skirt.visible = outfit == "dress"
 	suit.visible = outfit == "suit"
@@ -445,6 +479,37 @@ func set_hands(amount: float) -> void:
 	hand_open = clampf(amount, 0, 1)
 	if body != null:
 		body.set_blend_shape_value(0, hand_open)
+
+
+func reset_soft_motion() -> void:
+	soft_motion.reset()
+	_apply_soft_motion()
+
+
+func _apply_soft_motion() -> void:
+	# Keep weights nonnegative and <= 0.5 each. Negative normalized weights can
+	# overflow Compatibility's intermediate packed normal buffer and flash.
+	var weights := [maxf(soft_motion.chest, 0.0) * .5, maxf(-soft_motion.chest, 0.0) * .5,
+		maxf(soft_motion.hip, 0.0) * .5, maxf(-soft_motion.hip, 0.0) * .5]
+	if is_instance_valid(body) and body.mesh != null and body.mesh.get_blend_shape_count() >= 5:
+		for i in 4:
+			body.set_blend_shape_value(i + 1, weights[i])
+	if is_instance_valid(suit) and suit.mesh != null and suit.mesh.get_blend_shape_count() >= 4:
+		for i in 4:
+			suit.set_blend_shape_value(i, weights[i])
+
+
+func update_soft_motion(delta: float) -> void:
+	if outfit != "suit" or skeleton == null:
+		return
+	var chest_bone := skeleton.find_bone("chest")
+	var hip_bone := skeleton.find_bone("hips")
+	if chest_bone < 0 or hip_bone < 0:
+		return
+	var chest_position := skeleton.global_transform * skeleton.get_bone_global_pose(chest_bone).origin
+	var hip_position := skeleton.global_transform * skeleton.get_bone_global_pose(hip_bone).origin
+	soft_motion.advance(delta, chest_position, hip_position)
+	_apply_soft_motion()
 
 
 func reset_cloth() -> void:

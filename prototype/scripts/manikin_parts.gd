@@ -112,8 +112,9 @@ static func freeze_mesh(source: MeshInstance3D, skeleton: Skeleton3D, origin: Ve
 		var weights: PackedFloat32Array = a[Mesh.ARRAY_WEIGHTS]
 		var indices: PackedInt32Array = a[Mesh.ARRAY_INDEX]
 		var blends := source.mesh.surface_get_blend_shape_arrays(surface)
-		# The mannequin's hands use a relative blend shape. Freeze the same
-		# visible hand rather than reverting to the source's closed fist.
+		# Apply the same visible blends as the renderer, supporting both target modes.
+		var base_vertices := vertices.duplicate()
+		var base_normals := normals.duplicate()
 		for blend_index in blends.size():
 			var amount := source.get_blend_shape_value(blend_index)
 			if is_zero_approx(amount):
@@ -122,9 +123,14 @@ static func freeze_mesh(source: MeshInstance3D, skeleton: Skeleton3D, origin: Ve
 			var vertex_delta: PackedVector3Array = blend[Mesh.ARRAY_VERTEX]
 			var normal_delta: PackedVector3Array = blend[Mesh.ARRAY_NORMAL]
 			for i in vertices.size():
-				vertices[i] += vertex_delta[i] * amount
-				if not normal_delta.is_empty():
-					normals[i] += normal_delta[i] * amount
+				if source.mesh.blend_shape_mode == Mesh.BLEND_SHAPE_MODE_NORMALIZED:
+					vertices[i] += (vertex_delta[i] - base_vertices[i]) * amount
+					if not normal_delta.is_empty():
+						normals[i] += (normal_delta[i] - base_normals[i]) * amount
+				else:
+					vertices[i] += vertex_delta[i] * amount
+					if not normal_delta.is_empty():
+						normals[i] += normal_delta[i] * amount
 		var used := PackedByteArray()
 		used.resize(vertices.size())
 		for index in indices:

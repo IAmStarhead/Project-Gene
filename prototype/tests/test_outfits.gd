@@ -54,7 +54,7 @@ func _run() -> void:
 		var previous_upload: PackedByteArray = a._vertex_bytes.duplicate()
 		for clip in character.MOTIONS.get_animation_list():
 			character.seek_clip(clip, character.clip_duration(clip)*.43)
-			check(a.suit.visible and a.body.mesh.get_blend_shape_count() == 1, "suit + hand morph during "+clip)
+			check(a.suit.visible and a.body.mesh.get_blend_shape_count() == 5, "suit + hand and secondary morphs during "+clip)
 		check(a._vertex_bytes == previous_upload, "hidden skirt does not simulate/upload under trousers")
 	# Persist selection through the actual H -> showcase and Esc -> game
 	# resources, without losing scene-lighting or clone tint composition.
