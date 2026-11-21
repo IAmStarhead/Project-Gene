@@ -1,0 +1,81 @@
+{
+  "config": {
+    "pack": "production57-checked.pck",
+    "out": "/home/user/Project-Gene/.local/review/repair-57/production-checked/captures-smoke"
+  },
+  "shots": [
+    {
+      "name": "01-game-default-dress",
+      "key": null,
+      "file": "ui-01-game-default-dress.png",
+      "sha256": "b12f49c5bc85ca6d5c4f483d939f05ccac9194879c05d4d67a062d77a3aadde0"
+    },
+    {
+      "name": "02-game-F3",
+      "key": "F3",
+      "file": "ui-02-game-F3.png",
+      "sha256": "3d257cc3143e9e2c8390d6e9460c0c344647cc8847b1d20489af59fe60d834d6"
+    },
+    {
+      "name": "03-game-suit-O",
+      "key": "o",
+      "file": "ui-03-game-suit-O.png",
+      "sha256": "2e0433740856d3067b3d60b6e7209e3ff0b7b84fd94e7dd5639a276131803999"
+    },
+    {
+      "name": "04-hotbar-front-4",
+      "key": "4",
+      "file": "ui-04-hotbar-front-4.png",
+      "sha256": "9049ec178e07d6a28a8c3bb9f388c54740c99492b95627523cd0c88b7f601b88"
+    },
+    {
+      "name": "05-hotbar-strong-6",
+      "key": "6",
+      "file": "ui-05-hotbar-strong-6.png",
+      "sha256": "8f8534d18f6a0542f9703e6beb23712221e86b2d5490e5713e85ebdbaeccbb52"
+    },
+    {
+      "name": "06-hotbar-empty-0",
+      "key": "0",
+      "file": "ui-06-hotbar-empty-0.png",
+      "sha256": "bf8d795e52b270f17b8d724a2d1ea5cd283f370844270bca7640338b9795442a"
+    },
+    {
+      "name": "07-blade-context-right-arm-2",
+      "key": "2",
+      "file": "ui-07-blade-context-right-arm-2.png",
+      "sha256": "d6c0a64cfdf1e9fbd1152ca68f72fdeff33553abe5ac77ef93091560c621213d"
+    },
+    {
+      "name": "08-showcase-retains-suit-H",
+      "key": "h",
+      "file": "ui-08-showcase-retains-suit-H.png",
+      "sha256": "a9e46553d61dd236fe3e1b564ba84c7a2fe90fa8d8dc36005310c9acba54ffd9"
+    },
+    {
+      "name": "09-showcase-next-clip",
+      "key": "ArrowDown",
+      "file": "ui-09-showcase-next-clip.png",
+      "sha256": "98f358d8038cb0dda8edf60e71438b760b9b5863986ba76ec83e5c6b8376edf6"
+    },
+    {
+      "name": "10-showcase-dress-O",
+      "key": "o",
+      "file": "ui-10-showcase-dress-O.png",
+      "sha256": "70b7c0190762749254b6faa5b684ddd4002967c84ce8b85b290bfea498ed5265"
+    },
+    {
+      "name": "11-return-game-retains-dress",
+      "key": "h",
+      "file": "ui-11-return-game-retains-dress.png",
+      "sha256": "8f6e6a87a6e2dd07bcb5cf9a50d43ef0b69c2909c0a4a16c6bff9636843a0ab0"
+    }
+  ],
+  "logs": [
+    "Godot Engine v4.7.2.stable.custom_build.3d95ead8f (2026-10-08 08:18:16 UTC) - https://godotengine.org",
+    "OpenGL API OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium)) - Compatibility - Using Device: WebKit - WebKit WebGL",
+    "Build configuration: Emscripten 4.0.14, single-threaded, no GDExtension support."
+  ],
+  "errors": [],
+  "conditions": "Unmodified production main_scene; Chromium keyboard input; native Compatibility WebGL2 / SwiftShader. Fixed 2.5 s wall-time waits, not fixed simulation-step evidence. Screenshots require visual inspection. NOT 940MX or Windows acceptance."
+}

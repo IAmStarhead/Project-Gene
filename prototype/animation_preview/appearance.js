@@ -79,7 +79,7 @@ export class Appearance {
     suitGeometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(suitSource.joints.flat(), 4));
     suitGeometry.setIndex(suitSource.indices);
     this.suit = new THREE.SkinnedMesh(suitGeometry, this.material);
-    this.suit.name = 'LabTopAndTrousers'; this.suit.castShadow = true; this.suit.frustumCulled = false;
+    this.suit.name = 'SubjectJumpsuit'; this.suit.castShadow = true; this.suit.frustumCulled = false;
     this.suit.position.copy(body.position); this.suit.quaternion.copy(body.quaternion); this.suit.scale.copy(body.scale);
     body.parent.add(this.suit); this.suit.bind(body.skeleton, body.bindMatrix); this.suit.visible = false;
     const c = suitSource.coverage, hideSuit = [];

@@ -224,7 +224,7 @@ func select_category(index: int) -> void:
 		if category == 1 and i < 2:
 			var outfit := "dress" if i == 0 else "suit"
 			var outfit_button := _button("ПЛАТЬЕ" if i == 0 else "ФОРМА", 11)
-			outfit_button.tooltip_text = "Лабораторное платье" if i == 0 else "Лабораторный топ и штаны"
+			outfit_button.tooltip_text = "Лабораторное платье" if i == 0 else "Облегающая форма испытуемого"
 			outfit_button.custom_minimum_size = Vector2(70, 50)
 			outfit_button.pressed.connect(_select_clothing.bind(outfit))
 			grid.add_child(outfit_button)
@@ -248,7 +248,7 @@ func select_category(index: int) -> void:
 
 func _select_clothing(outfit: String) -> void:
 	selected_outfit = outfit
-	heading.text = "Лабораторное платье" if outfit == "dress" else "Лабораторная форма"
+	heading.text = "Лабораторное платье" if outfit == "dress" else "Форма испытуемого"
 	description.text = ("Надето. " if T.OUTFIT == outfit else "Доступно. ") + "Переключить одежду в игре — O. Характеристики пока не реализованы."
 	icon.queue_redraw()
 
@@ -281,7 +281,7 @@ func _draw_icon() -> void:
 
 
 func _update_values() -> void:
-	outfit_label.text = "Лабораторное платье" if T.OUTFIT == "dress" else "Лабораторная форма"
+	outfit_label.text = "Лабораторное платье" if T.OUTFIT == "dress" else "Форма испытуемого"
 	if is_instance_valid(player):
 		hp.text = "Здоровье    %.0f / %.0f" % [player.health, T.MAX_HEALTH]
 		stamina.text = "Выносливость    %.0f / %.0f" % [player.stamina, T.MAX_STAMINA]

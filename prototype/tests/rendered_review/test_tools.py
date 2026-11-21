@@ -70,10 +70,61 @@ class ReviewToolTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
                 self.assertIn('--work must be a separate review directory', result.stderr)
 
-    def test_historical_gameplay_is_not_offered(self):
+    def test_appearance_only_mixing_is_not_presented_as_historical_gameplay(self):
         result = self.build('--driver', 'game', '--baseline-appearance', 'HEAD')
         self.assertEqual(result.returncode, 2)
         self.assertIn('only for the isolated layers diagnostic', result.stderr)
+
+    def test_full_historical_source_cannot_be_silently_mixed_with_appearance_only(self):
+        result = self.build('--source-commit','HEAD','--baseline-appearance','HEAD')
+        self.assertEqual(result.returncode,2)
+        self.assertIn('cannot be combined',result.stderr)
+
+    def test_failed_render_coverage_cannot_be_published_as_a_successful_video(self):
+        from assemble import assemble
+        manifest = self.base/'failed.json'
+        for report in [{'errors':[],'frames':[{}],'coverage_assertions_passed':False},
+                       {'errors':[],'frames':[{}]}]:
+            manifest.write_text(json.dumps(report))
+            with self.assertRaisesRegex(ValueError,'coverage assertions'):
+                assemble(manifest,self.base/'must-not-exist.mp4')
+        self.assertFalse((self.base/'must-not-exist.mp4').exists())
+
+    def test_subject_timelines_have_uniform_true_simulation_cadence(self):
+        from subject_scenarios import timelines
+        expected = {'subject-air':420,'subject-kicks':444,'subject-jog':232,
+                    'subject-contact':48,'subject-plant':132}
+        for name,(step,timeline) in timelines().items():
+            takes = [x for x in timeline if 'take' in x]
+            self.assertTrue(all(x['ticks'] % step == 0 for x in takes))
+            self.assertEqual(sum(x['ticks']//step for x in takes),expected[name])
+        kick_timeline = timelines()['subject-kicks'][1]
+        self.assertEqual({x['command']['select'] for x in kick_timeline if 'take' in x},{3,4,5})
+        self.assertTrue(all(x['command']['attack']=='L' for x in kick_timeline if 'take' in x),
+                        'real selector then same LMB handler, not a private start-attack hook')
+
+    def test_before_after_rejects_different_physics_observer_and_protected_source(self):
+        from copy import deepcopy
+        from publish_subject_comparison import validate
+        png = self.base/'frame.png'
+        png.write_bytes(b'unchanged native PNG placeholder; validation does not decode pixels')
+        frame = {'take':'relaxed-jump','ticks':6,'steps':6,'viewport':[800,450],
+            'view':'side','yaw':0,'camera_yaw':0,'velocity':[0,1,0],
+            'grounded':False,'action':'','action_time':0,'camera_transform':[0]*12,
+            'player':{'position':[0,1,0]},'file':str(png),
+            'sha256':hashlib.sha256(png.read_bytes()).hexdigest()}
+        original = {'errors':[],'coverage_assertions_passed':True,
+            'config':{'coverage':'subject-comparison','sample_ticks':6,'timeline':[{'take':'relaxed-jump'}]},
+            'frames':[frame],'source_hashes':{k:'unchanged' for k in
+                ['world_sha256','lighting_sha256','camera_sha256','model_sha256','clone_sha256','project_sha256']}}
+        self.assertEqual(len(validate(original,deepcopy(original))),1)
+        for field in ['position','camera_transform','velocity','world_sha256']:
+            changed = deepcopy(original)
+            if field == 'position': changed['frames'][0]['player'][field][0] = .001
+            elif field == 'world_sha256': changed['source_hashes'][field] = 'different'
+            else: changed['frames'][0][field][0] = .001
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate(original,changed)
 
     def trace(self, unknown=False):
         data = {'fps': 10, 'outfit': 'mixed', 'seeks': {}, 'takes': {

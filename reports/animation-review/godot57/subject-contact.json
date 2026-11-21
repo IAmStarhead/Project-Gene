@@ -1,0 +1,7263 @@
+{
+  "video": "subject-contact.mp4",
+  "video_sha256": "d1c48b155543ae4939efdfe1d1e91060ebdbe944e522e3920f18fe6eaad7f706",
+  "capture_manifest_sha256": "60fc5cc4ea1312102995a6219beee0dc651101bd323d8337382e05f398dd717b",
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+    "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+    "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+    "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+    "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+    "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+    "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+    "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+    "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+    "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+    "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+    "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+  },
+  "conditions": "Godot native scene tree, Compatibility WebGL2 / Chromium ANGLE SwiftShader. Production medium/PBR lighting/shadows. Offline physics 60 Hz; one framebuffer every 3 ticks. Starting fixtures, observer camera, pause between commands and UI visibility are review-only. NOT Windows/OpenGL3.3/940MX performance.",
+  "physics_hz": 60,
+  "capture_hz": 20.0,
+  "playback_simulation_rate": 1,
+  "frames": 48,
+  "distinct_source_pngs": 48,
+  "seconds": 2.4,
+  "viewport": [
+    800,
+    450
+  ],
+  "video_pixels": [
+    800,
+    552
+  ],
+  "interpolated_frames": 0,
+  "errors": [],
+  "timeline": [
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "dress",
+        "stance": false,
+        "view": "feet-side"
+      }
+    },
+    {
+      "take": "dress / relaxed-idle-feet",
+      "ticks": 12,
+      "label": "dress / relaxed | real idle / CLOSE SIDE, original shadows",
+      "command": {}
+    },
+    {
+      "setup": {
+        "jump": true,
+        "steps": 75
+      }
+    },
+    {
+      "take": "dress / relaxed-land-feet",
+      "ticks": 12,
+      "label": "dress / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "command": {}
+    },
+    {
+      "setup": {
+        "view": "feet-back"
+      }
+    },
+    {
+      "take": "dress / relaxed-back-feet",
+      "ticks": 12,
+      "label": "dress / relaxed | same live settled feet / CLOSE BACK",
+      "command": {}
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "dress",
+        "stance": true,
+        "view": "feet-side"
+      }
+    },
+    {
+      "take": "dress / combat-idle-feet",
+      "ticks": 12,
+      "label": "dress / combat | real idle / CLOSE SIDE, original shadows",
+      "command": {}
+    },
+    {
+      "setup": {
+        "jump": true,
+        "steps": 75
+      }
+    },
+    {
+      "take": "dress / combat-land-feet",
+      "ticks": 12,
+      "label": "dress / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "command": {}
+    },
+    {
+      "setup": {
+        "view": "feet-back"
+      }
+    },
+    {
+      "take": "dress / combat-back-feet",
+      "ticks": 12,
+      "label": "dress / combat | same live settled feet / CLOSE BACK",
+      "command": {}
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "suit",
+        "stance": false,
+        "view": "feet-side"
+      }
+    },
+    {
+      "take": "suit / relaxed-idle-feet",
+      "ticks": 12,
+      "label": "suit / relaxed | real idle / CLOSE SIDE, original shadows",
+      "command": {}
+    },
+    {
+      "setup": {
+        "jump": true,
+        "steps": 75
+      }
+    },
+    {
+      "take": "suit / relaxed-land-feet",
+      "ticks": 12,
+      "label": "suit / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "command": {}
+    },
+    {
+      "setup": {
+        "view": "feet-back"
+      }
+    },
+    {
+      "take": "suit / relaxed-back-feet",
+      "ticks": 12,
+      "label": "suit / relaxed | same live settled feet / CLOSE BACK",
+      "command": {}
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "suit",
+        "stance": true,
+        "view": "feet-side"
+      }
+    },
+    {
+      "take": "suit / combat-idle-feet",
+      "ticks": 12,
+      "label": "suit / combat | real idle / CLOSE SIDE, original shadows",
+      "command": {}
+    },
+    {
+      "setup": {
+        "jump": true,
+        "steps": 75
+      }
+    },
+    {
+      "take": "suit / combat-land-feet",
+      "ticks": 12,
+      "label": "suit / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "command": {}
+    },
+    {
+      "setup": {
+        "view": "feet-back"
+      }
+    },
+    {
+      "take": "suit / combat-back-feet",
+      "ticks": 12,
+      "label": "suit / combat | same live settled feet / CLOSE BACK",
+      "command": {}
+    }
+  ],
+  "frame_states": [
+    {
+      "take": "dress / relaxed-idle-feet",
+      "label": "dress / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 38,
+      "steps": 3,
+      "sha256": "751652fed8f0af93825b56333492c000e48cfda1d5e04177e085d420691fb643",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.583333333333333,
+      "soles": {
+        "left_world_y": 0.00183332094457,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00207239575684071,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 0,
+      "video_time": 0.0,
+      "player": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.00025001776218414,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-idle-feet",
+      "label": "dress / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 41,
+      "steps": 3,
+      "sha256": "d93cefa53bbbfac71aa18287229795b4d08df23cb51f7cd00539214cebbead1f",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.633333333333334,
+      "soles": {
+        "left_world_y": 0.0018333065090701,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00208965479396284,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 1,
+      "video_time": 0.05,
+      "player": {
+        "cloth_gap": 0.000249973058700559,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000251463174819944,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-idle-feet",
+      "label": "dress / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 44,
+      "steps": 3,
+      "sha256": "aa7fa66ca6ef012ab2e22bb6f7f6b2ecb0cf5670c001ea36a15427e228fea396",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.683333333333334,
+      "soles": {
+        "left_world_y": 0.00183330161962658,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00210115779191256,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 2,
+      "video_time": 0.1,
+      "player": {
+        "cloth_gap": 0.000250077366828916,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250032663345334,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-idle-feet",
+      "label": "dress / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 47,
+      "steps": 3,
+      "sha256": "474dd1bd8684bacd948b190ef936ba94ca318c5113c3618ee32aaa76cfc61c5a",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.733333333333334,
+      "soles": {
+        "left_world_y": 0.0018333182670176,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00210615782998502,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 3,
+      "video_time": 0.15,
+      "player": {
+        "cloth_gap": 0.000250077366828916,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-land-feet",
+      "label": "dress / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 125,
+      "steps": 3,
+      "sha256": "11c75f3ef310f20ef0b0397e61a038d723e0033279f53f1d842264223fd34981",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.65,
+      "soles": {
+        "left_world_y": 0.00174464681185782,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158531835768372,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 4,
+      "video_time": 0.2,
+      "player": {
+        "cloth_gap": 0.000268748521804807,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.083333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-land-feet",
+      "label": "dress / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 128,
+      "steps": 3,
+      "sha256": "aa6add2faa496e67558fe9259f426cad1896a8a903b4930f44d53aa9a8719c7e",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.700000000000001,
+      "soles": {
+        "left_world_y": 0.00174204702489078,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158531928900629,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 5,
+      "video_time": 0.25,
+      "player": {
+        "cloth_gap": 0.000260537981986997,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.133333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-land-feet",
+      "label": "dress / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 131,
+      "steps": 3,
+      "sha256": "a435025d0c7972002fbc795e8c6dfff7fad472e02634e3794d698d7147baeeed",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.750000000000001,
+      "soles": {
+        "left_world_y": 0.00174005934968591,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158528960309923,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 6,
+      "video_time": 0.3,
+      "player": {
+        "cloth_gap": 0.000249928355216977,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.183333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-land-feet",
+      "label": "dress / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 134,
+      "steps": 3,
+      "sha256": "0c608f92f0a2ad5a129e1b1e286ab8f78bf73214c4ccd10e1871339915112c66",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.800000000000001,
+      "soles": {
+        "left_world_y": 0.00173852872103453,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158532208297402,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 7,
+      "video_time": 0.35,
+      "player": {
+        "cloth_gap": 0.000251612186431882,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.233333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-back-feet",
+      "label": "dress / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 137,
+      "steps": 3,
+      "sha256": "bb02a777fa92ec2c11165803fd85ad4082cdbdb450a0fefe57e1f5ba1d122b7d",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.850000000000001,
+      "soles": {
+        "left_world_y": 0.00173693976830691,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158529810141772,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 8,
+      "video_time": 0.4,
+      "player": {
+        "cloth_gap": 0.000254115581512449,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.283333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-back-feet",
+      "label": "dress / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 140,
+      "steps": 3,
+      "sha256": "9fb0c3b323bee4e6eb53280ddd38282b7303145192ee252688b64e75549569f4",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.900000000000001,
+      "soles": {
+        "left_world_y": 0.00173595547676086,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158533826470375,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 9,
+      "video_time": 0.45,
+      "player": {
+        "cloth_gap": 0.000256112337112424,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.333333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-back-feet",
+      "label": "dress / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 143,
+      "steps": 3,
+      "sha256": "91c570148c3f02b28ae1fe0c6e2b920c59395d79b5560c09de4f974d7d79ef59",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.950000000000001,
+      "soles": {
+        "left_world_y": 0.0017360191559419,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158528960309923,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 10,
+      "video_time": 0.5,
+      "player": {
+        "cloth_gap": 0.000256529569625852,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.383333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / relaxed-back-feet",
+      "label": "dress / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 146,
+      "steps": 3,
+      "sha256": "d441b28e2177c1743aee51e4d944400b056b58376e031983c3a14239ee421e8c",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 1,
+      "soles": {
+        "left_world_y": 0.00173599342815578,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158533500507474,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 11,
+      "video_time": 0.55,
+      "player": {
+        "cloth_gap": 0.000254607319831845,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.433333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-idle-feet",
+      "label": "dress / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 38,
+      "steps": 3,
+      "sha256": "74059244ca21abee26bd6ec2d9325c18e21296ffdd888c2378ec3635d193578a",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.583333333333333,
+      "soles": {
+        "left_world_y": 0.00327983358874917,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183337228372693,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 12,
+      "video_time": 0.6,
+      "player": {
+        "cloth_gap": 0.000249973058700559,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.00025001776218414,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-idle-feet",
+      "label": "dress / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 41,
+      "steps": 3,
+      "sha256": "4dc289c3b4a2ac4bce8bf34b8b1b661972e8d907db942408a9cd81c92626f66d",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.633333333333334,
+      "soles": {
+        "left_world_y": 0.00327933439984918,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183338113129139,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 13,
+      "video_time": 0.65,
+      "player": {
+        "cloth_gap": 0.00024989855289459,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000251463174819944,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-idle-feet",
+      "label": "dress / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 44,
+      "steps": 3,
+      "sha256": "5656b3aac8c3427258949031dc4868f29a74bcaf6c709e5b855b3a194db9f69c",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.683333333333334,
+      "soles": {
+        "left_world_y": 0.0032796326559037,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183342443779111,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 14,
+      "video_time": 0.7,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250032663345334,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-idle-feet",
+      "label": "dress / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 47,
+      "steps": 3,
+      "sha256": "440e3b5c52edfafa5866b617e668bb7a9b5fa8002a2a4d0e095c6b7dbe0ff243",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.733333333333334,
+      "soles": {
+        "left_world_y": 0.00328003289178014,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183339638169855,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 15,
+      "video_time": 0.75,
+      "player": {
+        "cloth_gap": 0.000249928355216977,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-land-feet",
+      "label": "dress / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 125,
+      "steps": 3,
+      "sha256": "dd7389b634731ca31c03fedcdb5747f57be9d3967e9f5fc2851f2c76e55f8804",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.65,
+      "soles": {
+        "left_world_y": 0.00307952798902988,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158540171105415,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 16,
+      "video_time": 0.8,
+      "player": {
+        "cloth_gap": 0.000305390477180478,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.083333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-land-feet",
+      "label": "dress / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 128,
+      "steps": 3,
+      "sha256": "a1434ba476e213e076d646f097b3e46fae72d0a023e474d7946414544ff93967",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.700000000000001,
+      "soles": {
+        "left_world_y": 0.00307918805629015,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158545013982803,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 17,
+      "video_time": 0.85,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.133333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-land-feet",
+      "label": "dress / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 131,
+      "steps": 3,
+      "sha256": "c8254ff6962c3d4a8890633c1ea196c298c8c421e2690b9cd8c07403354cb33a",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.750000000000001,
+      "soles": {
+        "left_world_y": 0.0030788432341069,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158542091958225,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 18,
+      "video_time": 0.9,
+      "player": {
+        "cloth_gap": 0.00025001776218414,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.183333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-land-feet",
+      "label": "dress / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 134,
+      "steps": 3,
+      "sha256": "155ac7f9eb0d5992b621181297948abc67745f1ae2b5820e7a263e512ebb6981",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.800000000000001,
+      "soles": {
+        "left_world_y": 0.00307820807211101,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158540077973157,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 19,
+      "video_time": 0.95,
+      "player": {
+        "cloth_gap": 0.000249973058700559,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.233333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-back-feet",
+      "label": "dress / combat | same live settled feet / CLOSE BACK",
+      "ticks": 137,
+      "steps": 3,
+      "sha256": "f469e207ae1c9c2d0800f987bdf71d743888f9dc887938e04b61558da23a5e8c",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.850000000000001,
+      "soles": {
+        "left_world_y": 0.00307757779955864,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158545130398124,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 20,
+      "video_time": 1.0,
+      "player": {
+        "cloth_gap": 0.000249973058700559,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.283333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-back-feet",
+      "label": "dress / combat | same live settled feet / CLOSE BACK",
+      "ticks": 140,
+      "steps": 3,
+      "sha256": "63ac855f1b3343caa4efedb3542d306305e2a0c8f49459e83bcf46d4759d823f",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.900000000000001,
+      "soles": {
+        "left_world_y": 0.00307607534341514,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158542755525559,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 21,
+      "video_time": 1.05,
+      "player": {
+        "cloth_gap": 0.000249973058700559,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.333333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-back-feet",
+      "label": "dress / combat | same live settled feet / CLOSE BACK",
+      "ticks": 143,
+      "steps": 3,
+      "sha256": "38325997c6b5a69002c93e5e0f501833a554427aa324a470a4df828359c25fae",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.950000000000001,
+      "soles": {
+        "left_world_y": 0.00307484809309244,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158542732242495,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 22,
+      "video_time": 1.1,
+      "player": {
+        "cloth_gap": 0.000249943256378171,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.383333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "dress / combat-back-feet",
+      "label": "dress / combat | same live settled feet / CLOSE BACK",
+      "ticks": 146,
+      "steps": 3,
+      "sha256": "2cb5c8ac00979250cf02c46e1969339a1a87b31917788b0c5f839e39b34440a2",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 1,
+      "soles": {
+        "left_world_y": 0.00307299406267703,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158544583246112,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 23,
+      "video_time": 1.15,
+      "player": {
+        "cloth_gap": 0.000274410963058469,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.433333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250062465667722,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "dress",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-idle-feet",
+      "label": "suit / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 38,
+      "steps": 3,
+      "sha256": "ce1483d05af97d72a972837bc0924ac2e4800894066de524a3ec22f5a2127d4b",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.583333333333333,
+      "soles": {
+        "left_world_y": 0.00183332094457,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00207239575684071,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 24,
+      "video_time": 1.2,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-idle-feet",
+      "label": "suit / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 41,
+      "steps": 3,
+      "sha256": "cc03e89bc2b12c242e195d5860d89b83ab258e1d55b6de8e692abf6d80af74da",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.633333333333334,
+      "soles": {
+        "left_world_y": 0.0018333065090701,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00208965479396284,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 25,
+      "video_time": 1.25,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-idle-feet",
+      "label": "suit / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 44,
+      "steps": 3,
+      "sha256": "fb3f0c142ef346e42669cfd523f79731fdd585960d6872b28b804ca20ca55986",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.683333333333334,
+      "soles": {
+        "left_world_y": 0.00183330161962658,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00210115779191256,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 26,
+      "video_time": 1.3,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-idle-feet",
+      "label": "suit / relaxed | real idle / CLOSE SIDE, original shadows",
+      "ticks": 47,
+      "steps": 3,
+      "sha256": "1efaf3c4ee4d90db8df855c96af7523f24f820f96be1ede902ec246e6833263d",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.733333333333334,
+      "soles": {
+        "left_world_y": 0.0018333182670176,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00210615782998502,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 27,
+      "video_time": 1.35,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-land-feet",
+      "label": "suit / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 125,
+      "steps": 3,
+      "sha256": "827b972aa4234323bc6484a92ca7b3208b644e8cfab40bc4d58c483200a148e4",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.65,
+      "soles": {
+        "left_world_y": 0.00174464681185782,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158531835768372,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 28,
+      "video_time": 1.4,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.083333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-land-feet",
+      "label": "suit / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 128,
+      "steps": 3,
+      "sha256": "afe8ecdbc71177a144ed3dea13bcdb7abaa54b0cb1e4cea13250b437974c0813",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.700000000000001,
+      "soles": {
+        "left_world_y": 0.00174204702489078,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158531928900629,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 29,
+      "video_time": 1.45,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.133333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-land-feet",
+      "label": "suit / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 131,
+      "steps": 3,
+      "sha256": "a350883cbe5392de1e11575f07fc8dd3a8c44c953380089f3e710b51c9386952",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.750000000000001,
+      "soles": {
+        "left_world_y": 0.00174005934968591,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158528960309923,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 30,
+      "video_time": 1.5,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.183333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-land-feet",
+      "label": "suit / relaxed | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 134,
+      "steps": 3,
+      "sha256": "01fe89c8092caa552c0b98c9cd7b11633e58b50096d7b3ec7d21a7d2d2485ff4",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.800000000000001,
+      "soles": {
+        "left_world_y": 0.00173852872103453,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158532208297402,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 31,
+      "video_time": 1.55,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.233333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-back-feet",
+      "label": "suit / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 137,
+      "steps": 3,
+      "sha256": "4dc825ef0cf5153b095dd6fd7040fd6fe47c9813e7eb144740514bd905bfe9c1",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.850000000000001,
+      "soles": {
+        "left_world_y": 0.00173693976830691,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158529810141772,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 32,
+      "video_time": 1.6,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.283333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-back-feet",
+      "label": "suit / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 140,
+      "steps": 3,
+      "sha256": "cb7d65efd0e048e6f2bf5511f4a4a45caa7991918d861ba3dec53e9ca3e5c530",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.900000000000001,
+      "soles": {
+        "left_world_y": 0.00173595547676086,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158533826470375,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 33,
+      "video_time": 1.65,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.333333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-back-feet",
+      "label": "suit / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 143,
+      "steps": 3,
+      "sha256": "439a397db79a8daed363a962f105165afe519b57297150e120723715c5d1dbff",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.950000000000001,
+      "soles": {
+        "left_world_y": 0.0017360191559419,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158528960309923,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 34,
+      "video_time": 1.7,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.383333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / relaxed-back-feet",
+      "label": "suit / relaxed | same live settled feet / CLOSE BACK",
+      "ticks": 146,
+      "steps": 3,
+      "sha256": "16c6ae083ca9ff9b96ead7e846da44163b6352e962d747edaa47903ff448105b",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": false,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 1,
+      "soles": {
+        "left_world_y": 0.00173599342815578,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158533500507474,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 35,
+      "video_time": 1.75,
+      "player": {
+        "cloth_gap": 0.000249913454055783,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 102.433333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000250002861022947,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-idle-feet",
+      "label": "suit / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 38,
+      "steps": 3,
+      "sha256": "65bbdd95af04bc21eaa9ac87138e4533fee0ed9ef48507963e9bf0d399a37c17",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.583333333333333,
+      "soles": {
+        "left_world_y": 0.00327983358874917,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183337228372693,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 36,
+      "video_time": 1.8,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.633333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-idle-feet",
+      "label": "suit / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 41,
+      "steps": 3,
+      "sha256": "0430d2a82952eadcce7a5b56f499517d4f59d059f68f2f8a7bc74df21295dd1f",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.633333333333334,
+      "soles": {
+        "left_world_y": 0.00327933439984918,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183338113129139,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 37,
+      "video_time": 1.85,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.683333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-idle-feet",
+      "label": "suit / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 44,
+      "steps": 3,
+      "sha256": "9ba5d2f36ce9ccb542099bb62dc5ae15e0b443588c9eef5ab332e6171769cd2d",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.683333333333334,
+      "soles": {
+        "left_world_y": 0.0032796326559037,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183342443779111,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 38,
+      "video_time": 1.9,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.733333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-idle-feet",
+      "label": "suit / combat | real idle / CLOSE SIDE, original shadows",
+      "ticks": 47,
+      "steps": 3,
+      "sha256": "dc011ba5359967cf421ca1cfad6606638931733718f0ce770a86d0fa8a976739",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3190.9892578125,
+          428.868469238281,
+          false
+        ],
+        [
+          -3831.18115234375,
+          -1242.81140136719,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": false,
+      "land_time": 0.733333333333334,
+      "soles": {
+        "left_world_y": 0.00328003289178014,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00183339638169855,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 39,
+      "video_time": 1.95,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833330675959587,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.783333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-land-feet",
+      "label": "suit / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 125,
+      "steps": 3,
+      "sha256": "b2f42b5dbe890c5a0cc8d7644177b51262614624659a3d04c597e42ee3581cb7",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.65,
+      "soles": {
+        "left_world_y": 0.00307952798902988,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158540171105415,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 40,
+      "video_time": 2.0,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.083333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-land-feet",
+      "label": "suit / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 128,
+      "steps": 3,
+      "sha256": "5daebdf869148ae05c701ebf21b286b52134973cf1c9040b9b52e7dcdd0b14b4",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.700000000000001,
+      "soles": {
+        "left_world_y": 0.00307918805629015,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158545013982803,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 41,
+      "video_time": 2.05,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.133333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-land-feet",
+      "label": "suit / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 131,
+      "steps": 3,
+      "sha256": "d85bb219b0d71d108fc79fec10563f338c78216cf2f8f58dd5c517fb4799469f",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.750000000000001,
+      "soles": {
+        "left_world_y": 0.0030788432341069,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158542091958225,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 42,
+      "video_time": 2.1,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.183333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-land-feet",
+      "label": "suit / combat | settled AFTER actual F jump / CLOSE SIDE",
+      "ticks": 134,
+      "steps": 3,
+      "sha256": "b26e8b26d9754315ce45b17eb45593f03a9d3b7879a7aa61938d7553e822540b",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          639.999938964844,
+          428.868438720703,
+          false
+        ],
+        [
+          639.999938964844,
+          -1242.81103515625,
+          false
+        ],
+        [
+          -3191.06567382812,
+          428.668914794922,
+          false
+        ],
+        [
+          -3831.28466796875,
+          -1243.08312988281,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.800000000000001,
+      "soles": {
+        "left_world_y": 0.00307820807211101,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158540077973157,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-side",
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ],
+      "frame": 43,
+      "video_time": 2.15,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.233333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-back-feet",
+      "label": "suit / combat | same live settled feet / CLOSE BACK",
+      "ticks": 137,
+      "steps": 3,
+      "sha256": "c459f72397ca457a9510968df7772210f7225fec318b0584381b64ce3859a9a6",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.850000000000001,
+      "soles": {
+        "left_world_y": 0.00307757779955864,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158545130398124,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 44,
+      "video_time": 2.2,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.283333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-back-feet",
+      "label": "suit / combat | same live settled feet / CLOSE BACK",
+      "ticks": 140,
+      "steps": 3,
+      "sha256": "bfb0c0b8ef167ca1b5383592e9dfa7a6ce3e02697692aeb9c7a32a8fdaf0c574",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.900000000000001,
+      "soles": {
+        "left_world_y": 0.00307607534341514,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158542755525559,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 45,
+      "video_time": 2.25,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.333333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-back-feet",
+      "label": "suit / combat | same live settled feet / CLOSE BACK",
+      "ticks": 143,
+      "steps": 3,
+      "sha256": "ad31013a2fb0e5bf80ae3d9339492959b083050a4116aaff5762a5b71326f444",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 0.950000000000001,
+      "soles": {
+        "left_world_y": 0.00307484809309244,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158542732242495,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 46,
+      "video_time": 2.3,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.383333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    },
+    {
+      "take": "suit / combat-back-feet",
+      "label": "suit / combat | same live settled feet / CLOSE BACK",
+      "ticks": 146,
+      "steps": 3,
+      "sha256": "585002af1f9b4357ca201ce4f8f187f0215366bfc083439c735a9c2dca4500f9",
+      "action": "",
+      "action_time": 0,
+      "grounded": true,
+      "health": 100,
+      "clone_health": 120,
+      "stamina": 100,
+      "lock_target": "",
+      "last_contact": "",
+      "received_contact": "",
+      "clone_received_contact": "",
+      "attack_kind": "straight",
+      "dodge_local": [
+        0,
+        0,
+        1
+      ],
+      "clone_grounded": true,
+      "hud_visible": false,
+      "yaw": 0,
+      "camera_yaw": 0,
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "framing": [
+        [
+          640,
+          428.868438720703,
+          false
+        ],
+        [
+          640,
+          -1242.81091308594,
+          false
+        ],
+        [
+          640,
+          281.068176269531,
+          false
+        ],
+        [
+          640,
+          -57.4446334838867,
+          false
+        ]
+      ],
+      "selected_slot": 0,
+      "kick_planting": false,
+      "stance": true,
+      "training_blade": false,
+      "training_limb": 0,
+      "air_launched": true,
+      "land_time": 1,
+      "soles": {
+        "left_world_y": 0.00307299406267703,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158544583246112,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "view": "feet-back",
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ],
+      "frame": 47,
+      "video_time": 2.35,
+      "player": {
+        "cloth_gap": 0.000249958157539365,
+        "combat_blend": 1,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 0,
+        "hit_active": false,
+        "hit_time": 102.433333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000585354864597321,
+          2.5
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      },
+      "clone": {
+        "cloth_gap": 0.000249987959861753,
+        "combat_blend": 0,
+        "direction_weights": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "directional": 0,
+        "gait": 0,
+        "hand_open": 1,
+        "hit_active": false,
+        "hit_time": 100.883333333333,
+        "incoming_local": [
+          0,
+          0,
+          -1
+        ],
+        "move_weight": 0,
+        "outfit": "suit",
+        "phase": 0,
+        "position": [
+          0,
+          0.000833321362733841,
+          -2.20000004768372
+        ],
+        "sprint": 0,
+        "state": "ground",
+        "zone": "unknown"
+      }
+    }
+  ]
+}

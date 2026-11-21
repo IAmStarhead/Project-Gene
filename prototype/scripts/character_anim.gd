@@ -13,6 +13,7 @@ extends Node3D
 
 const Appearance := preload("res://scripts/character_appearance.gd")
 const T := preload("res://scripts/tuning.gd")
+const Moves := preload("res://scripts/move_catalog.gd")
 const MODEL_PATH := "res://assets/heroine/female_A_rigged_safe.glb"
 const MOTIONS: AnimationLibrary = preload("res://assets/heroine/animations/motion_set.tres")
 
@@ -42,6 +43,8 @@ var _air_time := 0.0
 var _air_launched := false
 var _air_launch_speed := 0.0
 var _land_time := 100.0
+var _last_air_vertical := 0.0
+var _land_strength := 1.0
 var _hit_time := 100.0
 var _hit_zone := "unknown"
 var _hit_direction := Vector3(0, 0, -1) # model-local incoming attacker -> victim
@@ -176,7 +179,22 @@ func seek_clip(clip_name: StringName, time: float, preview_delta: float = 0.0) -
 ## Перевод игрового времени в клип: подготовка / активная фаза / возврат.
 ## У клона другая длительность подготовки, но контакт совпадает с уроном.
 func attack_clip_name(side: String, kind: String = "straight") -> String:
-	return "attack_body_hook" if kind == "hook" else "attack_right" if side == "R" else "attack_left"
+	return String(Moves.profile(kind, side).clip)
+
+
+## Read-only FK of the SAME native tracks. Used to sweep a kick's active
+## interval even when a long physics tick crosses it. Never seek/mutate the
+## displayed skeleton, and never substitute a chest-height fist fallback.
+## Godot bone poses here are full parent-local transforms (not rest deltas).
+func sample_joint_transforms(clip_name: String, time: float) -> Array[Transform3D]:
+	var pose := sample_clip(clip_name, time)
+	var result: Array[Transform3D] = []
+	for i in _bone_names.size():
+		var position: Vector3 = pose.hips if i == _hips_index else skeleton.get_bone_pose_position(i)
+		var local_pose := Transform3D(Basis(pose.rotations[i]), position)
+		var parent := skeleton.get_bone_parent(i)
+		result.append(result[parent]*local_pose if parent >= 0 else local_pose)
+	return result
 
 
 func attack_clip_time(time: float, timing: Vector3, side: String = "R", kind: String = "straight") -> float:
@@ -206,7 +224,9 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	_combat_blend = move_toward(_combat_blend, 1.0 if _combat_mode else 0.0, delta * 3.0)
 	if grounded and not _was_grounded:
 		_land_time = 0.0
+		_land_strength = clampf(absf(_last_air_vertical)/5.5, .5, 1.0)
 	if not grounded:
+		_last_air_vertical = float(context.get("vertical_speed", 0.0))
 		# Явный импульс также перезапускает визуальный взлёт при coyote-jump,
 		# когда персонаж уже кадр-два не касается пола. Сход с края НЕ прыжок.
 		if _was_grounded or context.get("jump_started", false):
@@ -268,11 +288,11 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	var state := "ground"
 	if action == "attack":
 		var kind: String = context.get("attack_kind", "straight")
-		state = "attack_"+side+("_hook" if kind == "hook" else "")
+		state = "attack_"+side+("_"+kind if kind != "straight" else "")
 		var timing: Vector3 = context.get("attack_timing", Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY))
 		var attack_pose := sample_clip(attack_clip_name(side, kind),
 			attack_clip_time(action_time, timing, side, kind))
-		pose = attack_pose if grounded else _replace_upper(_air_pose(context), attack_pose)
+		pose = attack_pose if grounded else _air_pose(context) if Moves.is_kick(kind) else _replace_upper(_air_pose(context), attack_pose)
 	elif action == "dodge":
 		state = "dodge"
 		pose = sample_dodge(action_time, context.get("dodge_direction", Vector3(0, 0, 1)))
@@ -283,13 +303,16 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		pose = _air_pose(context)
 	elif _land_time < clip_duration("land"):
 		state = "land"
-		var landing := sample_clip("land", _land_time)
-		# На бегу амортизируем в основном корпусом, не перебиваем шаг целиком.
-		var recover := _move_weight * .7
-		if not _combat_mode:
-			# После амортизации возвращаемся в обычную стойку, не поднимаем
-			# кулаки к лицу на последних кадрах посадки. Боевой клип не меняем.
-			recover = maxf(recover, smoothstep(.10, clip_duration("land"), _land_time))
+		var landing := _air_clip_pose("land", _land_time)
+		# A small ledge uses a smaller absorption, not the full jump crouch.
+		# Both ends remain exact; this is visual only, never extra stun.
+		if _land_strength < 1.0:
+			var quiet := _blend_pose(_air_clip_pose("land", 0.0),
+				_air_clip_pose("land", clip_duration("land")), smoothstep(0,clip_duration("land"),_land_time))
+			landing = _blend_pose(quiet, landing, _land_strength)
+		# Contact first, then release into the actually moving gait. The old
+		# constant .7 running mix could leave both soles hovering at touchdown.
+		var recover := _move_weight*smoothstep(.075,.22,_land_time)
 		pose = _blend_pose(landing, pose, recover)
 
 	if state != _state or (state == "air" and context.get("jump_started", false)):
@@ -301,12 +324,15 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		_state = state
 	_transition_elapsed += delta
 	if not _transition_from.is_empty() and _transition_elapsed < _transition_length:
-		pose = _blend_pose(_transition_from, pose, smoothstep(0.0, _transition_length, _transition_elapsed))
+		var seam := _blend_pose(_transition_from, pose, smoothstep(0.0, _transition_length, _transition_elapsed))
+		# On touchdown the authored contacts already match descent's end.
+		# Do not low-pass the planted legs back towards an airborne snapshot.
+		pose = _replace_upper(pose, seam) if state == "land" else seam
 
 	if _hit_time < clip_duration("hit"):
 		pose = _add_hit(pose, .35 if action == "attack" else 1.0)
 	_apply_pose(pose)
-	if appearance != null and grounded and state in ["ground", "dodge"]:
+	if appearance != null and grounded and (state in ["ground", "dodge", "land"] or (action == "attack" and Moves.is_kick(context.get("attack_kind", "straight")))):
 		# Floor-safe clips can still penetrate when SLERP-blended: the foot
 		# describes an arc, not the IK target line. Stabilise the resulting
 		# actual sole, not the Character node or a guessed ankle height.
@@ -404,34 +430,33 @@ func _locomotion_set(combat: bool) -> Dictionary:
 	return _blend_pose(idle, gait, _move_weight)
 
 
+func _air_clip_pose(name: String, time: float) -> Dictionary:
+	return _blend_pose(sample_clip(name+"_relaxed", time), sample_clip(name, time),
+		smoothstep(0,1,_combat_blend))
+
+
 func _air_pose(context: Dictionary) -> Dictionary:
 	var vertical: float = context.get("vertical_speed", 0.0)
 	var takeoff := clip_duration("jump_start")
 	if _air_launched and _air_time < takeoff and vertical > 0.0:
-		if _air_from_relaxed and not _takeoff_pose.is_empty():
-			# Из обычного шага/бега идём сразу к разгибанию прыжка,
-			# а не делаем промежуточный рывок в боевую защиту.
-			return _blend_pose(_takeoff_pose, sample_clip("jump_start", takeoff),
-				smoothstep(0.0, takeoff, _air_time))
-		return sample_clip("jump_start", _air_time)
+		# The state-entry seam already comes from the actual last gait pose.
+		# Two stance-specific starts avoid a second interpolation through guard.
+		return _air_clip_pose("jump_start", _air_time)
 	if _air_launched and vertical > 0.0:
-		# Прогресс после разгибания до вершины траектории; не зацикливаем
-		# короткий клип и не держим один неподвижный кадр в воздухе.
-		var remaining_speed := maxf(.1, _air_launch_speed - T.PLAYER_JUMP_GRAVITY * takeoff)
-		var rise := clampf(1.0 - vertical / remaining_speed, 0.0, 1.0)
-		return sample_clip("jump_up", rise * clip_duration("jump_up"))
-	var impact_speed := sqrt(2.0 * T.GRAVITY_FALL * T.JUMP_HEIGHT)
-	var fall := clampf(-vertical / impact_speed, 0.0, 1.0)
+		var remaining_speed := maxf(.1, _air_launch_speed-T.PLAYER_JUMP_GRAVITY*takeoff)
+		var rise := clampf(1.0-vertical/remaining_speed,0,1)
+		return _air_clip_pose("jump_up",rise*clip_duration("jump_up"))
+	var impact_speed := sqrt(2.0*T.GRAVITY_FALL*T.JUMP_HEIGHT)
+	var fall := clampf(-vertical/impact_speed,0,1)
 	if not _air_launched:
-		fall = maxf(fall, .7)  # Сошли с уступа: не изображаем подбор ног при взлёте.
-	var floor_distance: float = context.get("floor_distance", -1.0)
+		# A ledge begins near the braced portion, NEVER through the apex tuck.
+		fall = maxf(fall,.72)
+	var floor_distance: float = context.get("floor_distance",-1.0)
 	if floor_distance >= 0.0:
-		# На высокой площадке контакт раньше, чем на исходном полу. Луч
-		# используется ТОЛЬКО для позы, не двигает тело и не меняет коллизии.
-		var speed := maxf(0.0, -vertical)
-		var until_contact := (sqrt(speed*speed + 2.0*T.GRAVITY_FALL*floor_distance) - speed) / T.GRAVITY_FALL
-		fall = maxf(fall, 1.0 - clampf(until_contact / .18, 0.0, 1.0))
-	return sample_clip("jump_down", fall * clip_duration("jump_down"))
+		var speed := maxf(0.0,-vertical)
+		var until_contact := (sqrt(speed*speed+2.0*T.GRAVITY_FALL*floor_distance)-speed)/T.GRAVITY_FALL
+		fall = maxf(fall,1.0-clampf(until_contact/.18,0,1))
+	return _air_clip_pose("jump_down",fall*clip_duration("jump_down"))
 
 
 ## Телепорт/новый тест: не переносим фазу шага и отдачу из прошлой жизни.
@@ -451,6 +476,8 @@ func reset_motion(combat: bool = true) -> void:
 	_air_launched = false
 	_air_launch_speed = 0.0
 	_land_time = 100.0
+	_last_air_vertical = 0.0
+	_land_strength = 1.0
 	_hit_time = 100.0
 	_hit_zone = "unknown"
 	_hit_direction = Vector3(0, 0, -1)

@@ -20,12 +20,11 @@ def sha(path):
 
 
 def assemble(manifest, output, ffmpeg=None, font_path=None):
-    from PIL import Image, ImageDraw, ImageFont
-
     data = json.loads(manifest.read_text())
     frames = data['frames']
-    if data['errors'] or not frames:
-        raise ValueError('Capture must contain frames and have no engine/page errors')
+    if data['errors'] or not frames or data.get('coverage_assertions_passed') is not True:
+        raise ValueError('Capture must contain frames, have no engine/page errors and pass its coverage assertions')
+    from PIL import Image, ImageDraw, ImageFont
     step = data['config']['sample_ticks']
     if any(f['steps'] != step for f in frames):
         raise ValueError('Nonuniform sample duration needs explicit variable-rate encoding')
@@ -73,7 +72,7 @@ def assemble(manifest, output, ffmpeg=None, font_path=None):
                 canvas = Image.new('RGB', (width, total_height), '#15212f')
                 canvas.paste(image.convert('RGB'), (0, header))
             draw = ImageDraw.Draw(canvas)
-            title = 'R44 | GODOT 4.7.2 | GAME CONTROLLERS | '+data['config']['coverage'].upper()
+            title = data['config'].get('title','GODOT 4.7.2 | GAME CONTROLLERS')+' | '+data['config']['coverage'].upper()
             draw.text((12, 6), title, font=regular, fill='#d9f2ff')
             draw.text((12, 30), frame['label'], font=small, fill='white')
             draw.text((12, height+header+5),
@@ -95,7 +94,9 @@ def assemble(manifest, output, ffmpeg=None, font_path=None):
         keys = ['take', 'label', 'ticks', 'steps', 'sha256', 'action', 'action_time',
                 'grounded', 'health', 'clone_health', 'stamina', 'lock_target', 'last_contact',
                 'received_contact', 'clone_received_contact', 'attack_kind', 'dodge_local',
-                'clone_grounded', 'hud_visible', 'yaw', 'camera_yaw', 'velocity', 'framing']
+                'clone_grounded', 'hud_visible', 'yaw', 'camera_yaw', 'velocity', 'framing',
+                'selected_slot', 'kick_planting', 'stance', 'training_blade', 'training_limb', 'air_launched',
+                'land_time', 'soles', 'floor_y', 'view', 'camera_transform']
         row = {k: frame[k] for k in keys if k in frame}
         row.update({'frame': i, 'video_time': round(i/fps, 6)})
         for who in ['player', 'clone']:

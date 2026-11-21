@@ -1,0 +1,116 @@
+{
+  "suites": [
+    {
+      "name": "GEN native animation suite",
+      "checks": 1036,
+      "failures": 0
+    },
+    {
+      "name": "GEN idle-cache suite",
+      "checks": 7,
+      "failures": 0
+    },
+    {
+      "name": "Presentation suite",
+      "checks": 66,
+      "failures": 0
+    },
+    {
+      "name": "Floor finish suite",
+      "checks": 13,
+      "failures": 0
+    },
+    {
+      "name": "Camera smoothing suite",
+      "checks": 13,
+      "failures": 0
+    },
+    {
+      "name": "Camera jump air suite",
+      "checks": 18,
+      "failures": 0
+    },
+    {
+      "name": "Training sword suite",
+      "checks": 20,
+      "failures": 0
+    },
+    {
+      "name": "Limb demo suite",
+      "checks": 13,
+      "failures": 0
+    },
+    {
+      "name": "Cut manikin suite",
+      "checks": 40,
+      "failures": 0
+    },
+    {
+      "name": "Manikin partition suite",
+      "checks": 10,
+      "failures": 0
+    },
+    {
+      "name": "GEN combined integration suite",
+      "checks": 55,
+      "failures": 0
+    },
+    {
+      "name": "GEN directional suite",
+      "checks": 137,
+      "failures": 0
+    },
+    {
+      "name": "GEN wardrobe suite",
+      "checks": 108,
+      "failures": 0
+    },
+    {
+      "name": "GEN combat-zone suite",
+      "checks": 176,
+      "failures": 0
+    },
+    {
+      "name": "GEN controller-transition suite",
+      "checks": 96,
+      "failures": 0
+    },
+    {
+      "name": "GEN kicks-hotbar suite",
+      "checks": 332,
+      "failures": 0
+    },
+    {
+      "name": "GEN air-contact suite",
+      "checks": 332,
+      "failures": 0
+    }
+  ],
+  "suite_count": 17,
+  "checks": 2472,
+  "failures": 0,
+  "physics_hz": 60,
+  "per_process_timeout_seconds": 900,
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+    "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+    "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+    "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+    "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+    "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+    "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+    "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+    "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+    "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+    "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+    "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+  },
+  "conditions": "Actual headless Godot 4.7.2 project; no check skipped; not raster / artistic / Windows / laptop-performance acceptance."
+}

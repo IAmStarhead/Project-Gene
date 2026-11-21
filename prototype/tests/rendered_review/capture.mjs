@@ -52,7 +52,7 @@ try{
   console.log(part,frames.length-started,'native framebuffers');
  }
  const errors=logs.filter(s=>/^(SCRIPT ERROR:|ERROR:|PAGEERROR)/.test(s));
- const report={config,errors,frames,responses,source_hashes:expected,
+ const report={config,errors,frames,responses,source_hashes:expected,coverage_assertions_passed:false,
   unique_pngs:new Set(frames.map(f=>f.sha256)).size,simulation_seconds:frames.reduce((sum,f)=>sum+f.steps,0)/60,
   conditions:'Godot native scene tree, Compatibility WebGL2 / Chromium ANGLE SwiftShader. Production medium/PBR lighting/shadows. Offline physics 60 Hz; one framebuffer every '+step+' ticks. Starting fixtures, observer camera, pause between commands and UI visibility are review-only. NOT Windows/OpenGL3.3/940MX performance.'};
  await writeFile(out+'/manifest.json',JSON.stringify(report,null,2)+'\n');
@@ -109,5 +109,70 @@ try{
    }
   }
  }
- console.log('GEN rendered review:',config.coverage,frames.length,'captures,',report.unique_pngs,'unique PNGs,',report.simulation_seconds.toFixed(3),'s at 1x; no engine errors');
+ if(config.coverage==='subject-air'){
+  for(const outfit of ['dress','suit'])for(const stance of ['relaxed','combat']){
+   for(const route of ['stationary','moving','ordinary-camera']){
+    const f=frames.filter(f=>f.take===outfit+' / '+stance+'-'+route);
+    assert(f.some(f=>f.player.state==='air')&&f.some(f=>f.player.state==='land'),'Actual flight/contact '+outfit+' '+stance+' '+route);
+    assert(f.some(f=>f.air_launched)&&f.at(-1).grounded,'Actual launch and return to floor');
+    assert(Math.max(...f.map(f=>f.player.position[1]))>1.0,'Real ballistic jump, not only an in-place pose');
+    if(route==='ordinary-camera')assert(f.every(f=>f.view==='game'&&f.hud_visible),'Approved gameplay camera and UI retained');
+   }
+   const drop=frames.filter(f=>f.take===outfit+' / '+stance+'-ledge');
+   assert(drop.some(f=>f.player.state==='air'&&!f.air_launched),'Real ledge fall, not takeoff');
+   assert(drop.some(f=>f.player.position[1]>.70)&&drop.at(-1).grounded&&Math.abs(drop.at(-1).floor_y)<.001,'Existing deck reaches actual lower floor');
+  }
+ }
+ if(config.coverage==='subject-kicks'){
+  for(const outfit of ['dress','suit'])for(const kind of ['front_kick','low_kick','roundhouse'])for(const ordinary of [false,true]){
+   const name=outfit+' / '+kind+' / '+(ordinary?'approved game camera':'full pair observer');
+   const f=frames.filter(f=>f.take===name);
+   assert(f.length>25&&f.some(f=>f.action==='attack'&&f.attack_kind===kind),'Actual chosen move '+name);
+   assert(f.some(f=>f.last_contact.includes('authored_leg_sweep')&&f.clone_health<120),'Confirmed leg hit against an ACTIVE clone '+name);
+   assert(f.at(-1).action===''&&f.every(f=>f.grounded),'Grounded preparation/contact/recovery '+name);
+   if(ordinary)assert(f.every(f=>f.view==='game'&&f.hud_visible),'Unchanged actual game camera '+name);
+  }
+ }
+ if(config.coverage==='subject-jog'){
+  for(const outfit of ['dress','suit']){
+   const f=frames.filter(f=>f.take===outfit+'-jog');
+   assert.equal(new Set(f.map(f=>Math.floor(f.player.phase*4)%4)).size,4,'Whole ordinary jog phase '+outfit);
+   assert(f.some(f=>Math.abs(Math.hypot(f.velocity[0],f.velocity[2])-2.9)<.005),'Original real 2.9 m/s jog '+outfit);
+   const stopped=frames.filter(f=>f.take===outfit+'-stop').at(-1);
+   assert(Math.hypot(stopped.velocity[0],stopped.velocity[2])<.001&&stopped.player.move_weight===0,'Actual walk/jog/stop '+outfit);
+  }
+ }
+ if(config.coverage==='subject-plant'){
+  for(const outfit of ['dress','suit'])for(const gait of ['jog','sprint']){
+   const f=frames.filter(f=>f.take===outfit+'-'+gait+'-plant');
+   assert(f.some(f=>f.kick_planting&&f.action_time===0),'Visible actual braking before moving kick '+outfit+' '+gait);
+   const contact=f.filter(f=>f.action==='attack'&&!f.kick_planting&&f.action_time>.15);
+   assert(contact.length>8&&contact.every(f=>Math.hypot(f.velocity[0],f.velocity[2])<.001),'Body really stopped before leg lift/contact '+outfit+' '+gait);
+   assert(f.at(-1).action===''&&f.every(f=>f.grounded),'Full moving-start grounded recovery');
+  }
+ }
+ if(config.coverage==='subject-contact'){
+  for(const outfit of ['dress','suit'])for(const stance of [false,true]){
+   const f=frames.filter(f=>f.player.outfit===outfit&&f.stance===stance);
+   assert(f.length>=12&&f.some(f=>f.take.includes('-land-feet')),'Both outfits and stances after actual launch/contact');
+   for(const r of f){
+    assert(r.grounded&&r.soles.vertices>2000&&Number.isFinite(r.floor_y),'Dense native sole/floor diagnostic');
+    const gaps=[r.soles.left_world_y-r.floor_y,r.soles.right_world_y-r.floor_y];
+    assert(gaps.every(g=>g>-.001&&g<.007),'BOTH real skin soles settled at the actual floor, not a frozen spawn');
+   }
+  }
+ }
+ report.coverage_assertions_passed=true;
+ await writeFile(out+'/manifest.json',JSON.stringify(report,null,2)+'\n');
+ console.log('GEN rendered review:',config.coverage,frames.length,'captures,',report.unique_pngs,'unique PNGs,',report.simulation_seconds.toFixed(3),'s at 1x; no engine errors; coverage assertions passed');
+}catch(error){
+ // A slow batch / closed browser must not erase the console evidence or
+ // leave a partial run looking like a successful manifest. Keep each failed
+ // attempt separately; it cannot be assembled as accepted footage.
+ const failure={config,source_hashes:expected,coverage_assertions_passed:false,
+  error:String(error.stack??error),last_command:id,take:part,frames,responses,logs};
+ try{await writeFile(out+'/capture-failure-'+Date.now()+'.json',JSON.stringify(failure,null,2)+'\n');}
+ catch(diagnosticError){console.error('Could not save failure diagnostics:',diagnosticError);}
+ for(const message of logs.filter(s=>/^(SCRIPT ERROR:|ERROR:|PAGEERROR)/.test(s)))console.error(message);
+ throw error;
 }finally{await browser.close();}

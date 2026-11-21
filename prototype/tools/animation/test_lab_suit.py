@@ -19,7 +19,7 @@ class LabSuitTests(unittest.TestCase):
     def test_closed_top_long_trousers_are_a_small_real_skinned_mesh(self):
         s = self.suit
         p, n, w, j = [np.asarray(s[key]) for key in ['positions', 'normals', 'weights', 'joints']]
-        self.assertGreater(len(p), 6000)
+        self.assertGreater(len(p), 5000)
         self.assertLess(len(p), 14000)
         self.assertTrue(np.isfinite(p).all())
         self.assertTrue(np.isfinite(n).all())
@@ -28,11 +28,11 @@ class LabSuitTests(unittest.TestCase):
         self.assertGreaterEqual(w.min(), 0)
         self.assertGreaterEqual(j.min(), 0)
         self.assertLess(j.max(), 21)
-        self.assertLess(p[:, 1].min(), .14, 'long trousers, not shorts')
+        self.assertLess(p[:, 1].min(), .15, 'long legs, not shorts')
         self.assertGreater(p[:, 1].max(), 1.43, 'closed neckline, not an open sports top')
         self.assertEqual(len(s['face_groups']), len(s['indices'])//3)
-        self.assertEqual(len(s['boundaries']), 7, 'neck, wrists, hem, waist and two ankles only')
-        self.assertGreater(np.asarray(s['colors']).mean(), .70, 'matte light workwear, not black armour')
+        self.assertEqual(len(s['boundaries']), 5, 'one-piece: neck, two wrists, two ankles; no loose waist overlap')
+        self.assertGreater(np.ptp(np.asarray(s['colors']), axis=0).min(), .35, 'petrol/sage/ochre textile palette')
 
     def test_inseam_and_armholes_are_sewn_not_open_independent_tubes(self):
         s = self.suit
@@ -50,61 +50,32 @@ class LabSuitTests(unittest.TestCase):
     def test_neck_wrist_ankle_masks_leave_explicit_skin_overlap(self):
         c = self.suit['coverage']
         self.assertGreaterEqual(c['skin_overlap'], .020)
-        self.assertGreater(c['waist']-c['hem'], .08, 'top and trouser waist overlap while bending')
+        self.assertNotIn('hem', c, 'continuous fitted waist, not two floating overlapping shells')
         self.assertEqual(len(c['wrists']), 2)
         for cuff in c['wrists']:
             self.assertAlmostEqual(np.linalg.norm(cuff['axis']), 1, places=6)
             self.assertLess(cuff['end'], .23)
             self.assertGreater(cuff['end'], .20)
 
-    def test_waist_layers_and_cuff_openings_do_not_reintroduce_known_seams(self):
-        s, r = self.suit, self.rig
-        p, j, w = [np.asarray(s[k]) for k in ['positions', 'joints', 'weights']]
-        hem = next(b['vertices'] for b in s['boundaries'] if abs(b['center'][1]-s['coverage']['hem']) < .005)
-        np.testing.assert_allclose(p[hem, 1], s['coverage']['hem'], atol=1e-7)
-        thighs = (w[hem]*np.isin(j[hem], [r.index['thigh.L'], r.index['thigh.R']])).sum(axis=1)
-        self.assertGreater(thighs.max(), .25,
-                           'A hips-only top hem was pierced by the raised trouser leg during dodge')
-        for boundary in s['boundaries']:
-            if abs(boundary['center'][1]-s['coverage']['ankle']) > .005:
-                continue
-            ids = boundary['vertices']
-            side = 'L' if np.mean(p[ids, 0]) > 0 else 'R'
-            hip, ankle = [r.rest_world[r.index[n+'.'+side], :3, 3] for n in ['thigh', 'foot']]
-            u = (s['coverage']['ankle']-ankle[1])/(hip[1]-ankle[1])
-            center = ankle*(1-u)+hip*u
-            radius = np.linalg.norm(p[ids][:, [0, 2]]-center[[0, 2]], axis=1)
-            self.assertGreater(radius.min(), .075, 'not the old tight 58 mm ankle tube pierced at sprint toe-off')
-            self.assertLess(radius.max(), .085, 'straight workwear opening, not a baggy oversized calf')
-        # At a common waist section the top must actually be OUTSIDE the
-        # trousers, not just called an overlapping sewn panel. 32 rays.
-        faces = np.asarray(s['indices']).reshape(-1, 3)
-        groups = np.asarray(s['face_groups'])
-        arm_ids = [i for i,n in enumerate(r.names) if n.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
-        arms = (w*np.isin(j,arm_ids)).sum(axis=1)
-        waist_faces = faces[(groups == 'top') & (arms[faces].mean(axis=1) < .15)]
-        def radius_at(tri, direction):
-            a, b, c = tri[:, 0], tri[:, 1], tri[:, 2]
-            ab, ac = b-a, c-a
-            cross = np.cross(np.broadcast_to(direction, ac.shape), ac)
-            det = np.einsum('ij,ij->i', ab, cross)
-            good = abs(det) > 1e-10
-            inv = np.divide(1, det, out=np.zeros(len(det)), where=good)
-            rel = np.array([0, .942, .02])-a
-            u = np.einsum('ij,ij->i', rel, cross)*inv
-            q = np.cross(rel, ab)
-            v = q@direction*inv
-            length = np.einsum('ij,ij->i', ac, q)*inv
-            good &= (u >= 0) & (v >= 0) & (u+v <= 1) & (length >= 0)
-            self.assertTrue(good.any(), 'closed panel at the actual waist section')
-            # First exit from the torso shell. A lowered sleeve can lie
-            # farther along the SAME ray; it is not extra waist inflation.
-            return length[good].min()
-        for angle in np.linspace(0, 2*np.pi, 32, endpoint=False):
-            direction = np.array([np.sin(angle), 0, np.cos(angle)])
-            gap = radius_at(p[waist_faces], direction)-radius_at(p[faces[groups == 'trousers']], direction)
-            self.assertGreater(gap, .004, 'previous suit had negative waist gap / visible jagged trouser burnthrough')
-            self.assertLess(gap, .025, 'local layered ease, not global inflation')
+    def test_waist_and_crotch_are_one_connected_surface_not_overlapping_panels(self):
+        s = self.suit
+        p = np.asarray(s['positions'])
+        tri = np.asarray(s['indices']).reshape(-1,3)[np.asarray(s['face_groups']) == 'suit_shell']
+        count = s['fit']['shell_vertices']
+        adjacency = [set() for _ in range(count)]
+        for face in tri:
+            for a,b in zip(face,np.roll(face,-1)):
+                adjacency[a].add(b); adjacency[b].add(a)
+        seen, todo = set(), [0]
+        while todo:
+            i = todo.pop()
+            if i in seen: continue
+            seen.add(i); todo.extend(adjacency[i]-seen)
+        self.assertEqual(len(seen), count, 'neck / armholes / inseam are sewn into one shell')
+        self.assertTrue(any(p[face,1].min() < 1.03 < p[face,1].max() for face in tri),
+                        'actual triangles bridge the waist, not a gap hidden by a mask')
+        for b in s['boundaries']:
+            self.assertNotIn(b['opening'], ['waist','hem'])
 
     def test_every_motion_keeps_the_suit_finite_and_attached(self):
         s, r = self.suit, self.rig

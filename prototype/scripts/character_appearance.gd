@@ -121,7 +121,7 @@ func install(owner_actor: Node3D, rig: Skeleton3D, model: Node) -> void:
 	if _suit_mesh == null:
 		_suit_mesh = _build_gown_mesh(_data["suit"])
 	suit = MeshInstance3D.new()
-	suit.name = "LabTopAndTrousers"
+	suit.name = "SubjectJumpsuit"
 	suit.mesh = _suit_mesh
 	suit.skin = body.skin
 	suit.skeleton = body.skeleton

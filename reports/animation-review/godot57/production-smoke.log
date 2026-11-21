@@ -1,0 +1,12 @@
+01-game-default-dress
+02-game-F3
+03-game-suit-O
+04-hotbar-front-4
+05-hotbar-strong-6
+06-hotbar-empty-0
+07-blade-context-right-arm-2
+08-showcase-retains-suit-H
+09-showcase-next-clip
+10-showcase-dress-O
+11-return-game-retains-dress
+Uninstrumented production launch/UI smoke: 11 screenshots, no engine errors; selection/wardrobe states still require visual inspection

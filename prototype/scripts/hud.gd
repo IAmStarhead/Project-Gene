@@ -21,6 +21,7 @@ var _values_label: Label
 var _training_label: Label
 var _training_panel: PanelContainer
 var _quick_access: Control
+var _move_slots: Control
 var _target_mark: Control
 var _health_lag_value := 1.0
 var _last_combat_state := -1
@@ -29,6 +30,8 @@ var _last_combat_state := -1
 func setup(who: Node3D, lock_on: RefCounted) -> void:
 	player = who
 	lock = lock_on
+	if _move_slots != null:
+		_move_slots.player = player
 
 
 func _ready() -> void:
@@ -83,27 +86,21 @@ func _build_bars() -> void:
 	var quick := Control.new()
 	quick.name = "QuickAccess"
 	_quick_access = quick
+	quick.anchor_left = .5
+	quick.anchor_right = .5
 	quick.anchor_top = 1.0
 	quick.anchor_bottom = 1.0
-	quick.position = Vector2(MARGIN, -186)
-	quick.size = Vector2(166, 187)
+	quick.offset_left = -247
+	quick.offset_right = 247
+	quick.offset_top = -82
+	quick.offset_bottom = -10
 	quick.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(quick)
-	var quick_title := _text("БЫСТРЫЙ ДОСТУП  /  ПУСТО", 10, Color(.88, .93, .93))
-	var caption_style := StyleBoxFlat.new()
-	caption_style.bg_color = Color(.035, .055, .065, .86)
-	caption_style.content_margin_left = 4
-	caption_style.content_margin_right = 4
-	caption_style.content_margin_top = 1
-	caption_style.content_margin_bottom = 1
-	quick_title.add_theme_stylebox_override("normal", caption_style)
-	quick_title.position = Vector2(0, 0)
-	quick_title.visible = false
-	quick.add_child(quick_title)
-	var slots := preload("res://scripts/quick_slots.gd").new()
-	slots.name = "EmptySlots"
-	slots.position = Vector2.ZERO
-	quick.add_child(slots)
+	_move_slots = preload("res://scripts/quick_slots.gd").new()
+	_move_slots.name = "MoveSlots"
+	quick.add_child(_move_slots)
+	if is_instance_valid(player):
+		_move_slots.player = player
 
 	var training_panel := PanelContainer.new()
 	training_panel.name = "TrainingPanel"

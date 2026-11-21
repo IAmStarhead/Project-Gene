@@ -1,249 +1,194 @@
-"""Closed lab top + long trousers on the original 21-bone skin.
+"""Fitted test-subject jumpsuit, cut from the original continuous body surface.
 
-Deterministic cut/sew surface authoring; no external outfit, DCC, new rig,
-texture dependency or runtime cloth solver. Skin topology is welded before
-cutting, with interpolated four-weight LBS and real turned neck/wrist/ankle
-edges. This is a fitted textile prototype, not simulated trousers or armour.
+One sewn shell, five turned openings, original 21-bone / four-weight LBS.
+No loose square torso, separate floating badge, overlapping waist, new rig,
+textures or external costume assets. Petrol/sage textile with an original
+small ochre 07 print evokes a test subject, not medical laboratory staff.
+This is skinned textile geometry, NOT simulated cloth or a collision promise.
 """
 from collections import Counter
 import numpy as np
-from scipy.interpolate import PchipInterpolator
 from scipy.sparse import coo_matrix
 
-WHITE = [.86, .875, .89]
-TROUSERS = [.74, .765, .79]
-SEAM = [.63, .68, .71]
+FABRIC = np.array([.10,.28,.30])
+SAGE = np.array([.70,.74,.71])
+SIGNAL = np.array([.80,.61,.22])
+SEAM = [.16,.23,.24]
 
 
 def coverage(rig):
-    return {'hem': .935, 'waist': 1.025, 'neck': 1.44, 'ankle': .125,
-            'skin_overlap': .020,
-            'wrists': [{'origin': rig.rest_world[rig.index['forearm.'+s], :3, 3].tolist(),
-                        'axis': rig.rest_world[rig.index['forearm.'+s], :3, 1].tolist(),
-                        'end': float(np.linalg.norm(rig.positions[rig.index['hand.'+s]])-.012),
-                        'side': s} for s in ['L', 'R']]}
+    # Same neck/wrist inventory and retained 20 mm skin overlap as the old
+    # suit. The ankle cut is 20 mm higher: LESS skin is removed, not more.
+    return {'ankle':.145,'neck':1.44,'skin_overlap':.020,
+            'wrists':[{'origin':rig.rest_world[rig.index['forearm.'+s],:3,3].tolist(),
+                       'axis':rig.rest_world[rig.index['forearm.'+s],:3,1].tolist(),
+                       'end':float(np.linalg.norm(rig.positions[rig.index['hand.'+s]])-.012),
+                       'side':s} for s in ['L','R']]}
 
 
 def build_suit(rig):
     mesh = rig.mesh_data()
     source = mesh['POSITION']
-    _, first, inverse = np.unique(source.round(6), axis=0, return_index=True, return_inverse=True)
+    _,first,inverse = np.unique(source.round(6),axis=0,return_index=True,return_inverse=True)
     p = source[first].astype(float)
     normal = np.zeros_like(p)
-    np.add.at(normal, inverse, mesh['NORMAL'])
-    normal /= np.maximum(np.linalg.norm(normal, axis=1, keepdims=True), 1e-12)
-    dense = np.zeros((len(source), len(rig.names)))
+    np.add.at(normal,inverse,mesh['NORMAL'])
+    normal /= np.maximum(np.linalg.norm(normal,axis=1,keepdims=True),1e-12)
+    dense = np.zeros((len(source),len(rig.names)))
     for k in range(4):
-        dense[np.arange(len(source)), mesh['JOINTS_0'][:, k]] += mesh['WEIGHTS_0'][:, k]
+        dense[np.arange(len(source)),mesh['JOINTS_0'][:,k]] += mesh['WEIGHTS_0'][:,k]
     dense = dense[first]
     triangles = inverse[mesh['indices']]
-    arm_ids = [rig.index[n+'.'+s] for n in ['shoulder', 'upper_arm', 'forearm', 'hand'] for s in ['L', 'R']]
     c = coverage(rig)
-    parts = []
-    for kind in ['top', 'trousers']:
-        def fields(point, weights):
-            arms = sum(weights[arm_ids])
-            if kind == 'trousers':
-                return np.array([point[1]-c['ankle'], c['waist']-point[1], .25-arms])
-            values = [max(point[1]-c['hem'], (arms-.30)*.3), c['neck']-point[1]]
-            for side, cuff in zip(['L', 'R'], c['wrists']):
-                arm = sum(weights[rig.index[n+'.'+side]] for n in ['forearm', 'hand'])
-                along = np.dot(point-cuff['origin'], cuff['axis'])
-                values.append(max(cuff['end']-along, (.45-arm)*.3))
-            return np.asarray(values)
 
-        vertices, normals, weights, tri, lookup = [], [], [], [], {}
-        def add(v, n, w):
-            key = tuple(v.round(7))
-            if key not in lookup:
-                lookup[key] = len(vertices)
-                vertices.append(v); normals.append(n); weights.append(w)
-            return lookup[key]
-        for face in triangles:
-            poly = [(p[i], normal[i], dense[i], fields(p[i], dense[i])) for i in face]
-            for plane in range(3 if kind == 'trousers' else 4):
-                out = []
-                for a, b in zip(poly, poly[1:]+poly[:1]):
-                    if a[3][plane] >= 0:
-                        out.append(a)
-                    if (a[3][plane] >= 0) != (b[3][plane] >= 0):
-                        u = a[3][plane]/(a[3][plane]-b[3][plane])
-                        out.append(tuple(x*(1-u)+y*u for x, y in zip(a, b)))
-                poly = out
-                if len(poly) < 3:
-                    break
-            if len(poly) < 3:
-                continue
-            ids = [add(*v[:3]) for v in poly]
-            for k in range(1, len(ids)-1):
-                if len(set([ids[0], ids[k], ids[k+1]])) == 3:
-                    tri.append([ids[0], ids[k], ids[k+1]])
-        rest, normals, weights = map(np.asarray, (vertices, normals, weights))
-        normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
-        vertices = rest+normals*(.010 if kind == 'top' else .012)
-        arms = weights[:, arm_ids].sum(axis=1)
-        if kind == 'top':
-            profile = [(.935, .168, .125, -.09), (1.02, .152, .155, -.07),
-                       (1.08, .147, .163, -.055), (1.15, .149, .176, -.055),
-                       (1.22, .161, .190, -.073), (1.27, .173, .157, -.084),
-                       (1.32, .182, .126, -.084)]
-            curves = [PchipInterpolator([r[0] for r in profile], [r[k] for r in profile]) for k in [1, 2, 3]]
-            for i, point in enumerate(rest):
-                y = point[1]
-                rx, front, back = [float(f(np.clip(y, .935, 1.32))) for f in curves]
-                center, rz = (front+back)/2, (front-back)/2
-                theta = np.arctan2(point[0]/rx, (point[2]-center)/rz)
-                sn, cs = np.sin(theta), np.cos(theta)
-                chest = np.clip((y-1.10)/.075, 0, 1)*np.clip((1.35-y)/.05, 0, 1)
-                upper = np.clip((y-1.23)/.10, 0, 1)
-                upper = upper*upper*(3-2*upper)
-                eased = [rx*np.sign(sn)*abs(sn)**(2/(2+2*chest*(1-upper))), y,
-                         center+rz*np.sign(cs)*abs(cs)**(2/(2+2*chest))]
-                u = np.clip((1.39-y)/.085, 0, 1)
-                v = np.clip((arms[i]-.05)/.85, 0, 1)
-                amount = u*u*(3-2*u)*(1-v*v*(3-2*v))
-                vertices[i] = vertices[i]*(1-amount)+np.array(eased)*amount
-        else:
-            # Straighten calf/knee panels without baggy inflation at the
-            # crotch. Continuous source topology retains the sewn inseam.
-            for i, point in enumerate(rest):
-                y = point[1]
-                if y > .76:
-                    continue
-                side = 'L' if point[0] > 0 else 'R'
-                hip, ankle = [rig.rest_world[rig.index[n+'.'+side], :3, 3] for n in ['thigh', 'foot']]
-                u = np.clip((y-ankle[1])/(hip[1]-ankle[1]), 0, 1)
-                center = ankle*(1-u)+hip*u
-                radial = vertices[i, [0, 2]]-center[[0, 2]]
-                # Straight work-trouser opening, not a tight ankle tube.
-                # The old 58 mm throat was pierced by the heel/arch at
-                # sprint toe-off. Keep the original skin/cut and free foot.
-                desired = np.interp(y, [.125, .25, .47, .60, .76], [.078, .074, .073, .085, .100])
-                radius = np.linalg.norm(radial)
-                if radius > 1e-8:
-                    vertices[i, [0, 2]] = center[[0, 2]]+radial*max(1., desired/radius)
-        edges = Counter(tuple(sorted((a, b))) for t in tri for a, b in zip(t, np.roll(t, -1)))
-        boundary = [edge for edge, count in edges.items() if count == 1]
-        adjacency = {}
-        for a, b in boundary:
-            adjacency.setdefault(a, []).append(b); adjacency.setdefault(b, []).append(a)
-        if any(len(v) != 2 for v in adjacency.values()):
-            raise ValueError('Non-manifold suit cut: '+kind)
-        loops, unseen = [], set(adjacency)
-        while unseen:
-            loop, previous, current = [], -1, min(unseen)
-            while current not in loop:
-                loop.append(current); unseen.discard(current)
-                a, b = adjacency[current]
-                previous, current = current, b if a == previous else a
-            loops.append(loop)
-        if len(loops) != (4 if kind == 'top' else 3):
-            raise ValueError(f'{kind}: expected clean neck/wrist/hem or waist/ankle loops, got {list(map(len, loops))}')
-        pairs = np.array(list(edges))
-        directed = np.concatenate([pairs, pairs[:, ::-1]])
-        degree = np.bincount(directed[:, 0], minlength=len(vertices))
-        graph = coo_matrix((1/degree[directed[:, 0]], directed.T), shape=(len(vertices),)*2).tocsr()
-        free = np.ones(len(vertices)); free[list(adjacency)] = 0
-        for _ in range(8):
-            for strength in [.35, -.36]:
-                vertices += strength*(graph@vertices-vertices)*free[:, None]
-        # Preserve source-surface clearance at shoulders, sleeve, crotch and
-        # inner thigh. Torso panels may bridge anatomy, never mask more dress.
-        gap = np.sum((vertices-rest)*normals, axis=1)
-        minimum = np.full(len(rest), .007)
-        if kind == 'top':
-            # The top overlaps trousers, not bare skin: their 12 mm ease
-            # used to protrude through the 7 mm top as a jagged waist line.
-            # A local 20 mm shell at the actual waist (fading by 1.10 m),
-            # not a larger sleeve or additional body coverage.
-            u = np.clip((1.10-rest[:, 1])/.075, 0, 1)
-            minimum = .007+.013*u*u*(3-2*u)*(1-np.clip(arms, 0, 1))
-        vertices += np.maximum(0, minimum-gap)[:, None]*normals
-        colors = np.tile(WHITE if kind == 'top' else TROUSERS, (len(vertices), 1))
-        # Subtle technological panel seams, not armour plates.
-        if kind == 'top':
-            marked = (abs(abs(rest[:, 0])-.11) < .0025) & (rest[:, 1] > 1.02) & (rest[:, 1] < 1.20) & (rest[:, 2] > .08) & (arms < .2)
-            colors[marked] = [.73, .77, .79]
-        else:
-            outer = (abs(rest[:, 0]) > .13) & (abs(rest[:, 2]-.02) < .003) & (rest[:, 1] < .74)
-            colors[outer] = [.65, .70, .74]
-        # Sew a level REST hem/waist. The top's lower ring must retain its
-        # source hips/thigh blend: pinning it to hips alone let a raised
-        # trouser leg pass ~50 mm through that ring during a lateral dodge.
-        for loop in loops:
-            if arms[loop].mean() < .2 and rest[loop, 1].mean() < 1.10:
-                y = c['hem'] if kind == 'top' else c['waist']
-                if kind == 'top' or rest[loop, 1].mean() > .9:
-                    vertices[loop, 1] = y
-                    if kind == 'trousers':
-                        weights[loop] = 0
-                        weights[loop, rig.index['hips']] = 1
-        vertices, weights, colors = vertices.tolist(), weights.tolist(), colors.tolist()
-        groups = [kind]*len(tri)
-        # Turned 2 mm edges. Facings stay a short distance inside the actual
-        # closed shell. No independent overlapping tube at wrists/crotch.
-        boundary_info = []
-        source_edges = {(a, b) for face in tri for a, b in zip(face, np.roll(face, -1))}
-        for loop in loops:
-            boundary_info.append({'vertices': loop, 'center': rest[loop].mean(axis=0).round(7).tolist()})
-            ring = []
-            for i in loop:
-                colors[i] = SEAM
-                ring.append(len(vertices))
-                vertices.append((np.asarray(vertices[i])-normals[i]*.002).tolist())
-                weights.append(weights[i]); colors.append(SEAM)
-            for k, a in enumerate(loop):
-                b, v, w = loop[(k+1)%len(loop)], ring[k], ring[(k+1)%len(loop)]
-                source_directed = (a, b) in source_edges
-                tri.extend([[b, a, v], [b, v, w]] if source_directed else [[a, b, v], [b, w, v]])
-                groups.extend([kind+'_binding']*2)
-        if kind == 'top':
-            # Small reproducible lab-ID print; sample the actual panel and
-            # interpolate its weights. No floating rigid badge at the chest.
-            panel = np.asarray(vertices)
-            faces = panel[np.asarray(tri)]
-            ab, ac = faces[:, 1, :2]-faces[:, 0, :2], faces[:, 2, :2]-faces[:, 0, :2]
-            det = ab[:, 0]*ac[:, 1]-ab[:, 1]*ac[:, 0]
-            valid = abs(det) > 1e-12
-            def front(x, y):
-                rel = np.array([x, y])-faces[:, 0, :2]
-                u = np.divide(rel[:, 0]*ac[:, 1]-rel[:, 1]*ac[:, 0], det, out=np.zeros(len(det)), where=valid)
-                v = np.divide(ab[:, 0]*rel[:, 1]-ab[:, 1]*rel[:, 0], det, out=np.zeros(len(det)), where=valid)
-                good = valid & (u >= 0) & (v >= 0) & (u+v <= 1)
-                z = faces[:, 0, 2]+u*(faces[:, 1, 2]-faces[:, 0, 2])+v*(faces[:, 2, 2]-faces[:, 0, 2])
-                at = np.flatnonzero(good)[np.argmax(z[good])]
-                ids = tri[at]
-                values = (np.asarray(weights[ids[0]])*(1-u[at]-v[at])+np.asarray(weights[ids[1]])*u[at]+np.asarray(weights[ids[2]])*v[at])
-                return [x, y, float(z[at]+.0007)], values.tolist()
-            for layer, (x0, y0, x1, y1, color) in enumerate([(.052, 1.235, .100, 1.268, [.36, .47, .51]),
-                    (.057, 1.257, .095, 1.262, [.83, .91, .91]),
-                    (.057, 1.246, .078, 1.249, [.92, .94, .95]),
-                    (.057, 1.240, .087, 1.243, [.92, .94, .95])]):
-                ids = []
-                for x, y in [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]:
-                    point, value = front(x, y)
-                    point[2] += .0003*layer
-                    ids.append(len(vertices)); vertices.append(point); weights.append(value); colors.append(color)
-                a, b, d, e = ids
-                tri.extend([[a, b, d], [a, d, e]]); groups.extend(['top_badge']*2)
-        parts.append((np.asarray(vertices), np.asarray(weights), np.asarray(colors), np.asarray(tri), groups, boundary_info))
-    positions, weights, colors, triangles, groups, boundaries = [], [], [], [], [], []
-    count = 0
-    for v, w, col, tri, face_groups, loops in parts:
-        positions.extend(v); weights.extend(w); colors.extend(col); triangles.extend(tri+count); groups.extend(face_groups)
-        boundaries.extend([loop | {'vertices': [int(i+count) for i in loop['vertices']]} for loop in loops])
-        count += len(v)
-    positions, weights, colors, triangles = map(np.asarray, (positions, weights, colors, triangles))
-    face = np.cross(positions[triangles[:, 1]]-positions[triangles[:, 0]], positions[triangles[:, 2]]-positions[triangles[:, 0]])
-    normals = np.zeros_like(positions)
-    for k in range(3):
-        np.add.at(normals, triangles[:, k], face)
-    normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
-    joints = np.argsort(-weights, axis=1, kind='stable')[:, :4]
-    weights = np.take_along_axis(weights, joints, axis=1)
-    weights /= weights.sum(axis=1, keepdims=True)
-    return {'positions': positions.round(7).tolist(), 'normals': normals.round(7).tolist(),
-            'joints': joints.tolist(), 'weights': weights.round(8).tolist(), 'colors': colors.round(6).tolist(),
-            'uv': np.c_[positions[:, 0]*2, positions[:, 1]].round(7).tolist(),
-            'indices': triangles.ravel().tolist(), 'face_groups': groups, 'boundaries': boundaries,
-            'coverage': c, 'authoring': 'body-derived welded/cut/eased/sewn top and trousers; original LBS rig'}
+    def fields(point,weights):
+        values = [point[1]-c['ankle'],c['neck']-point[1]]
+        for side,cuff in zip(['L','R'],c['wrists']):
+            arm = sum(weights[rig.index[n+'.'+side]] for n in ['forearm','hand'])
+            along = np.dot(point-cuff['origin'],cuff['axis'])
+            values.append(max(cuff['end']-along,(.45-arm)*.3))
+        return np.asarray(values)
+
+    vertices,normals,weights,tri,lookup = [],[],[],[],{}
+    def add(v,n,w):
+        key = tuple(v.round(7))
+        if key not in lookup:
+            lookup[key] = len(vertices)
+            vertices.append(v); normals.append(n); weights.append(w)
+        return lookup[key]
+    for face in triangles:
+        poly = [(p[i],normal[i],dense[i],fields(p[i],dense[i])) for i in face]
+        for plane in range(4):
+            out = []
+            for a,b in zip(poly,poly[1:]+poly[:1]):
+                if a[3][plane] >= 0: out.append(a)
+                if (a[3][plane] >= 0) != (b[3][plane] >= 0):
+                    u = a[3][plane]/(a[3][plane]-b[3][plane])
+                    out.append(tuple(x*(1-u)+y*u for x,y in zip(a,b)))
+            poly = out
+            if len(poly) < 3: break
+        if len(poly) < 3: continue
+        ids = [add(*v[:3]) for v in poly]
+        for k in range(1,len(ids)-1):
+            if len(set([ids[0],ids[k],ids[k+1]])) == 3:
+                tri.append([ids[0],ids[k],ids[k+1]])
+    rest,normals,weights = map(np.asarray,(vertices,normals,weights))
+    normals /= np.maximum(np.linalg.norm(normals,axis=1,keepdims=True),1e-12)
+    # 6 mm tailored ease, not the former large, squared superellipse and
+    # straight inflated trouser tubes. The sewn waist has no second layer.
+    vertices = rest+normals*.006
+    edges = Counter(tuple(sorted((a,b))) for t in tri for a,b in zip(t,np.roll(t,-1)))
+    boundary = [edge for edge,count in edges.items() if count==1]
+    adjacency = {}
+    for a,b in boundary:
+        adjacency.setdefault(a,[]).append(b); adjacency.setdefault(b,[]).append(a)
+    if any(len(v)!=2 for v in adjacency.values()): raise ValueError('Non-manifold fitted suit cut')
+    loops,unseen = [],set(adjacency)
+    while unseen:
+        loop,previous,current = [],-1,min(unseen)
+        while current not in loop:
+            loop.append(current); unseen.discard(current)
+            a,b = adjacency[current]
+            previous,current = current,b if a==previous else a
+        loops.append(loop)
+    if len(loops)!=5:
+        raise ValueError('Expected neck, two wrists and two ankles, got '+str(list(map(len,loops))))
+    pairs = np.array(list(edges))
+    directed = np.concatenate([pairs,pairs[:,::-1]])
+    degree = np.bincount(directed[:,0],minlength=len(vertices))
+    graph = coo_matrix((1/degree[directed[:,0]],directed.T),shape=(len(vertices),)*2).tocsr()
+    free = np.ones(len(vertices)); free[list(adjacency)] = 0
+    for _ in range(3):
+        for strength in [.20,-.205]:
+            vertices += strength*(graph@vertices-vertices)*free[:,None]
+    gap = np.sum((vertices-rest)*normals,axis=1)
+    vertices += np.maximum(0,.0055-gap)[:,None]*normals
+    # In-plane fairing also stays local: it must not turn 'fitted' back into
+    # the rejected loose silhouette or an unseen clearance inflation.
+    delta = vertices-rest
+    length = np.linalg.norm(delta,axis=1)
+    vertices = rest+delta*np.minimum(1,.009/np.maximum(length,1e-12))[:,None]
+    # Matte continuous textile, not white/orange Portal costume colours.
+    # The first render exposed sawtooth colour thresholds across coarse
+    # original triangles. Use a broad, smoothly dyed shoulder yoke instead
+    # of jagged dark breast-cup / crotch panels or a broken vertex stripe.
+    yoke = np.clip((rest[:,1]-1.285)/.045,0,1)
+    yoke = (yoke*yoke*(3-2*yoke))[:,None]
+    colors = FABRIC[None,:]*(1-yoke)+SAGE[None,:]*yoke
+    shell_count = len(vertices)
+    vertices,weights,colors = vertices.tolist(),weights.tolist(),colors.tolist()
+    groups = ['suit_shell']*len(tri)
+    boundary_info = []
+    source_edges = {(a,b) for face in tri for a,b in zip(face,np.roll(face,-1))}
+    for loop in loops:
+        center = rest[loop].mean(axis=0)
+        label = 'neck' if center[1]>1.40 else 'ankle' if center[1]<.20 else 'wrist'
+        boundary_info.append({'vertices':[int(i) for i in loop],'center':center.round(7).tolist(),'opening':label})
+        ring = []
+        for i in loop:
+            colors[i] = SEAM
+            ring.append(len(vertices))
+            vertices.append((np.asarray(vertices[i])-normals[i]*.002).tolist())
+            weights.append(weights[i]); colors.append(SEAM)
+        for k,a in enumerate(loop):
+            b,v,w = loop[(k+1)%len(loop)],ring[k],ring[(k+1)%len(loop)]
+            tri.extend([[b,a,v],[b,v,w]] if (a,b) in source_edges else [[a,b,v],[b,w,v]])
+            groups.extend(['suit_binding']*2)
+    # A small 07 fabric print. Project onto the real curved front panel and
+    # interpolate its skin weights, no staff-style rigid name badge.
+    panel = np.asarray(vertices)
+    faces = panel[np.asarray(tri)]
+    ab,ac = faces[:,1,:2]-faces[:,0,:2],faces[:,2,:2]-faces[:,0,:2]
+    det = ab[:,0]*ac[:,1]-ab[:,1]*ac[:,0]
+    valid = abs(det)>1e-12
+    def surface(x,y,back=False):
+        rel = np.array([x,y])-faces[:,0,:2]
+        u = np.divide(rel[:,0]*ac[:,1]-rel[:,1]*ac[:,0],det,out=np.zeros(len(det)),where=valid)
+        v = np.divide(ab[:,0]*rel[:,1]-ab[:,1]*rel[:,0],det,out=np.zeros(len(det)),where=valid)
+        good = valid&(u>=0)&(v>=0)&(u+v<=1)
+        z = faces[:,0,2]+u*(faces[:,1,2]-faces[:,0,2])+v*(faces[:,2,2]-faces[:,0,2])
+        at = np.flatnonzero(good)[np.argmin(z[good]) if back else np.argmax(z[good])]
+        ids = tri[at]
+        value = np.asarray(weights[ids[0]])*(1-u[at]-v[at])+np.asarray(weights[ids[1]])*u[at]+np.asarray(weights[ids[2]])*v[at]
+        return [x,y,float(z[at]+(-.0006 if back else .0006))],value.tolist()
+
+    def printed_patch(x0,y0,x1,y1,color,back=False):
+        # Small curved textile patches follow the source panels and their
+        # weights. Do NOT span a breast/back curve with one rigid long quad.
+        xs = np.linspace(x0,x1,max(2,int(np.ceil((x1-x0)/.008))+1))
+        ys = np.linspace(y0,y1,max(2,int(np.ceil((y1-y0)/.008))+1))
+        ids = []
+        for y in ys:
+            row = []
+            for x in xs:
+                point,value = surface(x,y,back)
+                row.append(len(vertices)); vertices.append(point); weights.append(value); colors.append(list(color))
+            ids.append(row)
+        for j in range(len(ys)-1):
+            for i in range(len(xs)-1):
+                a,b,c0,d = ids[j][i],ids[j][i+1],ids[j+1][i+1],ids[j+1][i]
+                tri.extend([[a,c0,b],[a,d,c0]] if back else [[a,b,c0],[a,c0,d]])
+                groups.extend(['subject_print']*2)
+
+    for x0,y0,x1,y1 in [(-.045,1.247,-.041,1.278),(-.023,1.247,-.019,1.278),
+                        (-.045,1.274,-.019,1.278),(-.045,1.247,-.019,1.251),
+                        (-.009,1.274,.018,1.278),(.014,1.247,.018,1.278)]:
+        printed_patch(x0,y0,x1,y1,SIGNAL)
+    for back in [False,True]:
+        printed_patch(.046,1.025,.054,1.275,SIGNAL,back)
+        printed_patch(.061,1.025,.064,1.105,SAGE,back)
+    positions,weights,colors,triangles = map(np.asarray,(vertices,weights,colors,tri))
+    face = np.cross(positions[triangles[:,1]]-positions[triangles[:,0]],positions[triangles[:,2]]-positions[triangles[:,0]])
+    final_normals = np.zeros_like(positions)
+    for k in range(3): np.add.at(final_normals,triangles[:,k],face)
+    final_normals /= np.maximum(np.linalg.norm(final_normals,axis=1,keepdims=True),1e-12)
+    joints = np.argsort(-weights,axis=1,kind='stable')[:,:4]
+    weights = np.take_along_axis(weights,joints,axis=1)
+    weights /= weights.sum(axis=1,keepdims=True)
+    return {'positions':positions.round(7).tolist(),'normals':final_normals.round(7).tolist(),
+            'joints':joints.tolist(),'weights':weights.round(8).tolist(),'colors':colors.round(6).tolist(),
+            'uv':np.c_[positions[:,0]*2,positions[:,1]].round(7).tolist(),
+            'indices':triangles.ravel().tolist(),'face_groups':groups,'boundaries':boundary_info,'coverage':c,
+            'fit':{'ease_m':.006,'max_source_offset_m':.009,'shell_vertices':shell_count,
+                   'source_positions':rest.round(7).tolist(),'source_normals':normals.round(7).tolist()},
+            'authoring':'single continuous fitted subject shell; welded/cut/6 mm ease/turned edges; original LBS; original 07 print'}

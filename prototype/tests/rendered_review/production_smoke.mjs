@@ -12,6 +12,9 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTA
 const logs=[],shots=[];
 try{
  const page=await browser.newPage({viewport:{width:1000,height:700}});
+ // Software raster on a busy authoring host can take longer than 30 s.
+ // This is only an IPC/screenshot timeout, NOT an FPS/settling assertion.
+ page.setDefaultTimeout(120000);
  page.on('console',m=>logs.push(m.text()));
  page.on('pageerror',e=>logs.push('PAGEERROR '+e.stack));
  await page.goto((process.env.REVIEW_URL||'http://127.0.0.1:5182')+'/?pack='+config.pack,
@@ -28,14 +31,23 @@ try{
  await screenshot('01-game-default-dress');
  await screenshot('02-game-F3','F3');
  await screenshot('03-game-suit-O','o');
- await screenshot('04-showcase-retains-suit-H','h');
- await screenshot('05-showcase-next-clip','ArrowDown');
- await screenshot('06-showcase-dress-O','o');
- await screenshot('07-return-game-retains-dress','h');
+ await screenshot('04-hotbar-front-4','4');
+ await screenshot('05-hotbar-strong-6','6');
+ await screenshot('06-hotbar-empty-0','0');
+ await page.keyboard.press('v');
+ await page.keyboard.press('n');
+ await page.keyboard.press('k');
+ await screenshot('07-blade-context-right-arm-2','2');
+ await page.keyboard.press('v');
+ await page.keyboard.press('1');
+ await screenshot('08-showcase-retains-suit-H','h');
+ await screenshot('09-showcase-next-clip','ArrowDown');
+ await screenshot('10-showcase-dress-O','o');
+ await screenshot('11-return-game-retains-dress','h');
  const errors=logs.filter(s=>/^(ERROR:|SCRIPT ERROR:|PAGEERROR)/.test(s));
  await writeFile(config.out+'/manifest.json',JSON.stringify({config,shots,logs,errors,
   conditions:'Unmodified production main_scene; Chromium keyboard input; native Compatibility WebGL2 / SwiftShader. Fixed 2.5 s wall-time waits, not fixed simulation-step evidence. Screenshots require visual inspection. NOT 940MX or Windows acceptance.'},null,2)+'\n');
  assert.deepEqual(errors,[],'Production smoke engine/page errors');
- assert.equal(shots.length,7);
- console.log('Uninstrumented production launch/UI smoke: 7 screenshots, no engine errors');
+ assert.equal(shots.length,11);
+ console.log('Uninstrumented production launch/UI smoke: 11 screenshots, no engine errors; selection/wardrobe states still require visual inspection');
 }finally{await browser.close();}

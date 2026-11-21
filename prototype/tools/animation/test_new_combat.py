@@ -1,4 +1,4 @@
-""Short, committed Q hook + directional head/body reaction authoring."""
+"""Short, committed Q hook + directional head/body reaction authoring."""
 import json
 import unittest
 import numpy as np

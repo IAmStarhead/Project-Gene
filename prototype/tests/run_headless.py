@@ -19,7 +19,7 @@ ANSI = re.compile(r'\x1b\[[0-9;]*m')
 ERROR = re.compile(r'^(?:SCRIPT ERROR:|ERROR:)', re.MULTILINE)
 
 
-def run(engine, args, expect_suite=None, timeout=300):
+def run(engine, args, expect_suite=None, timeout=900):
     command = [engine, '--headless', '--path', str(PROJECT), *args]
     print('Running:', ' '.join(command), flush=True)
     started = time.monotonic()
@@ -43,8 +43,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--godot', default=os.getenv('GODOT_BIN'))
     parser.add_argument('--skip-import', action='store_true', help='use an already imported project')
-    parser.add_argument('--suite-timeout', type=int, default=300,
-                        help='seconds per process (default 300 for the expanded cloth/controller suites); no checks are skipped')
+    parser.add_argument('--suite-timeout', type=int, default=900,
+                        help='seconds per process (default 900: unchanged c9d24b1 animation baseline took 482.5 s on this host); no checks are skipped')
     args = parser.parse_args()
     if args.suite_timeout < 1:
         parser.error('--suite-timeout must be positive')
@@ -85,6 +85,10 @@ def main():
         expect_suite='GEN combat-zone suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_controller_transitions.gd'],
         expect_suite='GEN controller-transition suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_kicks_and_hotbar.gd'],
+        expect_suite='GEN kicks-hotbar suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_air_contact.gd'],
+        expect_suite='GEN air-contact suite', timeout=args.suite_timeout)
 
 
 if __name__ == '__main__':

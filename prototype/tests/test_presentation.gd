@@ -63,9 +63,9 @@ func _run() -> void:
 	var hud_root: Control = player.hud.get_child(0)
 	var status_panel: Control = hud_root.get_node("StatusPanel")
 	var quick: Control = hud_root.get_node("QuickAccess")
-	var slots: Control = quick.get_node("EmptySlots")
+	var slots: Control = quick.get_node("MoveSlots")
 	check(status_panel.position.y == 14.0 and quick.anchor_top == 1.0, "status at top, slots anchored at bottom")
-	check(slots.get("POSITIONS").size() == 4 and slots.get_child_count() == 0, "four empty quick slots without invented items")
+	check(slots.get("SLOT_COUNT") == 10 and slots.get("_profiles").size() == 10, "ten move slots: six real actions, four explicitly empty; original vector pictograms")
 	check(not scene._hint_panel.visible and not scene._bar_panel.visible and not player.hud._values_label.visible, "gameplay has no text hints")
 	var old_hp: float = player.health
 	var old_stamina: float = player.stamina

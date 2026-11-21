@@ -46,6 +46,13 @@ const CATALOG = [
   ['combat_back_walk', 'Отход назад · шаг', 'Направленный цикл с общей опорной фазой. Корпус смотрит на цель.', 'locomotion', '◇'],
   ['combat_back_jog', 'Отход назад · бег', 'Направленный цикл с общей опорной фазой. Корпус смотрит на цель.', 'locomotion', '◇'],
   ['combat_back_sprint', 'Отход назад · Shift', 'Направленный цикл с общей опорной фазой. Корпус смотрит на цель.', 'locomotion', '◇'],
+  ['jump_start_relaxed', 'Отрыв · обычный', 'Короткое разгибание с опущенных рук, без промежуточной защиты.', 'air', '↑'],
+  ['jump_up_relaxed', 'Подъём · обычный', 'Согласованный подбор ног и движение свободных рук к вершине.', 'air', '↥'],
+  ['jump_down_relaxed', 'Снижение · обычное', 'Раскрытие ног и баланс руками до контакта, не петля.', 'air', '↓'],
+  ['land_relaxed', 'Посадка · обычная', 'Собственные нейтральные контакты и выход без кулаков у лица.', 'air', '↧'],
+  ['attack_front_kick', '4 · прямой ногой', 'Левая: перенос веса → колено → подошва → подбор → опора.', 'combat', '↗'],
+  ['attack_low_kick', '5 · лоу-кик', 'Правая голень, невысокая дуга, поворот опорной стопы.', 'combat', '↘'],
+  ['attack_roundhouse', '6 · сильный круговой', 'Правой в корпус: заметная подготовка, таз, опорный поворот и возврат.', 'combat', '↗'],
 ];
 
 const scene = new THREE.Scene();
@@ -142,6 +149,7 @@ function support(side) {
   const c = data.clips[selected];
   if (c.duty) return ((time / c.duration + (side ? .5 : 0)) % 1) <= c.duty;
   if (selected.startsWith('jump')) return false;
+  if (c.ground_only) return c.support === (side ? 'R' : 'L') || time <= c.lift || time >= c.replant;
   if (selected.startsWith('dodge')) {
     const lead = c.lead === (side ? 'R' : 'L');
     return time <= c[lead ? 'lead_lift' : 'trail_lift'] || time >= c[lead ? 'lead_land' : 'trail_land'];
@@ -150,8 +158,9 @@ function support(side) {
 }
 
 function fistPoint(side) {
-  const hand = bones[data.bones.indexOf(`hand.${side}`)];
-  return hand.localToWorld(new THREE.Vector3(0, .075, 0));
+  const kick = data.clips[selected].ground_only;
+  const bone = bones[data.bones.indexOf(`${kick ? 'toe' : 'hand'}.${side}`)];
+  return bone.localToWorld(new THREE.Vector3(0, kick ? 0 : .075, 0));
 }
 
 function buildTrail() {

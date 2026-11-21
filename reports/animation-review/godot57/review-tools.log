@@ -1,0 +1,16 @@
+test_appearance_only_mixing_is_not_presented_as_historical_gameplay (test_tools.ReviewToolTests.test_appearance_only_mixing_is_not_presented_as_historical_gameplay) ... ok
+test_before_after_rejects_different_physics_observer_and_protected_source (test_tools.ReviewToolTests.test_before_after_rejects_different_physics_observer_and_protected_source) ... ok
+test_failed_render_coverage_cannot_be_published_as_a_successful_video (test_tools.ReviewToolTests.test_failed_render_coverage_cannot_be_published_as_a_successful_video) ... ok
+test_full_historical_source_cannot_be_silently_mixed_with_appearance_only (test_tools.ReviewToolTests.test_full_historical_source_cannot_be_silently_mixed_with_appearance_only) ... ok
+test_production_and_git_are_rejected (test_tools.ReviewToolTests.test_production_and_git_are_rejected) ... ok
+test_splitter_keeps_every_actor_snapshot_exactly_once (test_tools.ReviewToolTests.test_splitter_keeps_every_actor_snapshot_exactly_once) ... ok
+test_splitter_rejects_unknown_outfit_instead_of_dropping_it (test_tools.ReviewToolTests.test_splitter_rejects_unknown_outfit_instead_of_dropping_it) ... ok
+test_subject_timelines_have_uniform_true_simulation_cadence (test_tools.ReviewToolTests.test_subject_timelines_have_uniform_true_simulation_cadence) ... ok
+test_symlink_destination_is_not_followed_even_with_marker (test_tools.ReviewToolTests.test_symlink_destination_is_not_followed_even_with_marker) ... ok
+test_unmarked_project_is_never_removed (test_tools.ReviewToolTests.test_unmarked_project_is_never_removed) ... ok
+test_wrong_owner_is_never_removed (test_tools.ReviewToolTests.test_wrong_owner_is_never_removed) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 1.203s
+
+OK
