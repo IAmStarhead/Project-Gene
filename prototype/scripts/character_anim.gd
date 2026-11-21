@@ -295,7 +295,9 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	if state != _state or (state == "air" and context.get("jump_started", false)):
 		_transition_from = _last_pose
 		_transition_elapsed = 0.0
-		_transition_length = .055 if state in ["air", "land", "dodge"] else .075 if state.begins_with("attack") else .12
+		# Smooth only the jump/landing and return-to-ground seams; do not
+		# delay combat or alter any authored walk/run leg cycles.
+		_transition_length = .08 if state in ["air", "land"] else .055 if state == "dodge" else .075 if state.begins_with("attack") else .14
 		_state = state
 	_transition_elapsed += delta
 	if not _transition_from.is_empty() and _transition_elapsed < _transition_length:
@@ -415,7 +417,7 @@ func _air_pose(context: Dictionary) -> Dictionary:
 	if _air_launched and vertical > 0.0:
 		# Прогресс после разгибания до вершины траектории; не зацикливаем
 		# короткий клип и не держим один неподвижный кадр в воздухе.
-		var remaining_speed := maxf(.1, _air_launch_speed - T.GRAVITY * takeoff)
+		var remaining_speed := maxf(.1, _air_launch_speed - T.PLAYER_JUMP_GRAVITY * takeoff)
 		var rise := clampf(1.0 - vertical / remaining_speed, 0.0, 1.0)
 		return sample_clip("jump_up", rise * clip_duration("jump_up"))
 	var impact_speed := sqrt(2.0 * T.GRAVITY_FALL * T.JUMP_HEIGHT)

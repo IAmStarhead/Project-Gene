@@ -63,6 +63,8 @@ def main():
         expect_suite='Presentation suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_camera_smoothing.gd'],
         expect_suite='Camera smoothing suite', timeout=args.suite_timeout)
+    run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_camera_jump_air.gd'],
+        expect_suite='Camera jump air suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_training_sword.gd'],
         expect_suite='Training sword suite', timeout=args.suite_timeout)
     run(engine, ['--fixed-fps', '60', '--script', 'res://tests/test_limb_demo.gd'],

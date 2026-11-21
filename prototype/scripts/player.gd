@@ -9,6 +9,7 @@ const LockOn := preload("res://scripts/lock_on.gd")
 const HitCheck := preload("res://scripts/hit_check.gd")
 const Foley := preload("res://scripts/actor_foley.gd")
 const TrainingSword := preload("res://scripts/training_sword.gd")
+const StrikeAir := preload("res://scripts/strike_air.gd")
 
 @onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
@@ -25,6 +26,8 @@ var stamina: float = T.MAX_STAMINA
 
 # Видимый тестовый меч по-прежнему действует ТОЛЬКО на подготовленный манекен.
 var training_sword: RefCounted
+var strike_air: MeshInstance3D
+var _strike_hand_indices := {"L": -1, "R": -1}
 var training_blade := false
 var training_limb := 0
 var training_special := false
@@ -124,6 +127,11 @@ func _ready() -> void:
 		training_sword = TrainingSword.new()
 		if not training_sword.setup(character.skeleton):
 			training_sword = null
+		for side in ["L", "R"]:
+			_strike_hand_indices[side] = character.skeleton.find_bone("hand." + side)
+		strike_air = StrikeAir.new()
+		strike_air.name = "StrikeAir"
+		character.add_child(strike_air)
 
 
 func _style_debug_label() -> void:
@@ -332,7 +340,7 @@ func _physics_process(delta: float) -> void:
 		if _action != "dodge" and velocity.y <= 0.0:
 			velocity.y = 0.0
 	else:
-		var g := T.GRAVITY if velocity.y > 0.0 else T.GRAVITY_FALL
+		var g := T.PLAYER_JUMP_GRAVITY if velocity.y > 0.0 else T.GRAVITY_FALL
 		velocity.y -= g * delta
 
 	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and _coyote > 0.0:
@@ -349,6 +357,7 @@ func _physics_process(delta: float) -> void:
 	var displacement := global_position - previous_position
 	_sync_training_sword()
 	_update_character_anim(delta, displacement)
+	_update_strike_air(delta)
 	if character != null and foley != null:
 		var phase: Variant = character.get("_phase")
 		if phase != null:
@@ -357,7 +366,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _try_jump() -> void:
-	velocity.y = sqrt(2.0 * T.GRAVITY * T.JUMP_HEIGHT)
+	velocity.y = sqrt(2.0 * T.PLAYER_JUMP_GRAVITY * T.JUMP_HEIGHT)
 	_jump_started = true
 	_jump_buffer = BUF_NEVER
 	_coyote = 0.0
@@ -457,6 +466,26 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			"attack_kind": _attack_kind,
 			"hold_weapon": _sword_active(),
 		})
+
+
+func _update_strike_air(delta: float) -> void:
+	if not is_instance_valid(strike_air) or character.skeleton == null:
+		return
+	if _action != "attack" and strike_air.points.is_empty():
+		return
+	var timing := _attack_timing()
+	var sampling := _action == "attack" and _action_time >= timing.x - .035 \
+		and _action_time <= timing.x + timing.y + .025
+	var hand := Vector3.ZERO
+	if sampling:
+		var idx: int = _strike_hand_indices.get(_attack_side, -1)
+		if idx < 0:
+			sampling = false
+		else:
+			hand = character.skeleton.global_transform * character.skeleton.get_bone_global_pose(idx).origin
+	var active_camera := get_viewport().get_camera_3d()
+	var view: Vector3 = active_camera.global_position if is_instance_valid(active_camera) else global_position + Vector3(0, 1, 3)
+	strike_air.advance(delta, hand, sampling, view)
 
 
 func _update_buffers(delta: float) -> void:
@@ -605,6 +634,8 @@ func _attack_timing() -> Vector3:
 
 
 func _start_attack(kind: String = "straight") -> void:
+	if is_instance_valid(strike_air):
+		strike_air.clear_trail()
 	_attack_kind = "hook" if kind == "hook" else "straight"
 	if _attack_kind == "hook":
 		_attack_side = "L"

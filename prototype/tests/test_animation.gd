@@ -230,7 +230,7 @@ func knee_bend(character: Node3D, side: String) -> float:
 
 
 func _test_air_progress(character: Node3D) -> void:
-	var launch := sqrt(2.0 * T.GRAVITY * T.JUMP_HEIGHT)
+	var launch := sqrt(2.0 * T.PLAYER_JUMP_GRAVITY * T.JUMP_HEIGHT)
 	for fps in [30, 60, 120]:
 		character.reset_motion()
 		character.update_motion(0, Vector3.ZERO, "", 0, "R",
@@ -238,11 +238,11 @@ func _test_air_progress(character: Node3D) -> void:
 		var previous := joint(character, "foot.L")
 		var max_step := 0.0
 		var time := 0.0
-		while time < launch / T.GRAVITY:
-			var dt := minf(1.0 / fps, launch / T.GRAVITY - time)
+		while time < launch / T.PLAYER_JUMP_GRAVITY:
+			var dt := minf(1.0 / fps, launch / T.PLAYER_JUMP_GRAVITY - time)
 			time += dt
 			character.update_motion(dt, Vector3.ZERO, "", 0, "R",
-				{"grounded": false, "vertical_speed": maxf(0, launch - T.GRAVITY*time)})
+				{"grounded": false, "vertical_speed": maxf(0, launch - T.PLAYER_JUMP_GRAVITY*time)})
 			var foot := joint(character, "foot.L")
 			max_step = maxf(max_step, foot.distance_to(previous))
 			previous = foot
@@ -477,13 +477,13 @@ func _test_native_blended_soles(character: Node3D) -> void:
 func _test_relaxed_jump(character: Node3D) -> void:
 	character.reset_motion(false)
 	var wrist := joint(character, "hand.L")
-	var launch := sqrt(2.0*T.GRAVITY*T.JUMP_HEIGHT)
+	var launch := sqrt(2.0*T.PLAYER_JUMP_GRAVITY*T.JUMP_HEIGHT)
 	character.update_motion(0, Vector3.ZERO, "", 0, "R",
 		{"grounded": false, "combat": false, "vertical_speed": launch, "jump_started": true})
 	check(joint(character, "hand.L").distance_to(wrist) < .00001,
 		"ordinary take-off does not insert a combat-guard frame")
 	character.update_motion(.10, Vector3.ZERO, "", 0, "R",
-		{"grounded": false, "combat": false, "vertical_speed": launch - T.GRAVITY*.10})
+		{"grounded": false, "combat": false, "vertical_speed": launch - T.PLAYER_JUMP_GRAVITY*.10})
 	check(knee_bend(character, "L") < 30, "ordinary jump joins the accepted extension phase")
 	character.update_motion(.25, Vector3.ZERO, "", 0, "R",
 		{"grounded": false, "combat": false, "vertical_speed": -5.0})

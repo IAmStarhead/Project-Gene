@@ -14,6 +14,7 @@ const SHOW_HERO_DIST := 0.64
 
 var target: Node3D
 var spring: SpringArm3D
+var shoulder_probe: ShapeCast3D
 var camera: Camera3D
 
 var _pos_smooth := Vector3.ZERO
@@ -26,16 +27,26 @@ var _last_frame_usec := -1
 func setup(follow: Node3D, init_yaw: float, pitch_deg: float) -> void:
 	target = follow
 
-	spring = SpringArm3D.new()
-	spring.spring_length = T.CAMERA_DISTANCE
-	spring.position.x = 0.22
-	spring.collision_mask = 1
-	spring.margin = 0.08
 	var probe := SphereShape3D.new()
 	probe.radius = 0.16
+	# The spring protects the backwards segment. A separate sweep protects
+	# the sideways shoulder segment so its origin cannot cross a nearby wall.
+	shoulder_probe = ShapeCast3D.new()
+	shoulder_probe.shape = probe
+	shoulder_probe.target_position = Vector3(T.CAMERA_SHOULDER, 0, 0)
+	shoulder_probe.collision_mask = 1
+	shoulder_probe.margin = 0.04
+	shoulder_probe.enabled = false
+	add_child(shoulder_probe)
+	spring = SpringArm3D.new()
+	spring.spring_length = T.CAMERA_DISTANCE
+	spring.position.x = T.CAMERA_SHOULDER
+	spring.collision_mask = 1
+	spring.margin = 0.08
 	spring.shape = probe
 	if is_instance_valid(follow) and follow is CollisionObject3D:
 		spring.add_excluded_object((follow as CollisionObject3D).get_rid())
+		shoulder_probe.add_exception(follow as CollisionObject3D)
 	add_child(spring)
 
 	camera = Camera3D.new()
@@ -65,6 +76,19 @@ func add_kick(deg_amount: float) -> void:
 	## Короткий тактильный отклик камеры на удар (гаснет за ~0.12 с, не укачивает).
 	if T.CAMERA_DYNAMIC:
 		_kick_deg = clampf(_kick_deg + deg_amount, -1.2, 1.2)
+
+
+func _physics_process(delta: float) -> void:
+	if not is_instance_valid(target) or shoulder_probe == null:
+		return
+	shoulder_probe.force_shapecast_update()
+	var fraction := shoulder_probe.get_closest_collision_safe_fraction() if shoulder_probe.is_colliding() else 1.0
+	var safe_offset := T.CAMERA_SHOULDER * clampf(fraction, 0.0, 1.0)
+	# Retreat immediately for safety; gently move out again when clear.
+	if absf(safe_offset) < absf(spring.position.x):
+		spring.position.x = safe_offset
+	else:
+		spring.position.x = lerpf(spring.position.x, safe_offset, 1.0 - exp(-12.0 * delta))
 
 
 func _process(delta: float) -> void:
