@@ -114,9 +114,22 @@ func _run() -> void:
 	check(is_equal_approx(dummy.parts[2].time, before_pause), "regrowth pauses")
 	paused = false
 	dummy._physics_process(dummy.GROW_TIME * .4)
-	check(dummy.parts[2].growth.visible and dummy.parts[2].growth.scale.x > .4
-		and is_equal_approx(dummy.parts[2].growth.scale.x, dummy.parts[2].time / dummy.GROW_TIME)
-		and dummy.parts[2].stump.visible, "ordinary injury visibly regrows from its prepared stump")
+	var growth_materials: Array = dummy.parts[2].growth_materials
+	check(dummy.parts[2].growth.visible and dummy.parts[2].growth.scale == Vector3.ONE
+		and not growth_materials.is_empty()
+		and is_equal_approx(float(growth_materials[0].get_shader_parameter("growth_progress")), dummy.parts[2].time / dummy.GROW_TIME)
+		and dummy.parts[2].stump.visible, "ordinary injury reveals full-size geometry from its prepared stump")
+	for mat: ShaderMaterial in growth_materials:
+		check(is_equal_approx(float(mat.get_shader_parameter("growth_progress")), dummy.parts[2].time / dummy.GROW_TIME), "skin and clothing grow together")
+		check(float(mat.get_shader_parameter("growth_far")) > float(mat.get_shader_parameter("growth_near")), "growth has a nonzero extent")
+	check(dummy._cut_material.albedo_color.r < .75 and dummy._cut_material.albedo_color.g > .5, "stump uses a neutral blood-free placeholder")
+	var growing_mesh: MeshInstance3D = dummy.parts[2].growth.get_child(0)
+	var before_style := growing_mesh.get_surface_override_material(0)
+	scene.room.style_character(dummy.character, true)
+	dummy.refresh_cut_visibility()
+	check(growing_mesh.get_surface_override_material(0) == before_style, "style changes cannot destroy the growth mask")
+	scene.room.style_character(dummy.character, false)
+	dummy.refresh_cut_visibility()
 	dummy._physics_process(dummy.GROW_TIME)
 	check(dummy.parts[2].state == dummy.LimbState.INTACT, "ordinary injury regrows")
 	check(dummy.parts[1].state == dummy.LimbState.BLOCKED, "special injury remains blocked")

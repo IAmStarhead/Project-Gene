@@ -5,9 +5,11 @@ extends StaticBody3D
 
 const PartMesh := preload("res://scripts/manikin_parts.gd")
 const CharacterScript := preload("res://scripts/clone_anim.gd")
+const GrowthShader := preload("res://shaders/manikin_regrowth.gdshader")
 const LIMBS := ["arm_left", "arm_right", "leg_left", "leg_right"]
 const TARGET_BONES := ["forearm.L", "forearm.R", "shin.L", "shin.R"]
 const STUMP_BONES := ["upper_arm.L", "upper_arm.R", "thigh.L", "thigh.R"]
+const TIP_BONES := ["hand.L", "hand.R", "foot.L", "foot.R"]
 const GROW_TIME := 12.0
 const FALL_TIME := 0.85
 const STAND_TIME := 0.55
@@ -71,7 +73,7 @@ func _ready() -> void:
 	character.skeleton.force_update_all_bone_transforms()
 
 	_cut_material = StandardMaterial3D.new()
-	_cut_material.albedo_color = Color(.39, .09, .085)
+	_cut_material.albedo_color = Color(.69, .64, .60) # Neutral, blood-free test surface.
 	_cut_material.roughness = .9
 	_selected_material = StandardMaterial3D.new()
 	_selected_material.albedo_color = Color(1.0, .74, .2, .45)
@@ -79,7 +81,7 @@ func _ready() -> void:
 	_selected_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	for i in 4:
 		parts.append({"state": LimbState.INTACT, "time": 0.0, "debris": null,
-			"nodes": [], "stump": null, "growth": null})
+			"nodes": [], "stump": null, "growth": null, "growth_materials": []})
 	_prepare_visual_parts(character.appearance.body)
 	_prepare_visual_parts(character.appearance.suit)
 	for i in 4:
@@ -215,9 +217,19 @@ func _spawn_piece(index: int, direction: Vector3) -> void:
 	# The baked vertices use world axes. Preserve those axes at creation,
 	# then follow the attached stump as the whole mannequin moves.
 	growth.global_transform = Transform3D(Basis.IDENTITY, origin)
-	growth.scale = Vector3.ONE * .001
+	# Full-scale geometry: gradually reveal from the stump to the extremity.
+	# This is a visual test, not physical tissue growth.
+	growth.scale = Vector3.ONE
 	growth.visible = part.state == LimbState.GROWING
 	part.growth = growth
+	part.growth_materials = []
+	var tip_index := sk.find_bone(TIP_BONES[index])
+	var tip: Vector3 = sk.global_transform * sk.get_bone_global_pose(tip_index).origin
+	var axis := (tip - origin).normalized()
+	if axis.length_squared() < .01:
+		axis = Vector3.DOWN
+	var projection_min := INF
+	var projection_max := -INF
 	for source: MeshInstance3D in part.nodes:
 		var baked := PartMesh.freeze_mesh(source, character.skeleton, origin)
 		var visual := MeshInstance3D.new()
@@ -227,19 +239,30 @@ func _spawn_piece(index: int, direction: Vector3) -> void:
 		piece.add_child(visual)
 		var growing_visual := MeshInstance3D.new()
 		growing_visual.mesh = baked
-		growing_visual.material_override = source.material_override
 		growing_visual.layers = source.layers
+		growing_visual.set_meta("regrowth_visual", true)
+		for surface in baked.get_surface_count():
+			var original: Material = source.get_active_material(surface)
+			var material := _growth_material(original, axis)
+			growing_visual.set_surface_override_material(surface, material)
+			part.growth_materials.append(material)
 		growth.add_child(growing_visual)
 		for s in baked.get_surface_count():
 			var a := baked.surface_get_arrays(s)
 			var vertices: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 			var indices: PackedInt32Array = a[Mesh.ARRAY_INDEX]
 			for vertex in indices:
+				var projection := axis.dot(vertices[vertex])
+				projection_min = minf(projection_min, projection)
+				projection_max = maxf(projection_max, projection)
 				if first:
 					bounds = AABB(vertices[vertex], Vector3.ZERO)
 					first = false
 				else:
 					bounds = bounds.expand(vertices[vertex])
+	for material: ShaderMaterial in part.growth_materials:
+		material.set_shader_parameter("growth_near", projection_min - .001)
+		material.set_shader_parameter("growth_far", projection_max + .001)
 	# Prepared cap at the proximal end of the detached piece; no realtime
 	# cutting or procedural capping at impact.
 	var cut_end := MeshInstance3D.new()
@@ -263,6 +286,31 @@ func _spawn_piece(index: int, direction: Vector3) -> void:
 	part.debris = piece
 
 
+func _growth_material(source: Material, axis: Vector3) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = GrowthShader
+	material.set_shader_parameter("growth_axis", axis)
+	if source is BaseMaterial3D:
+		var base := source as BaseMaterial3D
+		material.set_shader_parameter("base_color", base.albedo_color)
+		material.set_shader_parameter("roughness_value", base.roughness)
+		material.set_shader_parameter("use_vertex_color", base.vertex_color_use_as_albedo)
+		if base.albedo_texture != null:
+			material.set_shader_parameter("use_texture", true)
+			material.set_shader_parameter("albedo_tex", base.albedo_texture)
+	elif source is ShaderMaterial:
+		# Preserve the original toon texture and tint when a cut is made in G mode.
+		var toon := source as ShaderMaterial
+		var texture: Variant = toon.get_shader_parameter("albedo_tex")
+		var color: Variant = toon.get_shader_parameter("base_color")
+		if color is Color:
+			material.set_shader_parameter("base_color", color)
+		if texture is Texture2D and bool(toon.get_shader_parameter("use_texture")):
+			material.set_shader_parameter("use_texture", true)
+			material.set_shader_parameter("albedo_tex", texture)
+	return material
+
+
 func _physics_process(delta: float) -> void:
 	for i in parts.size():
 		var part: Dictionary = parts[i]
@@ -270,7 +318,8 @@ func _physics_process(delta: float) -> void:
 			continue
 		part.time = minf(GROW_TIME, float(part.time) + delta)
 		if is_instance_valid(part.growth):
-			part.growth.scale = Vector3.ONE * maxf(.001, float(part.time) / GROW_TIME)
+			for material: ShaderMaterial in part.growth_materials:
+				material.set_shader_parameter("growth_progress", float(part.time) / GROW_TIME)
 		if part.time >= GROW_TIME:
 			part.state = LimbState.INTACT
 			_clear_piece(part)
@@ -311,6 +360,7 @@ func _clear_piece(part: Dictionary) -> void:
 	if is_instance_valid(part.growth):
 		part.growth.queue_free()
 	part.growth = null
+	part.growth_materials.clear()
 
 
 func _exit_tree() -> void:

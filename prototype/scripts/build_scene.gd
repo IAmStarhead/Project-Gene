@@ -647,8 +647,8 @@ func style_character(root: Node, use_toon: bool = false) -> void:
 		# Динамический слой 2: персонаж виден камере и отбрасывает тени, но не запекается в отражение пола.
 		mi.layers = CHARACTER_VISUAL_LAYER
 
-		# Не превращаем материал меча или полупрозрачного следа в материал кожи.
-		if mi.has_meta("weapon_visual") or mi.has_meta("air_effect"):
+		# Меч, след и маска отрастания имеют свои материалы; не заменять их кожей.
+		if mi.has_meta("weapon_visual") or mi.has_meta("air_effect") or mi.has_meta("regrowth_visual"):
 			continue
 
 		# Халат и живой подол (зона второго агента) — не меняем материал, оставляем мягкую тень.
