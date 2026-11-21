@@ -1,0 +1,176 @@
+{
+  "date_utc": "2026-11-17",
+  "method": "Agent visual inspection of explicitly enumerated original stills using the file image viewer. NOT continuous manual 1x playback, live gameplay, Windows or target-laptop acceptance.",
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+    "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+    "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+    "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+    "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+    "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+    "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+    "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+    "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+    "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+    "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+    "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+  },
+  "groups": {
+    "contact_originals": [
+      {
+        "file": "dress-idle-feet-side.png",
+        "sha256": "751652fed8f0af93825b56333492c000e48cfda1d5e04177e085d420691fb643"
+      },
+      {
+        "file": "dress-land-feet-side.png",
+        "sha256": "11c75f3ef310f20ef0b0397e61a038d723e0033279f53f1d842264223fd34981"
+      },
+      {
+        "file": "dress-land-feet-back.png",
+        "sha256": "bb02a777fa92ec2c11165803fd85ad4082cdbdb450a0fefe57e1f5ba1d122b7d"
+      },
+      {
+        "file": "suit-idle-feet-side.png",
+        "sha256": "ce1483d05af97d72a972837bc0924ac2e4800894066de524a3ec22f5a2127d4b"
+      },
+      {
+        "file": "suit-land-feet-side.png",
+        "sha256": "827b972aa4234323bc6484a92ca7b3208b644e8cfab40bc4d58c483200a148e4"
+      },
+      {
+        "file": "suit-land-feet-back.png",
+        "sha256": "4dc825ef0cf5153b095dd6fd7040fd6fe47c9813e7eb144740514bd905bfe9c1"
+      },
+      {
+        "file": "suit-combat-land-feet-side.png",
+        "sha256": "b2f42b5dbe890c5a0cc8d7644177b51262614624659a3d04c597e42ee3581cb7"
+      },
+      {
+        "file": "suit-combat-land-feet-back.png",
+        "sha256": "c459f72397ca457a9510968df7772210f7225fec318b0584381b64ce3859a9a6"
+      }
+    ],
+    "action_originals": [
+      {
+        "file": "air-dress-relaxed-crest.png",
+        "sha256": "1a8af6b0cefc47835584beefc65ba5e485ae2ecb525f97df6ce0391f9813a3e4"
+      },
+      {
+        "file": "air-dress-combat-crest.png",
+        "sha256": "d6b99478d2ea3c3e0151843866ad6c95f8b392e2971ce26cfda0fb2a4601c0cf"
+      },
+      {
+        "file": "air-dress-moving-land.png",
+        "sha256": "ce76aa5f0620cb52c627a501eccd93718081767624715073b6951faecdaf6c23"
+      },
+      {
+        "file": "air-dress-jog-after-land.png",
+        "sha256": "87de9ca0e544f55346b5fcfa3d1a11b306d4bdaa1860a2cbb837c774cf916b46"
+      },
+      {
+        "file": "known-dress-front-kick-contact.png",
+        "sha256": "82ac430e09d4d8ac72dee73c53a54b6e27bec9020d14dba7160654a6d43e377b"
+      },
+      {
+        "file": "known-dress-roundhouse-contact.png",
+        "sha256": "75707011bd4094c8dad8c7c773b2f47f7d44ec6bb286843f32befd8a97776835"
+      },
+      {
+        "file": "suit-front-kick.png",
+        "sha256": "664fc2d0644866e605f32621a285809f8d0d40133972ce548065d56656ad9581"
+      },
+      {
+        "file": "suit-low-kick.png",
+        "sha256": "637e66bdb99cbf299bb9fb49d876e44f45db09c669d357c3e8cd5325e3211ab7"
+      },
+      {
+        "file": "suit-roundhouse.png",
+        "sha256": "9346fd82ca38835372175f15cf4f3b84c6d5caf20f4ba6dddedbc4490ded88e8"
+      }
+    ],
+    "before_after_selected": [
+      {
+        "file": "comparison-subject-front.png",
+        "sha256": "deb0c2fef82fbb6734471f5b0404faf38724fa688a539351d3bc517096369130"
+      },
+      {
+        "file": "comparison-subject-back.png",
+        "sha256": "129694a232698d301d262a9fce1239a0c2ca46d135a931152ead4c3a15160180"
+      },
+      {
+        "file": "comparison-jump-apex.png",
+        "sha256": "d2433c2254b8a60373d6ac40bdfd7ca39229ff24e907934d51d37d6b49544357"
+      },
+      {
+        "file": "comparison-jog.png",
+        "sha256": "cb8a9908bee3b4794cd3e5b0f72d8905ce3fee7bd9ba99ec935681bc6629d399"
+      }
+    ],
+    "production_ui": [
+      {
+        "file": "ui-01-game-default-dress.png",
+        "sha256": "b12f49c5bc85ca6d5c4f483d939f05ccac9194879c05d4d67a062d77a3aadde0"
+      },
+      {
+        "file": "ui-02-game-F3.png",
+        "sha256": "3d257cc3143e9e2c8390d6e9460c0c344647cc8847b1d20489af59fe60d834d6"
+      },
+      {
+        "file": "ui-03-game-suit-O.png",
+        "sha256": "2e0433740856d3067b3d60b6e7209e3ff0b7b84fd94e7dd5639a276131803999"
+      },
+      {
+        "file": "ui-04-hotbar-front-4.png",
+        "sha256": "9049ec178e07d6a28a8c3bb9f388c54740c99492b95627523cd0c88b7f601b88"
+      },
+      {
+        "file": "ui-05-hotbar-strong-6.png",
+        "sha256": "8f8534d18f6a0542f9703e6beb23712221e86b2d5490e5713e85ebdbaeccbb52"
+      },
+      {
+        "file": "ui-06-hotbar-empty-0.png",
+        "sha256": "bf8d795e52b270f17b8d724a2d1ea5cd283f370844270bca7640338b9795442a"
+      },
+      {
+        "file": "ui-07-blade-context-right-arm-2.png",
+        "sha256": "d6c0a64cfdf1e9fbd1152ca68f72fdeff33553abe5ac77ef93091560c621213d"
+      },
+      {
+        "file": "ui-08-showcase-retains-suit-H.png",
+        "sha256": "a9e46553d61dd236fe3e1b564ba84c7a2fe90fa8d8dc36005310c9acba54ffd9"
+      },
+      {
+        "file": "ui-09-showcase-next-clip.png",
+        "sha256": "98f358d8038cb0dda8edf60e71438b760b9b5863986ba76ec83e5c6b8376edf6"
+      },
+      {
+        "file": "ui-10-showcase-dress-O.png",
+        "sha256": "70b7c0190762749254b6faa5b684ddd4002967c84ce8b85b290bfea498ed5265"
+      },
+      {
+        "file": "ui-11-return-game-retains-dress.png",
+        "sha256": "8f6e6a87a6e2dd07bcb5cf9a50d43ef0b69c2909c0a4a16c6bff9636843a0ab0"
+      }
+    ]
+  },
+  "observations": [
+    "Selected contact views show original shadows and small measured sole gaps; no camera/shadow/floor adjustment was used. Feet observers are not the approved gameplay camera.",
+    "Four exact-source before/after stills were inspected; the fitted shell is visibly different and the ordinary jog/air arm silhouettes changed. No continuous naturalness acceptance is inferred.",
+    "The front and roundhouse dress kick stills retain visible hem/thigh defects. Both native and recorded-Web kick skirt diagnostics contain 24/444 intersecting actor snapshots. This is an open compatibility defect, not accepted clothing.",
+    "The suit walking showcase still ui-09 has visible chest volume loss/dents and a bent printed stripe. The shell and deformation remain unaccepted; nonzero garment contacts are not dismissed as harmless.",
+    "All eleven production UI stills were inspected: visible numeric 4/6/0 selection borders and captions agree, V+2 shows the right-arm context, O changes player/clone clothes, H retains clothing into the showcase, the next clip and O/return are visible. These are fixed-wall-time screenshot observations, not exhaustive input/gameplay tests.",
+    "F3 in this SwiftShader production smoke reports below one to one FPS; it is not 940MX/Windows performance and not the offline clips recording cadence. The debug-line arrow has a fallback glyph; hotbar captions are readable."
+  ],
+  "reviewed_still_count": 32,
+  "continuous_manual_1x_review_completed": false,
+  "artistic_acceptance": false,
+  "windows_tested": false,
+  "target_laptop_fps_tested": false
+}

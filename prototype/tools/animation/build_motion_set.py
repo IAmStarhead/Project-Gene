@@ -24,6 +24,8 @@ import numpy as np
 from rig_math import Rig, unit
 import locomotion
 import combat_locomotion
+import air_motion
+import kick_motion
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / 'prototype/assets/heroine/female_A_rigged_safe.glb'
@@ -354,70 +356,19 @@ def dodge(rig, t, direction=(0, 1)):
     return p
 
 
-JUMP_START = .10
-JUMP_UP = .22
-JUMP_DOWN = .26
-LAND = .30
+JUMP_START, JUMP_UP, JUMP_DOWN, LAND = air_motion.START, air_motion.UP, air_motion.DOWN, air_motion.LAND
 
 
-def jump_start(rig, t):
-    # Immediate game jump: EXTEND before folding, rather than pulling both feet
-    # up on the first frame. Physics supplies the entire ballistic root motion.
-    u = smooth(t / JUMP_START)
-    p = body(rig, hip=(0, .835 + .100 * u, .02),
-             yaw=(-6 + 4*u, -4 + 3*u, -7 + 5*u), lean=(3, 2))
-    for side, sign, start in [('L', 1, [.145, 1.295, .265]),
-                              ('R', -1, [-.145, 1.305, .205])]:
-        wrist, elbow = swing_targets(p, side, 38, 72, .16)
-        p.arm(side, mix(start, wrist, u),
-              pole=mix(guard_pole(side), elbow, u),
-              roll=(8 - 3*u) * sign)
-    p.foot('L', [.125 - .005*u, .08 + .01*u, .155 - .035*u], pitch=28*u, yaw=6 - 3*u)
-    p.foot('R', [-.135 + .005*u, .08 + .01*u, -.135 + .035*u], pitch=26*u, yaw=-10 + 5*u)
-    return p
+def jump_start(rig, t, relaxed=False):
+    return air_motion.takeoff(rig, t, relaxed, body, swing_arm, guard_hands, guard_feet)
 
 
-def air_pose(rig, t, falling=False):
-    # Non-looping segments, sampled by vertical velocity in character_anim.gd.
-    # The ascent ends in the SAME crest pose that begins the descent. Feet
-    # unfold before contact; the apex is not a switch between frozen poses.
-    u = smooth(t / (JUMP_DOWN if falling else JUMP_UP))
-    if falling:
-        height, lean = .88 - .005*u, 6 - 3*u
-        shoulder, elbow, spread = 15 + 3*u, 100 - 35*u, .16 + .04*u
-        left = mix([.12, .31, .21], [.125, .08, .155], u)
-        right = mix([-.13, .24, -.10], [-.135, .08, -.135], u)
-        pitches, yaws = (4*(1-u), 12*(1-u)), (3 + 3*u, -5 - 5*u)
-    else:
-        height, lean = .935 - .055*u, 3 + 3*u
-        shoulder, elbow, spread = 38 - 23*u, 72 + 28*u, .16
-        left = mix([.12, .09, .12], [.12, .31, .21], u)
-        right = mix([-.13, .09, -.10], [-.13, .24, -.10], u)
-        pitches, yaws = (28 - 24*u, 26 - 14*u), (3, -5)
-    p = body(rig, hip=(0, height, .02), yaw=(-2, -1, -2), lean=(lean, 2))
-    for side in ['L', 'R']:
-        swing_arm(p, side, shoulder, elbow, spread)
-    p.foot('L', left, pitch=pitches[0], yaw=yaws[0])
-    p.foot('R', right, pitch=pitches[1], yaw=yaws[1])
-    return p
+def air_pose(rig, t, falling=False, relaxed=False):
+    return air_motion.stage(rig, t / (JUMP_DOWN if falling else JUMP_UP), falling, relaxed, body, swing_arm)
 
 
-def land(rig, t):
-    compress = curve(t, [(0, 0), (.075, 1), (.18, .32), (LAND, 0)])
-    recover = smooth(t / LAND)
-    height = .875 - .04*recover - .125*compress
-    p = body(rig, hip=(0, height, .02),
-             yaw=(-2 - 4*recover, -1 - 3*recover, -2 - 5*recover),
-             lean=(3 + 8*compress, 2 + 3*compress))
-    # Arms balance the landing first, then return to the existing combat guard.
-    for side, sign, end in [('L', 1, [.145, 1.295, .265]),
-                            ('R', -1, [-.145, 1.305, .205])]:
-        wrist, elbow = swing_targets(p, side, 18 + 6*compress, 65 + 10*compress, .20)
-        p.arm(side, mix(wrist, end, recover),
-              pole=mix(elbow, guard_pole(side), recover),
-              roll=(5 + 3*recover) * sign)
-    guard_feet(p)
-    return p
+def land(rig, t, relaxed=False):
+    return air_motion.landing(rig, t, relaxed, body, swing_arm, guard_hands, guard_feet)
 
 
 def hit(rig, t):
@@ -507,6 +458,11 @@ def definitions():
         ('jump_up', JUMP_UP, False, lambda r, t: air_pose(r, t), {}),
         ('jump_down', JUMP_DOWN, False, lambda r, t: air_pose(r, t, True), {}),
         ('land', LAND, False, land, {}),
+        ('jump_start_relaxed', JUMP_START, False, lambda r,t: jump_start(r,t,True), {}),
+        ('jump_up_relaxed', JUMP_UP, False, lambda r,t: air_pose(r,t,relaxed=True), {}),
+        ('jump_down_relaxed', JUMP_DOWN, False, lambda r,t: air_pose(r,t,True,True), {}),
+        ('land_relaxed', LAND, False, lambda r,t: land(r,t,True), {}),
+        *kick_motion.definitions(body, guard_hands, guard_feet, guard_pole),
         ('hit', .32, False, hit, {}),
         ('attack_body_hook', .62, False, body_hook,
          {'windup': .22, 'active_end': .32, 'impact': .22, 'side': 'L', 'reach': .60, 'kind': 'hook'}),
@@ -573,7 +529,7 @@ def tres(data):
         lines += [f'[sub_resource type="Animation" id="Animation_{name}"]',
                   f'resource_name = "{name}"', f'length = {clip["duration"]}',
                   f'loop_mode = {1 if clip["loop"] else 0}', f'step = {1 / clip.get("sample_fps", FPS):.10f}']
-        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps', 'tier', 'reach', 'kind', 'zone', 'incoming_direction'):
+        for key in ('stride', 'speed', 'duty', 'windup', 'active_end', 'impact', 'side', 'direction', 'lead', 'lead_lift', 'lead_land', 'trail_lift', 'trail_land', 'sample_fps', 'tier', 'reach', 'kind', 'zone', 'incoming_direction', 'support', 'damage', 'stamina', 'cancel_window', 'lift', 'replant', 'pivot', 'ground_only'):
             if key in clip:
                 lines.append(f'metadata/{key} = {json.dumps(clip[key])}')
         q = np.asarray(clip['rotations'])

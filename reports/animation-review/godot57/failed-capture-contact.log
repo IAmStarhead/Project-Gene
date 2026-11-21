@@ -1,0 +1,19 @@
+REPLAY_READY 4.7.2-stable (custom_build) / 04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16
+dress / relaxed-idle-feet 4 native framebuffers
+dress / relaxed-land-feet 4 native framebuffers
+dress / relaxed-back-feet 4 native framebuffers
+dress / combat-idle-feet 4 native framebuffers
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForEvent: Timeout 120000ms exceeded while waiting for event "console"
+=========================== logs ===========================
+waiting for event "console"
+============================================================
+    at command (/home/user/Project-Gene/prototype/tests/rendered_review/capture.mjs:25:19)
+    at /home/user/Project-Gene/prototype/tests/rendered_review/capture.mjs:46:25 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.22.3

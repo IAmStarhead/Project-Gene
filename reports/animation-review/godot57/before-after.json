@@ -1,0 +1,300 @@
+{
+  "video": "before-after.mp4",
+  "sha256": "288c44b6f51e6912cef4a8ddddd801ed5f0f29d136ae9947d2ebd8b213f38661",
+  "frames": 69,
+  "distinct_before_pngs": 69,
+  "distinct_after_pngs": 69,
+  "physics_hz": 60,
+  "capture_hz": 10,
+  "playback_simulation_rate": 1,
+  "seconds": 6.9,
+  "viewport_per_cell": [
+    800,
+    450
+  ],
+  "video_pixels": [
+    1600,
+    552
+  ],
+  "input_timeline_exactly_equal": true,
+  "root_physics_and_observer_exact_pairs": 69,
+  "old_gait_nonarm_exact_pairs": 30,
+  "before_manifest_sha256": "44928e71208a89553c9a28a5935c415e130442e2d5ec32c462a5f7b7ec106907",
+  "after_manifest_sha256": "313caa64c738d93e3a42ad792f3305396374d86ca72d535f59ae9a3258607462",
+  "source_hashes": {
+    "before": {
+      "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+      "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+      "motion_set_sha256": "5c98372b871550950c0f5cdd8bd7c24ef97bd62316e1caac2b158f60c8f88644",
+      "runtime_sha256": "57899971dd1654872c74627bed91930a69fe26eadfc562f130015ebf0ee3c3c2",
+      "controller_sha256": "ea855b85d8a3ea8ddcf83b98c8cf9eb88e1a6c3f4c15b7b8680cfee6260e346e",
+      "player_sha256": "c3337568b4795de41beb9358941488aacbfcb30724b684b4de40898f3d982b62",
+      "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+      "hit_check_sha256": "de2e2968725c047a979658a6a6ce0a1c95f6cf5ef5114af550a6c74ee6531173",
+      "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+      "hud_sha256": "670085506d4275366dfed4fa3871d43d80eb8c4ab5f42efe0364f8ed8c2cbedc",
+      "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+      "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+      "showcase_sha256": "17ee42a752652f15739c3ddf991f3837e0d662fea9a88192469fb168a900b3f1",
+      "main_sha256": "4b8b00c5203cb979e7c4ab5f3240b1219f10c3a8742ce647a76c5892cb2874f5",
+      "tuning_sha256": "53534499635657427ce8d63031df5fb48c56126d624810fa998131b28bebee27",
+      "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+      "quick_slots_sha256": "db06939f7df2508b2ae99dafed4f12acbbf81f384e596ad309726904c00cc398",
+      "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+    },
+    "after": {
+      "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+      "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+      "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+      "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+      "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+      "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+      "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+      "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+      "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+      "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+      "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+      "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+      "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+      "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+      "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+      "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+      "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+      "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+      "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+    }
+  },
+  "pack_provenance": {
+    "before": {
+      "pck_sha256": "4205205681e000bce3c9a7becfd8fb56f144f43ba653aa838890f0c966affba3",
+      "strict_import_and_pack_pass": true,
+      "isolated_project_sha256": "724be8b5560a428ec32892476763ed53def72c76d00defe9e3eb229c2d51b109",
+      "driver": "game",
+      "driver_sha256": "094b4e71fd5dceb8a9b42180e3c5145cf9cfea9ad43b565d0a2e097a6ffa5d21",
+      "native_trace_sha256": "6b3b84d1ea2e2c8e9860b5dda78f7977db3356d3c48574cf92098facc25e2c32",
+      "baseline_appearance_commit": null,
+      "production_source_commit": "c9d24b157ce7f8366f9a2712e87c01619192cfc8",
+      "diagnostic_note": "ALL production sources archived from the stated commit; CURRENT isolated review driver and test-only dense-sole helper",
+      "source_hashes": {
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "5c98372b871550950c0f5cdd8bd7c24ef97bd62316e1caac2b158f60c8f88644",
+        "runtime_sha256": "57899971dd1654872c74627bed91930a69fe26eadfc562f130015ebf0ee3c3c2",
+        "controller_sha256": "ea855b85d8a3ea8ddcf83b98c8cf9eb88e1a6c3f4c15b7b8680cfee6260e346e",
+        "player_sha256": "c3337568b4795de41beb9358941488aacbfcb30724b684b4de40898f3d982b62",
+        "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+        "hit_check_sha256": "de2e2968725c047a979658a6a6ce0a1c95f6cf5ef5114af550a6c74ee6531173",
+        "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+        "hud_sha256": "670085506d4275366dfed4fa3871d43d80eb8c4ab5f42efe0364f8ed8c2cbedc",
+        "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+        "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+        "showcase_sha256": "17ee42a752652f15739c3ddf991f3837e0d662fea9a88192469fb168a900b3f1",
+        "main_sha256": "4b8b00c5203cb979e7c4ab5f3240b1219f10c3a8742ce647a76c5892cb2874f5",
+        "tuning_sha256": "53534499635657427ce8d63031df5fb48c56126d624810fa998131b28bebee27",
+        "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+        "quick_slots_sha256": "db06939f7df2508b2ae99dafed4f12acbbf81f384e596ad309726904c00cc398",
+        "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+      },
+      "metadata_sha256": "576356d47dcd6d88d18fe164f24992f7646114db349a8d3614474943c78e9789"
+    },
+    "after": {
+      "pck_sha256": "0b1ff35265f8f43996f472e54d7016d20ef553709aefc90afc4ece522ff05e1a",
+      "strict_import_and_pack_pass": true,
+      "isolated_project_sha256": "724be8b5560a428ec32892476763ed53def72c76d00defe9e3eb229c2d51b109",
+      "driver": "game",
+      "driver_sha256": "094b4e71fd5dceb8a9b42180e3c5145cf9cfea9ad43b565d0a2e097a6ffa5d21",
+      "native_trace_sha256": "6b3b84d1ea2e2c8e9860b5dda78f7977db3356d3c48574cf92098facc25e2c32",
+      "baseline_appearance_commit": null,
+      "production_source_commit": null,
+      "diagnostic_note": null,
+      "source_hashes": {
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+        "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+        "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+        "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+        "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+        "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+        "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+        "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+        "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+        "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+        "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+        "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+        "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+        "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+      },
+      "metadata_sha256": "e21c8f14b80250cb1b97eb36ff449dcac82885b782df26f46ca750f88f655aea"
+    }
+  },
+  "selected_stills": [
+    {
+      "file": "comparison-subject-front.png",
+      "sha256": "deb0c2fef82fbb6734471f5b0404faf38724fa688a539351d3bc517096369130",
+      "pair": 0,
+      "before_source_png": "e814fd5b3366b7f7d7995e2a0870845c2c0dd560bb2ee6e499e48cbe925cc95e",
+      "after_source_png": "dc3d84827c995b61ca837c2be28787967d6ff6ab22074b58354da5a9263fdd77"
+    },
+    {
+      "file": "comparison-subject-back.png",
+      "sha256": "129694a232698d301d262a9fce1239a0c2ca46d135a931152ead4c3a15160180",
+      "pair": 2,
+      "before_source_png": "0febe05dab484a94e0f964326b4efcabeb2e764b19112f42dfea7451b52bf972",
+      "after_source_png": "7c53dfd8fa0b278c486e2fe1bfc6728c4590f77efae68c3c6e73683f27bf3628"
+    },
+    {
+      "file": "comparison-jump-apex.png",
+      "sha256": "d2433c2254b8a60373d6ac40bdfd7ca39229ff24e907934d51d37d6b49544357",
+      "pair": 6,
+      "before_source_png": "b93252b3ff820bbb69a1ebd111f20c42f3cb7d6b8e6e49bdb9741b9a05d86ed1",
+      "after_source_png": "85acbff8d403246fa269f9c5db94426316679b309d9100e1724deb4c89c0dfc2"
+    },
+    {
+      "file": "comparison-jog.png",
+      "sha256": "cb8a9908bee3b4794cd3e5b0f72d8905ce3fee7bd9ba99ec935681bc6629d399",
+      "pair": 53,
+      "before_source_png": "a32b85758914831dd9d4d497aef1b5eb6f22867af8712e21d60f3381bc63f640",
+      "after_source_png": "6e26f17683b995c6ce7685c8de5be6501431d5da348ecbe094f5f5dd91e956e3"
+    }
+  ],
+  "timeline": [
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "suit",
+        "view": "front"
+      }
+    },
+    {
+      "take": "subject-front",
+      "ticks": 12,
+      "label": "same settled controller | subject clothing FRONT",
+      "command": {}
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "suit",
+        "view": "back"
+      }
+    },
+    {
+      "take": "subject-back",
+      "ticks": 12,
+      "label": "same settled controller | subject clothing BACK",
+      "command": {}
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "dress",
+        "view": "side"
+      }
+    },
+    {
+      "take": "relaxed-jump",
+      "ticks": 72,
+      "label": "same input and physics | ordinary F jump / absorption",
+      "command": {
+        "jump": true
+      }
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": true,
+        "steps": 35,
+        "ui": false,
+        "outfit": "dress",
+        "view": "front",
+        "stance": true
+      }
+    },
+    {
+      "take": "combat-jump",
+      "ticks": 72,
+      "label": "same input and physics | combat F jump / absorption",
+      "command": {
+        "jump": true
+      }
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": false,
+        "steps": 35,
+        "ui": false,
+        "deck_edge": true,
+        "outfit": "dress",
+        "view": "route"
+      }
+    },
+    {
+      "take": "ledge",
+      "ticks": 90,
+      "label": "same EXISTING deck | step OFF, not a launch",
+      "command": {
+        "press": [
+          "move_right",
+          "walk_slow"
+        ]
+      }
+    },
+    {
+      "setup": {
+        "scene": "game",
+        "center": false,
+        "steps": 35,
+        "ui": false,
+        "route": true,
+        "outfit": "dress",
+        "view": "route"
+      }
+    },
+    {
+      "take": "walk",
+      "ticks": 36,
+      "label": "same accepted walking keys",
+      "command": {
+        "press": [
+          "move_left",
+          "walk_slow"
+        ]
+      }
+    },
+    {
+      "take": "jog",
+      "ticks": 96,
+      "label": "same accepted jog legs, pelvis, cadence | arms change",
+      "command": {
+        "release": [
+          "walk_slow"
+        ]
+      }
+    },
+    {
+      "take": "stop",
+      "ticks": 24,
+      "label": "same real deceleration / stop",
+      "command": {
+        "release": [
+          "move_left"
+        ]
+      }
+    }
+  ],
+  "conditions": "Full c9d24b1 production archive versus current production, same current review driver; only entry point/starting fixtures/observer/UI visibility are review-only. All physical root positions, velocities, grounded flags and observer transforms exactly equal per pair; old gait non-arm keys also checked. No crop/rescale/retouch/interpolation; captions outside original game pixels. Offline Godot Compatibility/WebGL2/SwiftShader, no audio, NOT continuous manual review / Windows / 940MX performance."
+}

@@ -35,8 +35,11 @@ GAITS = {
 ARMS = {
     'walk': dict(shoulder=(-4, 16), elbow=(24, 7), lag=.040,
                  upper_out=.190, fore_out=.320, medial=.030, clavicle=1.0, palm=12),
-    'jog': dict(shoulder=(-10, 28), elbow=(91, 13), lag=.035,
-                upper_out=.10, fore_out=.230, medial=.410, clavicle=1.7, palm=8),
+    # Easy jog, not the sprint's high folded carriage. A lower, softer elbow
+    # and modest shoulder excursion let the hand pass the hip on recovery.
+    # Only this arm-chain authoring changes; pelvis/legs/contact are frozen.
+    'jog': dict(shoulder=(-7, 24), elbow=(80, 10), lag=.050,
+                upper_out=.10, fore_out=.160, medial=.285, recovery_out=.080, clavicle=1.3, palm=10),
     'sprint': dict(shoulder=(-10, 38), elbow=(94, 16), lag=.035,
                    upper_out=.13, fore_out=.230, medial=.390, clavicle=2.5, palm=6),
 }
@@ -221,8 +224,13 @@ def _arm(p, name, side, phase):
     # Carry past the actual loose gown at low hip height, not through it.
     # Front running hands approach the centre as they rise; only the low
     # recovery has outward clearance, not an always-wide handbag silhouette.
-    lower = chest@unit([sign*(a['fore_out']-a['medial']*forward),
-                       -np.cos(fore_angle), np.sin(fore_angle)])
+    fore_out = a['fore_out']-a['medial']*forward
+    if 'recovery_out' in a:
+        # Only the LOW return clears the retained hem (~17 mm at the wrist).
+        # Keep the authored medial FRONT path rather than widening the whole
+        # arm orbit or hiding forearm triangles with a garment/body mask.
+        fore_out += a['recovery_out']*(1-forward)
+    lower = chest@unit([sign*fore_out, -np.cos(fore_angle), np.sin(fore_angle)])
     l1 = np.linalg.norm(p.rig.positions[p.rig.index['forearm.'+side]])
     l2 = np.linalg.norm(p.rig.positions[p.rig.index['hand.'+side]])
     elbow = root+l1*upper

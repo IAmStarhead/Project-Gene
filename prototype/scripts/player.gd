@@ -10,6 +10,7 @@ const HitCheck := preload("res://scripts/hit_check.gd")
 const Foley := preload("res://scripts/actor_foley.gd")
 const TrainingSword := preload("res://scripts/training_sword.gd")
 const StrikeAir := preload("res://scripts/strike_air.gd")
+const Moves := preload("res://scripts/move_catalog.gd")
 
 @onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
@@ -58,8 +59,14 @@ var _buf_dodge: float = BUF_NEVER
 var _buf_attack: float = BUF_NEVER
 var _buf_secondary: float = BUF_NEVER
 var _buf_hook: float = BUF_NEVER
+var selected_attack_slot := 0 # 1..9,0 select; LMB executes, default remains left jab.
+var _buf_primary_slot := -1 # Snapshot at the click, not after a later number press.
 var _attack_kind := "straight"
 var _attack_side: String = "L"
+# New kicks only: a moving start first brakes through the real gait using
+# UNCHANGED DECELERATION. Their authored weight transfer starts after stop,
+# not while a planted foot visibly skids under a sprinting CharacterBody.
+var _kick_planting := false
 var _buf_dir: Vector3 = Vector3.ZERO
 
 var _dodge_local_dir := Vector3(0, 0, 1)
@@ -179,6 +186,17 @@ func _unhandled_input(event: InputEvent) -> void:
 					manikin.restore_all()
 				get_viewport().set_input_as_handled()
 				return
+		# Left Alt is the existing WALK modifier, not a reason to disable
+		# number selection while moving. Shift/AZERTY text is also irrelevant.
+		if not training_blade and not event.ctrl_pressed and not event.meta_pressed:
+			var digits := [KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0]
+			var keypad := [KEY_KP_1,KEY_KP_2,KEY_KP_3,KEY_KP_4,KEY_KP_5,KEY_KP_6,KEY_KP_7,KEY_KP_8,KEY_KP_9,KEY_KP_0]
+			var slot := digits.find(key)
+			if slot < 0: slot = keypad.find(key)
+			if slot >= 0:
+				selected_attack_slot = slot
+				get_viewport().set_input_as_handled()
+				return
 	if lock != null and lock.handle_input(event):
 		get_viewport().set_input_as_handled()
 		return
@@ -207,11 +225,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 			return
 		if mb.button_index == MOUSE_BUTTON_LEFT:
-			_buf_attack = 0.0
+			_buffer_primary_attack()
 		elif mb.button_index == MOUSE_BUTTON_RIGHT:
 			_buf_secondary = 0.0
 	elif event.is_action_pressed("attack"):
-		_buf_attack = 0.0
+		_buffer_primary_attack()
 	elif event.is_action_pressed("attack_secondary"):
 		_buf_secondary = 0.0
 	elif event.is_action_pressed("attack_hook"):
@@ -223,6 +241,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_jump_buffer = 0.0
 	elif event.is_action_pressed("toggle_stance"):
 		toggle_combat_mode()
+
+
+func _buffer_primary_attack() -> void:
+	_buf_attack = 0.0
+	_buf_primary_slot = selected_attack_slot
 
 
 func _sync_training_selection() -> void:
@@ -343,7 +366,7 @@ func _physics_process(delta: float) -> void:
 		var g := T.PLAYER_JUMP_GRAVITY if velocity.y > 0.0 else T.GRAVITY_FALL
 		velocity.y -= g * delta
 
-	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and _coyote > 0.0:
+	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and not (_action == "attack" and Moves.is_kick(_attack_kind)) and _coyote > 0.0:
 		_try_jump()
 
 	var stepped_up := false
@@ -361,7 +384,7 @@ func _physics_process(delta: float) -> void:
 	if character != null and foley != null:
 		var phase: Variant = character.get("_phase")
 		if phase != null:
-			foley.update_motion(delta, float(phase), is_on_floor(), Vector2(displacement.x, displacement.z).length(), _action)
+			foley.update_motion(delta, float(phase), is_on_floor(), Vector2(displacement.x, displacement.z).length(), "" if _kick_planting else _action)
 	_update_camera_lock(delta)
 
 
@@ -450,7 +473,7 @@ func _update_character_anim(delta: float, displacement: Vector3) -> void:
 			var hit := get_world_3d().direct_space_state.intersect_ray(query)
 			if not hit.is_empty():
 				floor_distance = maxf(0.0, global_position.y - (hit["position"] as Vector3).y)
-		character.update_motion(delta, local_velocity, _action, _action_time, _attack_side, {
+		character.update_motion(delta, local_velocity, "" if _kick_planting else _action, _action_time, _attack_side, {
 			"distance": planar.length(),
 			"grounded": is_on_floor(),
 			"vertical_speed": velocity.y,
@@ -474,7 +497,7 @@ func _update_strike_air(delta: float) -> void:
 	if _action != "attack" and strike_air.points.is_empty():
 		return
 	var timing := _attack_timing()
-	var sampling := _action == "attack" and _action_time >= timing.x - .035 \
+	var sampling := _action == "attack" and not Moves.is_kick(_attack_kind) and _action_time >= timing.x - .035 \
 		and _action_time <= timing.x + timing.y + .025
 	var hand := Vector3.ZERO
 	if sampling:
@@ -569,11 +592,25 @@ func _try_start_actions() -> void:
 		_start_dodge()
 		_buf_dodge = BUF_NEVER
 		return
-	if _buf_attack <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
-		_attack_side = "L"
-		_start_attack()
-		_buf_attack = BUF_NEVER
-	elif _buf_secondary <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
+	_try_start_attacks()
+
+
+func _try_start_attacks() -> void:
+	if _buf_attack <= T.INPUT_BUFFER:
+		# Blade is a visibly separate context: its legacy 1..4 limb selection
+		# and LMB cut do NOT become kick damage or disappear into an empty slot.
+		var slot := _buf_primary_slot if _buf_primary_slot >= 0 else selected_attack_slot
+		var profile := Moves.profile("straight", "L") if training_blade else Moves.slot_profile(slot)
+		if profile.is_empty():
+			_buf_attack = BUF_NEVER
+			_buf_primary_slot = -1
+		elif (not profile.ground_only or is_on_floor()) and _spend_stamina(float(profile.stamina)):
+			_attack_side = profile.side
+			_start_attack(profile.kind)
+			_buf_attack = BUF_NEVER
+			_buf_primary_slot = -1
+			return
+	if _buf_secondary <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
 		_attack_side = "R"
 		_start_attack()
 		_buf_secondary = BUF_NEVER
@@ -583,6 +620,7 @@ func _try_start_actions() -> void:
 
 
 func _start_dodge() -> void:
+	_kick_planting = false
 	velocity.x = 0.0
 	velocity.z = 0.0
 	_action = "dodge"
@@ -616,29 +654,20 @@ func _process_dodge(delta: float) -> void:
 	if _action_time >= T.DODGE_DURATION:
 		_action = ""
 		_invulnerable = false
-		if _buf_attack <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
-			_attack_side = "L"
-			_start_attack()
-			_buf_attack = BUF_NEVER
-		elif _buf_secondary <= T.INPUT_BUFFER and _spend_stamina(T.ATTACK_STAMINA):
-			_attack_side = "R"
-			_start_attack()
-			_buf_secondary = BUF_NEVER
-		elif _buf_hook <= T.INPUT_BUFFER and _spend_stamina(T.HOOK_STAMINA):
-			_start_attack("hook")
-			_buf_hook = BUF_NEVER
+		_try_start_attacks()
 
 
 func _attack_timing() -> Vector3:
-	return Vector3(T.HOOK_WINDUP, T.HOOK_ACTIVE, T.HOOK_RECOVERY) if _attack_kind == "hook" else Vector3(T.ATTACK_WINDUP, T.ATTACK_ACTIVE, T.ATTACK_RECOVERY)
+	return Moves.profile(_attack_kind, _attack_side).timing
 
 
 func _start_attack(kind: String = "straight") -> void:
 	if is_instance_valid(strike_air):
 		strike_air.clear_trail()
-	_attack_kind = "hook" if kind == "hook" else "straight"
-	if _attack_kind == "hook":
-		_attack_side = "L"
+	var profile := Moves.profile(kind, _attack_side)
+	_attack_kind = profile.kind
+	_attack_side = profile.side
+	_kick_planting = Moves.is_kick(_attack_kind) and Vector2(velocity.x,velocity.z).length() > .35
 	combat_mode = true
 	_action = "attack"
 	_action_time = 0.0
@@ -646,7 +675,7 @@ func _start_attack(kind: String = "straight") -> void:
 	_miss_logged = false
 	_last_hit = ""
 	# Тип и выбор части фиксируются в начале замаха, а не в момент контакта.
-	_attack_blade = training_blade
+	_attack_blade = training_blade and not Moves.is_kick(_attack_kind)
 	_attack_blade_limb = training_limb
 	_attack_blade_special = training_special
 	_sync_training_sword()
@@ -659,6 +688,7 @@ func _start_attack(kind: String = "straight") -> void:
 
 
 func _attack_phase() -> String:
+	if _kick_planting: return "постановка опоры"
 	var timing := _attack_timing()
 	if _action_time < timing.x:
 		return "замах"
@@ -668,6 +698,23 @@ func _attack_phase() -> String:
 
 
 func _process_attack(delta: float) -> void:
+	var kick := Moves.is_kick(_attack_kind)
+	# A grounded kick may not turn into an invisible airborne upper-body
+	# punch after stepping off a platform. Existing air punches are unchanged.
+	if kick and not is_on_floor():
+		_action = ""
+		_kick_planting = false
+		return
+	if kick and _kick_planting:
+		velocity.x = move_toward(velocity.x,0.0,T.DECELERATION*delta)
+		velocity.z = move_toward(velocity.z,0.0,T.DECELERATION*delta)
+		# A clearly displayed preparation, not a delayed hit or changed
+		# physics constant. Hand attacks / Q / clone timing are untouched.
+		if Vector2(velocity.x,velocity.z).length_squared() < .0001:
+			velocity.x = 0.0
+			velocity.z = 0.0
+			_kick_planting = false
+		return
 	var previous_time := _action_time
 	_action_time += delta
 	velocity.x = move_toward(velocity.x, 0.0, T.DECELERATION * delta)
@@ -684,14 +731,14 @@ func _process_attack(delta: float) -> void:
 	var in_window := _action_time >= timing.x and _action_time <= active_end
 	var crossed_window := previous_time < active_end and _action_time >= timing.x
 	if not _hit_done and (in_window or crossed_window):
-		if _do_hit(in_window):
+		if (_do_kick_hit(previous_time, _action_time) if kick else _do_hit(in_window)):
 			_hit_done = true
 	if not _hit_done and not _miss_logged and _action_time >= active_end:
 		_miss_logged = true
 		_last_hit = _miss_reason()
 
 	# Отмена восстановления уворотом (в пределах ATTACK_CANCEL_WINDOW до конца удара).
-	var cancel_start := maxf(active_end, total - T.ATTACK_CANCEL_WINDOW)
+	var cancel_start := maxf(active_end, total - float(Moves.profile(_attack_kind, _attack_side).cancel_window))
 	if _action_time >= cancel_start and _buf_dodge <= T.INPUT_BUFFER and _spend_stamina(T.DODGE_STAMINA):
 		_start_dodge()
 		_buf_dodge = BUF_NEVER
@@ -701,7 +748,17 @@ func _process_attack(delta: float) -> void:
 		_action = ""
 
 
+func _do_kick_hit(previous_time: float, time: float) -> bool:
+	if not is_on_floor() or _attack_blade:
+		return false
+	_refresh_targets()
+	var hit := HitCheck.find_kick_hit(self, _targets, -global_basis.z, _attack_kind, previous_time, time)
+	return _accept_contact(hit)
+
+
 func _do_hit(use_live_bone: bool) -> bool:
+	if Moves.is_kick(_attack_kind):
+		return false # Never borrow the fist segment / fallback for a foot.
 	_refresh_targets()
 	var forward := -global_transform.basis.z
 	if lock != null and lock.active():
@@ -720,11 +777,15 @@ func _do_hit(use_live_bone: bool) -> bool:
 		use_live_bone,
 		_attack_kind
 	)
+	return _accept_contact(hit)
+
+
+func _accept_contact(hit: Dictionary) -> bool:
 	if hit.is_empty():
 		return false
 	var victim := hit["target"] as Node3D
 	var zone_name := HitCheck.zone_label(String(hit.get("zone", "torso")))
-	var damage := T.HOOK_DAMAGE if _attack_kind == "hook" else T.ATTACK_DAMAGE
+	var damage := float(Moves.profile(_attack_kind, _attack_side).damage)
 	if victim.has_method("is_passive") and bool(victim.call("is_passive")):
 		_last_hit = "%s (%s — бой ВЫКЛ, нажмите T)" % [victim.name, zone_name]
 	else:
@@ -848,8 +909,10 @@ func receive_hit(amount: float, hit: Dictionary) -> bool:
 		_action = ""
 		_action_time = 0.0
 		_attack_kind = "straight"
+		_kick_planting = false
 		_hit_done = false
 		_buf_attack = BUF_NEVER
+		_buf_primary_slot = -1
 		_buf_secondary = BUF_NEVER
 		_buf_hook = BUF_NEVER
 		_buf_dodge = BUF_NEVER
@@ -872,7 +935,7 @@ func _write_debug_label() -> void:
 		return
 	var state_text := "движение"
 	if _action == "attack":
-		state_text = "%s: %s" % [("Q хук в корпус" if _attack_kind == "hook" else "правая" if _attack_side == "R" else "левая"), _attack_phase()]
+		state_text = "%s: %s" % [Moves.profile(_attack_kind, _attack_side).title, _attack_phase()]
 	elif _action == "dodge":
 		state_text = "уворот" + (" [i-frames]" if _invulnerable else "")
 
@@ -898,6 +961,9 @@ func _write_debug_label() -> void:
 	lines.append("Графика [F4]: %s  ·  свет [B]: %s  ·  стиль [G]: %s" % [q_name, b_name, style_name])
 	lines.append("Режим [R]: %s  ·  %s  ·  захват: %s" % [stance_name(), state_text, lock_name])
 	lines.append("Костюм [O]: %s" % T.OUTFIT_NAMES[T.OUTFIT])
+	var selected := Moves.slot_profile(selected_attack_slot)
+	lines.append("Выбор [1–0]: %d · %s → ЛКМ" % [(selected_attack_slot+1)%10,
+		"пусто" if selected.is_empty() else String(selected.title)])
 	lines.append("Здоровье: %.0f/%.0f  ·  стамина: %.0f/%.0f" % [health, T.MAX_HEALTH, stamina, T.MAX_STAMINA])
 	lines.append("Последний контакт: %s" % (_last_hit if not _last_hit.is_empty() else "—"))
 	lines.append("Получено: %s" % (_last_received_hit if not _last_received_hit.is_empty() else "—"))

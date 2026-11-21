@@ -37,6 +37,13 @@ const CLIPS := [
 	["combat_back_walk", "Отход назад · шаг"],
 	["combat_back_jog", "Отход назад · бег"],
 	["combat_back_sprint", "Отход назад · Shift"],
+	["jump_start_relaxed", "Отрыв · обычный"],
+	["jump_up_relaxed", "Подъём · обычный"],
+	["jump_down_relaxed", "Снижение · обычный"],
+	["land_relaxed", "Посадка · обычная"],
+	["attack_front_kick", "4 · левый прямой ногой"],
+	["attack_low_kick", "5 · правый лоу-кик"],
+	["attack_roundhouse", "6 · сильный круговой"],
 ]
 const SPEEDS := [0.25, 0.5, 1.0]
 

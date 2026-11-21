@@ -1,0 +1,250 @@
+{
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+    "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+    "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+    "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+    "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+    "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+    "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+    "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+    "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+    "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+    "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+    "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+  },
+  "conditions": "Original 800x450 Godot PNGs; no crop, scaling, retouch or shadow edit. Explicit feet observer, not gameplay camera.",
+  "stills": [
+    {
+      "file": "dress-idle-feet-side.png",
+      "sha256": "751652fed8f0af93825b56333492c000e48cfda1d5e04177e085d420691fb643",
+      "source_frame": 0,
+      "take": "dress / relaxed-idle-feet",
+      "source_png_sha256": "751652fed8f0af93825b56333492c000e48cfda1d5e04177e085d420691fb643",
+      "soles": {
+        "left_world_y": 0.00183332094457,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00207239575684071,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ]
+    },
+    {
+      "file": "dress-land-feet-side.png",
+      "sha256": "11c75f3ef310f20ef0b0397e61a038d723e0033279f53f1d842264223fd34981",
+      "source_frame": 4,
+      "take": "dress / relaxed-land-feet",
+      "source_png_sha256": "11c75f3ef310f20ef0b0397e61a038d723e0033279f53f1d842264223fd34981",
+      "soles": {
+        "left_world_y": 0.00174464681185782,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158531835768372,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ]
+    },
+    {
+      "file": "dress-land-feet-back.png",
+      "sha256": "bb02a777fa92ec2c11165803fd85ad4082cdbdb450a0fefe57e1f5ba1d122b7d",
+      "source_frame": 8,
+      "take": "dress / relaxed-back-feet",
+      "source_png_sha256": "bb02a777fa92ec2c11165803fd85ad4082cdbdb450a0fefe57e1f5ba1d122b7d",
+      "soles": {
+        "left_world_y": 0.00173693976830691,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158529810141772,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ]
+    },
+    {
+      "file": "suit-idle-feet-side.png",
+      "sha256": "ce1483d05af97d72a972837bc0924ac2e4800894066de524a3ec22f5a2127d4b",
+      "source_frame": 24,
+      "take": "suit / relaxed-idle-feet",
+      "source_png_sha256": "ce1483d05af97d72a972837bc0924ac2e4800894066de524a3ec22f5a2127d4b",
+      "soles": {
+        "left_world_y": 0.00183332094457,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00207239575684071,
+        "vertices": 2410
+      },
+      "floor_y": 7.45058059692383e-09,
+      "camera_transform": [
+        -1.34190595149994,
+        0.203442990779877,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ]
+    },
+    {
+      "file": "suit-land-feet-side.png",
+      "sha256": "827b972aa4234323bc6484a92ca7b3208b644e8cfab40bc4d58c483200a148e4",
+      "source_frame": 28,
+      "take": "suit / relaxed-land-feet",
+      "source_png_sha256": "827b972aa4234323bc6484a92ca7b3208b644e8cfab40bc4d58c483200a148e4",
+      "soles": {
+        "left_world_y": 0.00174464681185782,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158531835768372,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ]
+    },
+    {
+      "file": "suit-land-feet-back.png",
+      "sha256": "4dc825ef0cf5153b095dd6fd7040fd6fe47c9813e7eb144740514bd905bfe9c1",
+      "source_frame": 32,
+      "take": "suit / relaxed-back-feet",
+      "source_png_sha256": "4dc825ef0cf5153b095dd6fd7040fd6fe47c9813e7eb144740514bd905bfe9c1",
+      "soles": {
+        "left_world_y": 0.00173693976830691,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158529810141772,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ]
+    },
+    {
+      "file": "suit-combat-land-feet-side.png",
+      "sha256": "b2f42b5dbe890c5a0cc8d7644177b51262614624659a3d04c597e42ee3581cb7",
+      "source_frame": 40,
+      "take": "suit / combat-land-feet",
+      "source_png_sha256": "b2f42b5dbe890c5a0cc8d7644177b51262614624659a3d04c597e42ee3581cb7",
+      "soles": {
+        "left_world_y": 0.00307952798902988,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158540171105415,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "camera_transform": [
+        -1.34190595149994,
+        0.203195005655289,
+        2.5,
+        -4.37113882867379e-08,
+        0,
+        1,
+        0.109340481460094,
+        0.994004368782043,
+        4.7794244117938e-09,
+        -0.994004368782043,
+        0.109340481460094,
+        -4.34493117040802e-08
+      ]
+    },
+    {
+      "file": "suit-combat-land-feet-back.png",
+      "sha256": "c459f72397ca457a9510968df7772210f7225fec318b0584381b64ce3859a9a6",
+      "source_frame": 44,
+      "take": "suit / combat-back-feet",
+      "source_png_sha256": "c459f72397ca457a9510968df7772210f7225fec318b0584381b64ce3859a9a6",
+      "soles": {
+        "left_world_y": 0.00307757779955864,
+        "method": "ALL native imported skin vertices with rest Y < .09 m; original four weights and Skin binds; separate left/right minima",
+        "right_world_y": 0.00158545130398124,
+        "vertices": 2410
+      },
+      "floor_y": 3.72529029846191e-09,
+      "camera_transform": [
+        0,
+        0.203195005655289,
+        3.84190607070923,
+        1,
+        0,
+        0,
+        0,
+        0.994004368782043,
+        -0.109340474009514,
+        0,
+        0.109340474009514,
+        0.994004368782043
+      ]
+    }
+  ]
+}

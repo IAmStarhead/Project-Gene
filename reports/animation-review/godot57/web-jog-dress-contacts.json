@@ -1,0 +1,3101 @@
+{
+  "summary": {
+    "frames": 192,
+    "outfit": "dress",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "intersecting_frames": {
+      "gown": 192,
+      "skirt": 0
+    },
+    "frames_by_approximate_body_part": {
+      "gown/chest": 177,
+      "gown/forearm.L": 2,
+      "gown/forearm.R": 7,
+      "gown/upper_arm.L": 192,
+      "gown/upper_arm.R": 192
+    },
+    "seconds": 168.928,
+    "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+  },
+  "intersections": [
+    {
+      "frame": "dress-walk/player:0",
+      "hits": {
+        "gown": {
+          "contacts": 219,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 219
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:1",
+      "hits": {
+        "gown": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:2",
+      "hits": {
+        "gown": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:3",
+      "hits": {
+        "gown": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:4",
+      "hits": {
+        "gown": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:5",
+      "hits": {
+        "gown": {
+          "contacts": 182,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 182
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:6",
+      "hits": {
+        "gown": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:7",
+      "hits": {
+        "gown": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:8",
+      "hits": {
+        "gown": {
+          "contacts": 177,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 177
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:9",
+      "hits": {
+        "gown": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:10",
+      "hits": {
+        "gown": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:11",
+      "hits": {
+        "gown": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:12",
+      "hits": {
+        "gown": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:13",
+      "hits": {
+        "gown": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:14",
+      "hits": {
+        "gown": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:15",
+      "hits": {
+        "gown": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:16",
+      "hits": {
+        "gown": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:17",
+      "hits": {
+        "gown": {
+          "contacts": 177,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 177
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:18",
+      "hits": {
+        "gown": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:19",
+      "hits": {
+        "gown": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:20",
+      "hits": {
+        "gown": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/player:21",
+      "hits": {
+        "gown": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:0",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:1",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:2",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:3",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:6",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:8",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:9",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:10",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:11",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:12",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:13",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:14",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:15",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:16",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:17",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:18",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:19",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:20",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-walk/clone:21",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:0",
+      "hits": {
+        "gown": {
+          "contacts": 174,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 174
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:1",
+      "hits": {
+        "gown": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:2",
+      "hits": {
+        "gown": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:3",
+      "hits": {
+        "gown": {
+          "contacts": 212,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 212
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:4",
+      "hits": {
+        "gown": {
+          "contacts": 236,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 236
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:5",
+      "hits": {
+        "gown": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:6",
+      "hits": {
+        "gown": {
+          "contacts": 217,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 217
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:7",
+      "hits": {
+        "gown": {
+          "contacts": 224,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 224
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:8",
+      "hits": {
+        "gown": {
+          "contacts": 234,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 234
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:9",
+      "hits": {
+        "gown": {
+          "contacts": 240,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "waist_adapter": 4,
+            "outer": 236
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:10",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "waist_adapter": 19,
+            "outer": 245
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:11",
+      "hits": {
+        "gown": {
+          "contacts": 254,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 254
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:12",
+      "hits": {
+        "gown": {
+          "contacts": 237,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 237
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:13",
+      "hits": {
+        "gown": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:14",
+      "hits": {
+        "gown": {
+          "contacts": 217,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 217
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:15",
+      "hits": {
+        "gown": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:16",
+      "hits": {
+        "gown": {
+          "contacts": 235,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 235
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:17",
+      "hits": {
+        "gown": {
+          "contacts": 235,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 235
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:18",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.L",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 245,
+            "waist_adapter": 19
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:19",
+      "hits": {
+        "gown": {
+          "contacts": 252,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 252
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:20",
+      "hits": {
+        "gown": {
+          "contacts": 239,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 239
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:21",
+      "hits": {
+        "gown": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:22",
+      "hits": {
+        "gown": {
+          "contacts": 217,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 217
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:23",
+      "hits": {
+        "gown": {
+          "contacts": 224,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 224
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:24",
+      "hits": {
+        "gown": {
+          "contacts": 234,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 234
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:25",
+      "hits": {
+        "gown": {
+          "contacts": 240,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "waist_adapter": 4,
+            "outer": 236
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:26",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "waist_adapter": 19,
+            "outer": 245
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:27",
+      "hits": {
+        "gown": {
+          "contacts": 254,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 254
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:28",
+      "hits": {
+        "gown": {
+          "contacts": 237,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 237
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:29",
+      "hits": {
+        "gown": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:30",
+      "hits": {
+        "gown": {
+          "contacts": 217,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 217
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/player:31",
+      "hits": {
+        "gown": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:0",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:1",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:2",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:3",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:6",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:8",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:9",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:10",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:11",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:12",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:13",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:14",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:15",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:16",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:17",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:18",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:19",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:20",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:21",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:22",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:23",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:24",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:25",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:26",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:27",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:28",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:29",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:30",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-jog/clone:31",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:0",
+      "hits": {
+        "gown": {
+          "contacts": 218,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 218
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:1",
+      "hits": {
+        "gown": {
+          "contacts": 210,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 210
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:2",
+      "hits": {
+        "gown": {
+          "contacts": 207,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 207
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:3",
+      "hits": {
+        "gown": {
+          "contacts": 225,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 225
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:6",
+      "hits": {
+        "gown": {
+          "contacts": 262,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 262
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/player:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:0",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:1",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:2",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:3",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:6",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop/clone:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:0",
+      "hits": {
+        "gown": {
+          "contacts": 226,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 226
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:1",
+      "hits": {
+        "gown": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:2",
+      "hits": {
+        "gown": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:3",
+      "hits": {
+        "gown": {
+          "contacts": 198,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 198
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:4",
+      "hits": {
+        "gown": {
+          "contacts": 219,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 219
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:5",
+      "hits": {
+        "gown": {
+          "contacts": 218,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 218
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:6",
+      "hits": {
+        "gown": {
+          "contacts": 224,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 224
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:7",
+      "hits": {
+        "gown": {
+          "contacts": 234,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 234
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:8",
+      "hits": {
+        "gown": {
+          "contacts": 237,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "waist_adapter": 8,
+            "outer": 229
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:9",
+      "hits": {
+        "gown": {
+          "contacts": 278,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264,
+            "waist_adapter": 14
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:10",
+      "hits": {
+        "gown": {
+          "contacts": 241,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 241
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:11",
+      "hits": {
+        "gown": {
+          "contacts": 236,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 236
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/player:12",
+      "hits": {
+        "gown": {
+          "contacts": 235,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 235
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:0",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:1",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:2",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:3",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:6",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:8",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:9",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:10",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:11",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-reverse/clone:12",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:0",
+      "hits": {
+        "gown": {
+          "contacts": 213,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 213
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:1",
+      "hits": {
+        "gown": {
+          "contacts": 208,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 208
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:2",
+      "hits": {
+        "gown": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:3",
+      "hits": {
+        "gown": {
+          "contacts": 221,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 221
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:4",
+      "hits": {
+        "gown": {
+          "contacts": 257,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.L",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 237,
+            "waist_adapter": 20
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:5",
+      "hits": {
+        "gown": {
+          "contacts": 256,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 256
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:6",
+      "hits": {
+        "gown": {
+          "contacts": 242,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 242
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:7",
+      "hits": {
+        "gown": {
+          "contacts": 239,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 239
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:8",
+      "hits": {
+        "gown": {
+          "contacts": 219,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 219
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:9",
+      "hits": {
+        "gown": {
+          "contacts": 224,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 224
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:10",
+      "hits": {
+        "gown": {
+          "contacts": 232,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 232
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:11",
+      "hits": {
+        "gown": {
+          "contacts": 234,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 234
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/player:12",
+      "hits": {
+        "gown": {
+          "contacts": 260,
+          "approximate_body_parts": [
+            "chest",
+            "forearm.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "waist_adapter": 22,
+            "outer": 238
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:0",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:1",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:2",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:3",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:6",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:8",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:9",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:10",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:11",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-forward/clone:12",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:0",
+      "hits": {
+        "gown": {
+          "contacts": 221,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 221
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:1",
+      "hits": {
+        "gown": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:2",
+      "hits": {
+        "gown": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:3",
+      "hits": {
+        "gown": {
+          "contacts": 227,
+          "approximate_body_parts": [
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 227
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:4",
+      "hits": {
+        "gown": {
+          "contacts": 254,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 254
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:5",
+      "hits": {
+        "gown": {
+          "contacts": 254,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 254
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:6",
+      "hits": {
+        "gown": {
+          "contacts": 254,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 254
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/player:7",
+      "hits": {
+        "gown": {
+          "contacts": 254,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 254
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:0",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:1",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:2",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:3",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:4",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:5",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:6",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "dress-stop-again/clone:7",
+      "hits": {
+        "gown": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "outer": 264
+          }
+        }
+      }
+    }
+  ]
+}

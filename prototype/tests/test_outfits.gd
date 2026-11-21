@@ -37,15 +37,15 @@ func _run() -> void:
 		"a new session starts in the retained dress")
 	var original: Mesh = main.player.character.appearance.body.mesh
 	main._unhandled_input(action("toggle_outfit"))
-	check(T.OUTFIT == "suit", "O selects top + long trousers")
+	check(T.OUTFIT == "suit", "O selects fitted subject jumpsuit")
 	for character in [main.player.character, main.clone.character]:
 		var a: Node3D = character.appearance
 		check(a.suit.visible and not a.gown.visible and not a.skirt.visible and a.outfit == "suit",
 			"both actual actors switch geometry, not just a wardrobe label")
 		check(a.suit.skin == a.body.skin and a.suit.skeleton == a.body.skeleton,
 			"outfit binds the original imported skeleton")
-		check(a.suit.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size() > 6000,
-			"real closed top/trouser geometry installed")
+		check(a.suit.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size() > 5000,
+			"real continuous fitted shell geometry installed")
 		a.set_hands(.75)
 		check(absf(a.body.get_blend_shape_value(0)-.75) < .000001,
 			"switching body coverage preserves the manual RelaxedHands morph")

@@ -1,0 +1,7146 @@
+{
+  "summary": {
+    "frames": 444,
+    "outfit": "suit",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "intersecting_frames": {
+      "suit": 444
+    },
+    "frames_by_approximate_body_part": {
+      "suit/chest": 444,
+      "suit/shoulder.R": 18,
+      "suit/upper_arm.L": 444,
+      "suit/upper_arm.R": 444
+    },
+    "seconds": 318.423,
+    "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee."
+  },
+  "intersections": [
+    {
+      "frame": "suit / front_kick / full pair observer/player:0",
+      "hits": {
+        "suit": {
+          "contacts": 136,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 136
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:1",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:2",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:3",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:4",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:5",
+      "hits": {
+        "suit": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:6",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:7",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:8",
+      "hits": {
+        "suit": {
+          "contacts": 155,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 155
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:9",
+      "hits": {
+        "suit": {
+          "contacts": 156,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 156
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:10",
+      "hits": {
+        "suit": {
+          "contacts": 156,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 156
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:11",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:12",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:13",
+      "hits": {
+        "suit": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:14",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:15",
+      "hits": {
+        "suit": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:16",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:17",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:18",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:19",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:20",
+      "hits": {
+        "suit": {
+          "contacts": 174,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 174
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:21",
+      "hits": {
+        "suit": {
+          "contacts": 180,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 180
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:22",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:23",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:24",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:25",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:26",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:27",
+      "hits": {
+        "suit": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:28",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:30",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:31",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/player:32",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:0",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:1",
+      "hits": {
+        "suit": {
+          "contacts": 135,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 135
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:2",
+      "hits": {
+        "suit": {
+          "contacts": 159,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 159
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:3",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:4",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:5",
+      "hits": {
+        "suit": {
+          "contacts": 148,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 148
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:6",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:7",
+      "hits": {
+        "suit": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:8",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:9",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:10",
+      "hits": {
+        "suit": {
+          "contacts": 205,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 205
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:11",
+      "hits": {
+        "suit": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:12",
+      "hits": {
+        "suit": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:13",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:14",
+      "hits": {
+        "suit": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:15",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:16",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:17",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:18",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:19",
+      "hits": {
+        "suit": {
+          "contacts": 232,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 232
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:20",
+      "hits": {
+        "suit": {
+          "contacts": 248,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 248
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:21",
+      "hits": {
+        "suit": {
+          "contacts": 247,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 247
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:22",
+      "hits": {
+        "suit": {
+          "contacts": 246,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 246
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:23",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:24",
+      "hits": {
+        "suit": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:25",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:26",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:27",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:28",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:30",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:31",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / full pair observer/clone:32",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:0",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:1",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:2",
+      "hits": {
+        "suit": {
+          "contacts": 164,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 164
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:3",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:4",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:5",
+      "hits": {
+        "suit": {
+          "contacts": 180,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 180
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:6",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:7",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:8",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:9",
+      "hits": {
+        "suit": {
+          "contacts": 214,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 214
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:10",
+      "hits": {
+        "suit": {
+          "contacts": 214,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 214
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:11",
+      "hits": {
+        "suit": {
+          "contacts": 216,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 216
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:12",
+      "hits": {
+        "suit": {
+          "contacts": 215,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 215
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:13",
+      "hits": {
+        "suit": {
+          "contacts": 217,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 217
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:14",
+      "hits": {
+        "suit": {
+          "contacts": 221,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 221
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:15",
+      "hits": {
+        "suit": {
+          "contacts": 215,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 215
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:16",
+      "hits": {
+        "suit": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:17",
+      "hits": {
+        "suit": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:18",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:19",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:20",
+      "hits": {
+        "suit": {
+          "contacts": 177,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 177
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:21",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:22",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:23",
+      "hits": {
+        "suit": {
+          "contacts": 183,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 183
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:24",
+      "hits": {
+        "suit": {
+          "contacts": 156,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 156
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:25",
+      "hits": {
+        "suit": {
+          "contacts": 153,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 153
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:26",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:27",
+      "hits": {
+        "suit": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:28",
+      "hits": {
+        "suit": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:29",
+      "hits": {
+        "suit": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:30",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:31",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/player:32",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:0",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:1",
+      "hits": {
+        "suit": {
+          "contacts": 135,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 135
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:2",
+      "hits": {
+        "suit": {
+          "contacts": 159,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 159
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:3",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:4",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:5",
+      "hits": {
+        "suit": {
+          "contacts": 148,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 148
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:6",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:7",
+      "hits": {
+        "suit": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:8",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:9",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:10",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:11",
+      "hits": {
+        "suit": {
+          "contacts": 187,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 187
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:12",
+      "hits": {
+        "suit": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:13",
+      "hits": {
+        "suit": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:14",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:15",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:16",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:17",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:18",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:19",
+      "hits": {
+        "suit": {
+          "contacts": 232,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 232
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:20",
+      "hits": {
+        "suit": {
+          "contacts": 248,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 248
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:21",
+      "hits": {
+        "suit": {
+          "contacts": 247,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 247
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:22",
+      "hits": {
+        "suit": {
+          "contacts": 246,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 246
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:23",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:24",
+      "hits": {
+        "suit": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:25",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:26",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:27",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:28",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:30",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:31",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / full pair observer/clone:32",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:0",
+      "hits": {
+        "suit": {
+          "contacts": 134,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 134
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:1",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:2",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:3",
+      "hits": {
+        "suit": {
+          "contacts": 158,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 158
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:4",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:5",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:6",
+      "hits": {
+        "suit": {
+          "contacts": 183,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 183
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:7",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:8",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:9",
+      "hits": {
+        "suit": {
+          "contacts": 161,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 161
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:10",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:11",
+      "hits": {
+        "suit": {
+          "contacts": 225,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 225
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:12",
+      "hits": {
+        "suit": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:13",
+      "hits": {
+        "suit": {
+          "contacts": 282,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 282
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:14",
+      "hits": {
+        "suit": {
+          "contacts": 284,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 284
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:15",
+      "hits": {
+        "suit": {
+          "contacts": 282,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 282
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:16",
+      "hits": {
+        "suit": {
+          "contacts": 280,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 280
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:17",
+      "hits": {
+        "suit": {
+          "contacts": 278,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 278
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:18",
+      "hits": {
+        "suit": {
+          "contacts": 282,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 282
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:19",
+      "hits": {
+        "suit": {
+          "contacts": 271,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 271
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:20",
+      "hits": {
+        "suit": {
+          "contacts": 263,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 263
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:21",
+      "hits": {
+        "suit": {
+          "contacts": 245,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 245
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:22",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:23",
+      "hits": {
+        "suit": {
+          "contacts": 238,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 238
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:24",
+      "hits": {
+        "suit": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:25",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:26",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:27",
+      "hits": {
+        "suit": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:28",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:29",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:30",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:31",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:32",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:33",
+      "hits": {
+        "suit": {
+          "contacts": 153,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 153
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:34",
+      "hits": {
+        "suit": {
+          "contacts": 152,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 152
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:35",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:36",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:37",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:38",
+      "hits": {
+        "suit": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:39",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:40",
+      "hits": {
+        "suit": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:41",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:42",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:43",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/player:44",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:0",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:1",
+      "hits": {
+        "suit": {
+          "contacts": 135,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 135
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:2",
+      "hits": {
+        "suit": {
+          "contacts": 159,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 159
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:3",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:4",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:5",
+      "hits": {
+        "suit": {
+          "contacts": 148,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 148
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:6",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:7",
+      "hits": {
+        "suit": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:8",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:9",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:10",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:11",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:12",
+      "hits": {
+        "suit": {
+          "contacts": 183,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 183
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:13",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:14",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:15",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:16",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:17",
+      "hits": {
+        "suit": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:18",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:19",
+      "hits": {
+        "suit": {
+          "contacts": 243,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 243
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:20",
+      "hits": {
+        "suit": {
+          "contacts": 252,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 252
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:21",
+      "hits": {
+        "suit": {
+          "contacts": 245,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 245
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:22",
+      "hits": {
+        "suit": {
+          "contacts": 246,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 246
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:23",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:24",
+      "hits": {
+        "suit": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:25",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:26",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:27",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:28",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:30",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:31",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:32",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:33",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:34",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:35",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:36",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:37",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:38",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:39",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:40",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:41",
+      "hits": {
+        "suit": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:42",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:43",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / full pair observer/clone:44",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:0",
+      "hits": {
+        "suit": {
+          "contacts": 136,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 136
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:1",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:2",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:3",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:4",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:5",
+      "hits": {
+        "suit": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:6",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:7",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:8",
+      "hits": {
+        "suit": {
+          "contacts": 155,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 155
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:9",
+      "hits": {
+        "suit": {
+          "contacts": 156,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 156
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:10",
+      "hits": {
+        "suit": {
+          "contacts": 156,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 156
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:11",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:12",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:13",
+      "hits": {
+        "suit": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:14",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:15",
+      "hits": {
+        "suit": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:16",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:17",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:18",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:19",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:20",
+      "hits": {
+        "suit": {
+          "contacts": 174,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 174
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:21",
+      "hits": {
+        "suit": {
+          "contacts": 180,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 180
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:22",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:23",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:24",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:25",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:26",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:27",
+      "hits": {
+        "suit": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:28",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:30",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:31",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/player:32",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:0",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:1",
+      "hits": {
+        "suit": {
+          "contacts": 135,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 135
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:2",
+      "hits": {
+        "suit": {
+          "contacts": 159,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 159
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:3",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:4",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:5",
+      "hits": {
+        "suit": {
+          "contacts": 148,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 148
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:6",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:7",
+      "hits": {
+        "suit": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:8",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:9",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:10",
+      "hits": {
+        "suit": {
+          "contacts": 205,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 205
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:11",
+      "hits": {
+        "suit": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:12",
+      "hits": {
+        "suit": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:13",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:14",
+      "hits": {
+        "suit": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:15",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:16",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:17",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:18",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:19",
+      "hits": {
+        "suit": {
+          "contacts": 232,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 232
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:20",
+      "hits": {
+        "suit": {
+          "contacts": 248,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 248
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:21",
+      "hits": {
+        "suit": {
+          "contacts": 247,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 247
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:22",
+      "hits": {
+        "suit": {
+          "contacts": 246,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 246
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:23",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:24",
+      "hits": {
+        "suit": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:25",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:26",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:27",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:28",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:30",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:31",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / front_kick / approved game camera/clone:32",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:0",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:1",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:2",
+      "hits": {
+        "suit": {
+          "contacts": 164,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 164
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:3",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:4",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:5",
+      "hits": {
+        "suit": {
+          "contacts": 180,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 180
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:6",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:7",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:8",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:9",
+      "hits": {
+        "suit": {
+          "contacts": 214,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 214
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:10",
+      "hits": {
+        "suit": {
+          "contacts": 214,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 214
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:11",
+      "hits": {
+        "suit": {
+          "contacts": 216,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 216
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:12",
+      "hits": {
+        "suit": {
+          "contacts": 215,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 215
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:13",
+      "hits": {
+        "suit": {
+          "contacts": 217,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 217
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:14",
+      "hits": {
+        "suit": {
+          "contacts": 221,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 221
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:15",
+      "hits": {
+        "suit": {
+          "contacts": 215,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 215
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:16",
+      "hits": {
+        "suit": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:17",
+      "hits": {
+        "suit": {
+          "contacts": 168,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 168
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:18",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:19",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:20",
+      "hits": {
+        "suit": {
+          "contacts": 177,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 177
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:21",
+      "hits": {
+        "suit": {
+          "contacts": 166,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 166
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:22",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:23",
+      "hits": {
+        "suit": {
+          "contacts": 183,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 183
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:24",
+      "hits": {
+        "suit": {
+          "contacts": 156,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 156
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:25",
+      "hits": {
+        "suit": {
+          "contacts": 153,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 153
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:26",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:27",
+      "hits": {
+        "suit": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:28",
+      "hits": {
+        "suit": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:29",
+      "hits": {
+        "suit": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:30",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:31",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/player:32",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:0",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:1",
+      "hits": {
+        "suit": {
+          "contacts": 135,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 135
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:2",
+      "hits": {
+        "suit": {
+          "contacts": 159,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 159
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:3",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:4",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:5",
+      "hits": {
+        "suit": {
+          "contacts": 148,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 148
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:6",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:7",
+      "hits": {
+        "suit": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:8",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:9",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:10",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:11",
+      "hits": {
+        "suit": {
+          "contacts": 187,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 187
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:12",
+      "hits": {
+        "suit": {
+          "contacts": 200,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 200
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:13",
+      "hits": {
+        "suit": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:14",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:15",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:16",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:17",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:18",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:19",
+      "hits": {
+        "suit": {
+          "contacts": 232,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 232
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:20",
+      "hits": {
+        "suit": {
+          "contacts": 248,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 248
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:21",
+      "hits": {
+        "suit": {
+          "contacts": 247,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 247
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:22",
+      "hits": {
+        "suit": {
+          "contacts": 246,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 246
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:23",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:24",
+      "hits": {
+        "suit": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:25",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:26",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:27",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:28",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:30",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:31",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / low_kick / approved game camera/clone:32",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:0",
+      "hits": {
+        "suit": {
+          "contacts": 134,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 134
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:1",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:2",
+      "hits": {
+        "suit": {
+          "contacts": 163,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 163
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:3",
+      "hits": {
+        "suit": {
+          "contacts": 158,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 158
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:4",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:5",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:6",
+      "hits": {
+        "suit": {
+          "contacts": 183,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 183
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:7",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:8",
+      "hits": {
+        "suit": {
+          "contacts": 185,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 185
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:9",
+      "hits": {
+        "suit": {
+          "contacts": 161,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 161
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:10",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:11",
+      "hits": {
+        "suit": {
+          "contacts": 225,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 225
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:12",
+      "hits": {
+        "suit": {
+          "contacts": 264,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 264
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:13",
+      "hits": {
+        "suit": {
+          "contacts": 282,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 282
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:14",
+      "hits": {
+        "suit": {
+          "contacts": 284,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 284
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:15",
+      "hits": {
+        "suit": {
+          "contacts": 282,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 282
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:16",
+      "hits": {
+        "suit": {
+          "contacts": 280,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 280
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:17",
+      "hits": {
+        "suit": {
+          "contacts": 278,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 278
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:18",
+      "hits": {
+        "suit": {
+          "contacts": 282,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 282
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:19",
+      "hits": {
+        "suit": {
+          "contacts": 271,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 271
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:20",
+      "hits": {
+        "suit": {
+          "contacts": 263,
+          "approximate_body_parts": [
+            "chest",
+            "shoulder.R",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 263
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:21",
+      "hits": {
+        "suit": {
+          "contacts": 245,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 245
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:22",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:23",
+      "hits": {
+        "suit": {
+          "contacts": 238,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 238
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:24",
+      "hits": {
+        "suit": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:25",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:26",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:27",
+      "hits": {
+        "suit": {
+          "contacts": 169,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 169
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:28",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:29",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:30",
+      "hits": {
+        "suit": {
+          "contacts": 171,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 171
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:31",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:32",
+      "hits": {
+        "suit": {
+          "contacts": 172,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 172
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:33",
+      "hits": {
+        "suit": {
+          "contacts": 153,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 153
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:34",
+      "hits": {
+        "suit": {
+          "contacts": 152,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 152
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:35",
+      "hits": {
+        "suit": {
+          "contacts": 170,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 170
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:36",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:37",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:38",
+      "hits": {
+        "suit": {
+          "contacts": 192,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 192
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:39",
+      "hits": {
+        "suit": {
+          "contacts": 201,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 201
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:40",
+      "hits": {
+        "suit": {
+          "contacts": 196,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 196
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:41",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:42",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:43",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/player:44",
+      "hits": {
+        "suit": {
+          "contacts": 199,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 199
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:0",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:1",
+      "hits": {
+        "suit": {
+          "contacts": 135,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 135
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:2",
+      "hits": {
+        "suit": {
+          "contacts": 159,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 159
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:3",
+      "hits": {
+        "suit": {
+          "contacts": 140,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 140
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:4",
+      "hits": {
+        "suit": {
+          "contacts": 130,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 130
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:5",
+      "hits": {
+        "suit": {
+          "contacts": 148,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 148
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:6",
+      "hits": {
+        "suit": {
+          "contacts": 157,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 157
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:7",
+      "hits": {
+        "suit": {
+          "contacts": 176,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 176
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:8",
+      "hits": {
+        "suit": {
+          "contacts": 191,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 191
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:9",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:10",
+      "hits": {
+        "suit": {
+          "contacts": 188,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 188
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:11",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:12",
+      "hits": {
+        "suit": {
+          "contacts": 183,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 183
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:13",
+      "hits": {
+        "suit": {
+          "contacts": 184,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 184
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:14",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:15",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:16",
+      "hits": {
+        "suit": {
+          "contacts": 195,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 195
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:17",
+      "hits": {
+        "suit": {
+          "contacts": 193,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 193
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:18",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:19",
+      "hits": {
+        "suit": {
+          "contacts": 243,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 243
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:20",
+      "hits": {
+        "suit": {
+          "contacts": 252,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 252
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:21",
+      "hits": {
+        "suit": {
+          "contacts": 245,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 245
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:22",
+      "hits": {
+        "suit": {
+          "contacts": 246,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 246
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:23",
+      "hits": {
+        "suit": {
+          "contacts": 233,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 233
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:24",
+      "hits": {
+        "suit": {
+          "contacts": 222,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 222
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:25",
+      "hits": {
+        "suit": {
+          "contacts": 211,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 211
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:26",
+      "hits": {
+        "suit": {
+          "contacts": 189,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 189
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:27",
+      "hits": {
+        "suit": {
+          "contacts": 173,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 173
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:28",
+      "hits": {
+        "suit": {
+          "contacts": 197,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 197
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:29",
+      "hits": {
+        "suit": {
+          "contacts": 194,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 194
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:30",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:31",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:32",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:33",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:34",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:35",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:36",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:37",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:38",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:39",
+      "hits": {
+        "suit": {
+          "contacts": 190,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 190
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:40",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:41",
+      "hits": {
+        "suit": {
+          "contacts": 175,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 175
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:42",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:43",
+      "hits": {
+        "suit": {
+          "contacts": 181,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 181
+          }
+        }
+      }
+    },
+    {
+      "frame": "suit / roundhouse / approved game camera/clone:44",
+      "hits": {
+        "suit": {
+          "contacts": 179,
+          "approximate_body_parts": [
+            "chest",
+            "upper_arm.L",
+            "upper_arm.R"
+          ],
+          "garment_face_groups": {
+            "suit_shell": 179
+          }
+        }
+      }
+    }
+  ]
+}

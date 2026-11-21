@@ -1,0 +1,98 @@
+{
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+    "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+    "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+    "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+    "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+    "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+    "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+    "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+    "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+    "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+    "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+    "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+  },
+  "conditions": "Original native 800x450 framebuffers, including two explicitly retained dress defects; no crop/scale/retouch. These stills do not replace continuous review.",
+  "stills": [
+    {
+      "file": "air-dress-relaxed-crest.png",
+      "sha256": "1a8af6b0cefc47835584beefc65ba5e485ae2ecb525f97df6ce0391f9813a3e4",
+      "recording": "air",
+      "source_frame": 6,
+      "take": "dress / relaxed-stationary",
+      "source_png_sha256": "1a8af6b0cefc47835584beefc65ba5e485ae2ecb525f97df6ce0391f9813a3e4"
+    },
+    {
+      "file": "air-dress-combat-crest.png",
+      "sha256": "d6b99478d2ea3c3e0151843866ad6c95f8b392e2971ce26cfda0fb2a4601c0cf",
+      "recording": "air",
+      "source_frame": 111,
+      "take": "dress / combat-stationary",
+      "source_png_sha256": "d6b99478d2ea3c3e0151843866ad6c95f8b392e2971ce26cfda0fb2a4601c0cf"
+    },
+    {
+      "file": "air-dress-moving-land.png",
+      "sha256": "ce76aa5f0620cb52c627a501eccd93718081767624715073b6951faecdaf6c23",
+      "recording": "air",
+      "source_frame": 41,
+      "take": "dress / relaxed-moving",
+      "source_png_sha256": "ce76aa5f0620cb52c627a501eccd93718081767624715073b6951faecdaf6c23"
+    },
+    {
+      "file": "air-dress-jog-after-land.png",
+      "sha256": "87de9ca0e544f55346b5fcfa3d1a11b306d4bdaa1860a2cbb837c774cf916b46",
+      "recording": "air",
+      "source_frame": 49,
+      "take": "dress / relaxed-moving",
+      "source_png_sha256": "87de9ca0e544f55346b5fcfa3d1a11b306d4bdaa1860a2cbb837c774cf916b46"
+    },
+    {
+      "file": "known-dress-front-kick-contact.png",
+      "sha256": "82ac430e09d4d8ac72dee73c53a54b6e27bec9020d14dba7160654a6d43e377b",
+      "recording": "kicks",
+      "source_frame": 10,
+      "take": "dress / front_kick / full pair observer",
+      "source_png_sha256": "82ac430e09d4d8ac72dee73c53a54b6e27bec9020d14dba7160654a6d43e377b"
+    },
+    {
+      "file": "known-dress-roundhouse-contact.png",
+      "sha256": "75707011bd4094c8dad8c7c773b2f47f7d44ec6bb286843f32befd8a97776835",
+      "recording": "kicks",
+      "source_frame": 78,
+      "take": "dress / roundhouse / full pair observer",
+      "source_png_sha256": "75707011bd4094c8dad8c7c773b2f47f7d44ec6bb286843f32befd8a97776835"
+    },
+    {
+      "file": "suit-front-kick.png",
+      "sha256": "664fc2d0644866e605f32621a285809f8d0d40133972ce548065d56656ad9581",
+      "recording": "kicks",
+      "source_frame": 231,
+      "take": "suit / front_kick / full pair observer",
+      "source_png_sha256": "664fc2d0644866e605f32621a285809f8d0d40133972ce548065d56656ad9581"
+    },
+    {
+      "file": "suit-low-kick.png",
+      "sha256": "637e66bdb99cbf299bb9fb49d876e44f45db09c669d357c3e8cd5325e3211ab7",
+      "recording": "kicks",
+      "source_frame": 265,
+      "take": "suit / low_kick / full pair observer",
+      "source_png_sha256": "637e66bdb99cbf299bb9fb49d876e44f45db09c669d357c3e8cd5325e3211ab7"
+    },
+    {
+      "file": "suit-roundhouse.png",
+      "sha256": "9346fd82ca38835372175f15cf4f3b84c6d5caf20f4ba6dddedbc4490ded88e8",
+      "recording": "kicks",
+      "source_frame": 304,
+      "take": "suit / roundhouse / full pair observer",
+      "source_png_sha256": "9346fd82ca38835372175f15cf4f3b84c6d5caf20f4ba6dddedbc4490ded88e8"
+    }
+  ]
+}

@@ -56,7 +56,7 @@ class MotionSetTests(unittest.TestCase):
         self.assertEqual(self.data['model_sha256'], hashlib.sha256(MODEL.read_bytes()).hexdigest())
         self.assertEqual(self.data['bones'], self.rig.names)
         self.assertEqual(len(self.rig.names), 21)
-        self.assertEqual(len(self.data['clips']), 39)
+        self.assertEqual(len(self.data['clips']), 46)
         self.assertTrue({'idle_relaxed', 'walk_relaxed', 'run_relaxed'} <= self.data['clips'].keys())
 
     def test_generated_files_are_reproducible(self):
@@ -98,32 +98,12 @@ class MotionSetTests(unittest.TestCase):
             np.testing.assert_allclose(self.globals(a, at), self.globals(b, 0),
                                        atol=2e-7, err_msg=f'{a} -> {b}')
 
-    def test_repair42_preserves_all_non_upper_arm_keys_and_ordinary_clips(self):
-        # Frozen from 1d5d20b / the integrated pre-repair-42 motion set.
-        # Only the guarding humerus plane is edited. Keep EVERY hip key,
-        # timing/meta field, other bone and the entire four ordinary clips.
-        protected = {}
-        legacy = ['guard', 'idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run', 'attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'jump_start', 'jump_up', 'jump_down', 'land', 'hit']
-        self.assertTrue(set(legacy) <= self.data['clips'].keys())
-        for name in legacy:
-            clip = self.data['clips'][name]
-            ordinary = name in ('idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed')
-            keep = [i for i, bone in enumerate(self.data['bones'])
-                    if ordinary or bone not in ('upper_arm.L', 'upper_arm.R')]
-            protected[name] = {key: value for key, value in clip.items() if key != 'rotations'} | {
-                'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
-
-        def canonical_zero(value):
-            if isinstance(value, list):
-                return [canonical_zero(v) for v in value]
-            if isinstance(value, dict):
-                return {k: canonical_zero(v) for k, v in value.items()}
-            # Canonicalise ONLY exact IEEE signed zero, not small deviations.
-            return 0.0 if isinstance(value, float) and value == 0 else value
-
-        stamp = hashlib.sha256(json.dumps(canonical_zero(protected), sort_keys=True,
-                                          separators=(',', ':')).encode()).hexdigest()
-        self.assertEqual(stamp, 'b50941126c60ae8f6212c5cac6608ecc513572d0e3b02f1e02d9420c0e06098a')
+    def test_repair57_preserves_every_unrequested_clip_key(self):
+        # R57 deliberately replaces the rejected four air clips and jog
+        # arms. Freeze ALL 35 remaining clip payloads (jog except its arm
+        # chain), not a newly loosened tolerance or an unexplained rehash.
+        from test_subject_and_kicks import assert_protected_motion
+        assert_protected_motion(self, self.data)
 
     def test_guard_elbows_clear_the_bodice_without_moving_the_fists(self):
         guard = self.globals('guard', 0)
@@ -363,7 +343,12 @@ class MotionSetTests(unittest.TestCase):
                     hand = self.joint(g, 'hand.' + side)
                     # Guard/attacks stay high; relaxed running and balancing
                     # arms on landing must NOT be forced back to combat guard.
-                    if name.endswith('_relaxed'):
+                    if name.startswith(('jump_', 'land')):
+                        self.assertGreater(hand[1], self.joint(g, 'hips')[1]-.06, (name,side))
+                        self.assertLess(hand[1], self.joint(g, 'neck')[1]+.05, (name,side))
+                        self.assertGreater(hand[0]*(1 if side=='L' else -1), .13, (name,side))
+                        self.assertGreater(hand[2], .02, (name,side))
+                    elif name.endswith('_relaxed'):
                         running = name in ('run_relaxed', 'sprint_relaxed')
                         # A trailing running hand may pass waist height as
                         # the pelvis compresses. Absolute y>.90 pinned it in
@@ -385,10 +370,20 @@ class MotionSetTests(unittest.TestCase):
                     self.assertLess(flexion(*[self.joint(g, b + '.' + side)
                                               for b in ['thigh', 'shin', 'foot']]), 135)
                     thigh, shin, foot = [self.joint(g, b + '.' + side) for b in ['thigh', 'shin', 'foot']]
-                    # Knees bend forward in world +Z, not through the back.
-                    axis = unit(foot - thigh)
-                    projection = thigh + axis * np.dot(shin-thigh, axis)
-                    self.assertGreater(shin[2] - projection[2], -.001, (name, side))
+                    if name in ('attack_front_kick','attack_low_kick','attack_roundhouse'):
+                        # A body-height femur or 76-degree support pivot is
+                        # not aligned to WORLD +Z. Keep a signed anatomical
+                        # hinge test instead: the shin flexes around the
+                        # authored thigh's knee axis, never hyperextends.
+                        hinge = g[self.rig.index['thigh.'+side], :3, 0]
+                        self.assertLess(np.dot(np.cross(unit(shin-thigh),unit(foot-shin)),hinge),
+                                        -.01, (name,side,'anatomical knee hinge'))
+                    else:
+                        # Retain the old world-facing constraint unchanged
+                        # for every old gait/attack/dodge/air clip.
+                        axis = unit(foot - thigh)
+                        projection = thigh + axis * np.dot(shin-thigh, axis)
+                        self.assertGreater(shin[2] - projection[2], -.001, (name, side))
 
     def test_feet_do_not_sink_and_skin_seams_stay_closed(self):
         pos = self.mesh['POSITION']

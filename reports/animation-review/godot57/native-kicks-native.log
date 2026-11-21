@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+REPLAY_READY 4.7.2-stable (custom_build) / 04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16
+GEN native subject trace: 444 sampled physics frames / 888 actor snapshots; /home/user/Project-Gene/.local/review/repair-57/preflight-return080/kicks/trace.json

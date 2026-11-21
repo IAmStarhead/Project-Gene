@@ -10,11 +10,13 @@ beyond Python + Godot. Source hashes are validated again by the capture client.
 """
 import argparse
 import hashlib
+import io
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'prototype'
@@ -31,6 +33,9 @@ FILES = {
     'lighting_sha256': 'shaders/toon_light.gd', 'showcase_sha256': 'scripts/showcase.gd',
     'main_sha256': 'scripts/main.gd', 'tuning_sha256': 'scripts/tuning.gd',
     'project_sha256': 'project.godot',
+    'move_catalog_sha256': 'scripts/move_catalog.gd',
+    'quick_slots_sha256': 'scripts/quick_slots.gd',
+    'camera_sha256': 'scripts/camera_rig.gd',
 }
 
 
@@ -43,9 +48,16 @@ def main():
     p.add_argument('--godot', required=True)
     p.add_argument('--driver', choices=['game', 'layers', 'production'], default='game')
     p.add_argument('--baseline-appearance', help='Layers only: git commit for model, appearance JSON and cloth runtime. Other sources stay current for identical pose/camera diagnostics.')
+    p.add_argument('--source-commit', help='Archive ALL production sources from this exact git commit into the owned review copy; same CURRENT review driver. Never checkout or edit a production branch. Cannot combine with appearance-only mixing.')
     p.add_argument('--work', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
+    if a.source_commit and a.baseline_appearance:
+        p.error('--source-commit cannot be combined with --baseline-appearance')
+    source_commit = None
+    if a.source_commit:
+        source_commit = subprocess.run(['git','rev-parse','--verify','--end-of-options',
+            a.source_commit+'^{commit}'],cwd=ROOT,text=True,capture_output=True,check=True).stdout.strip()
     baseline = None
     if a.baseline_appearance:
         if a.driver != 'layers':
@@ -75,9 +87,30 @@ def main():
     # or an unmarked project. Exclude output / authoring dependencies.
     if project.exists():
         shutil.rmtree(project)
-    shutil.copytree(SOURCE, project, dirs_exist_ok=True,
-                    ignore=shutil.ignore_patterns('.godot', 'node_modules', 'animation_preview', '__pycache__', 'output'))
-    production = (SOURCE/'project.godot').read_text()
+    if source_commit:
+        content = subprocess.run(['git','archive','--format=tar',source_commit,'prototype'],
+            cwd=ROOT,capture_output=True,check=True).stdout
+        # Write only regular tracked files under the fixed prototype prefix.
+        # Do not use unrestricted extractall or follow archive symlinks.
+        with tarfile.open(fileobj=io.BytesIO(content),mode='r:') as archive:
+            for member in archive.getmembers():
+                parts = PurePosixPath(member.name).parts
+                if not parts or parts[0] != 'prototype' or '..' in parts:
+                    raise ValueError('Unexpected historical archive path: '+member.name)
+                if any(k in parts for k in ['.godot','node_modules','animation_preview','__pycache__','output']):
+                    continue
+                if member.isdir(): continue
+                if not member.isfile():
+                    raise ValueError('Historical review does not follow links: '+member.name)
+                destination = project.joinpath(*parts[1:])
+                destination.parent.mkdir(parents=True,exist_ok=True)
+                destination.write_bytes(archive.extractfile(member).read())
+    else:
+        shutil.copytree(SOURCE, project, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns('.godot', 'node_modules', 'animation_preview', '__pycache__', 'output'))
+    # Hash the chosen production sources BEFORE installing any review hooks.
+    expected = {key: sha(project/path) for key,path in FILES.items() if (project/path).is_file()}
+    production = (project/'project.godot').read_text()
     assert production.count('run/main_scene="res://scenes/main.tscn"') == 1
     (project/'production-project.godot').write_text(production)
     if a.driver == 'production':
@@ -90,11 +123,22 @@ def main():
             shutil.copy2(HERE/(driver+suffix), project/('driver'+suffix))
         scene = project/'driver.tscn'
         scene.write_text(scene.read_text().replace('res://tests/rendered_review/'+driver+'.gd', 'res://driver.gd'))
+        if a.driver == 'game':
+            # Explicit test-only dependency even when the historical source
+            # predates it. No production controller, asset or scene is patched.
+            (project/'tests').mkdir(exist_ok=True)
+            shutil.copy2(HERE.parent/'native_soles.gd',project/'tests/native_soles.gd')
+            # Optional no-raster preflight uses precisely the same command
+            # fixtures, but is never called by the Web/production entry point.
+            for helper in ['native_trace.gd','native_trace.tscn']:
+                text = (HERE/helper).read_text().replace('res://tests/rendered_review/driver.gd','res://driver.gd').replace(
+                    'res://tests/rendered_review/native_trace.gd','res://native_trace.gd')
+                (project/helper).write_text(text)
     shutil.copy2(HERE/'pack.gd', project/'pack.gd')
-    expected = {key: sha(SOURCE/path) for key, path in FILES.items()}
-    for key, file in FILES.items():
+    for key, value in expected.items():
+        file = FILES[key]
         if key != 'project_sha256' or a.driver == 'production':
-            assert sha(project/file) == expected[key], 'Changed production copy '+file
+            assert sha(project/file) == value, 'Changed production copy '+file
     if baseline:
         # A deliberately MIXED diagnostic, never advertised as a historical
         # game/controller replay: only appearance changes, not pose/camera.
@@ -122,8 +166,10 @@ def main():
     (work/'pack.json').write_text(json.dumps({'pck_sha256':sha(output), 'strict_import_and_pack_pass': True,
         'isolated_project_sha256':sha(project/'project.godot'),
         'driver':a.driver, 'driver_sha256':sha(project/'driver.gd') if a.driver != 'production' else None,
-        'baseline_appearance_commit': baseline,
-        'diagnostic_note': 'Appearance-only baseline with CURRENT poses/cameras; not historical gameplay' if baseline else None,
+        'native_trace_sha256':sha(project/'native_trace.gd') if a.driver == 'game' else None,
+        'baseline_appearance_commit': baseline, 'production_source_commit':source_commit,
+        'diagnostic_note': ('Appearance-only baseline with CURRENT poses/cameras; not historical gameplay' if baseline
+                            else 'ALL production sources archived from the stated commit; CURRENT isolated review driver and test-only dense-sole helper' if source_commit else None),
         'source_hashes':expected}, indent=2)+'\n')
     print('Review pack:', output, '\nSource hashes:', work/'source-hashes.json')
 

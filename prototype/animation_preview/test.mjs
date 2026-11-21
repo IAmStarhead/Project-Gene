@@ -30,9 +30,9 @@ try {
   const data = await (await fetch(base + '/assets/heroine/animations/motion_set.json')).json();
   const model = await (await fetch(base + '/assets/heroine/female_A_rigged_safe.glb')).arrayBuffer();
   assert.equal(createHash('sha256').update(Buffer.from(model)).digest('hex'), data.model_sha256);
-  assert.equal(await page.locator('.clip-button').count(), 39);
+  assert.equal(await page.locator('.clip-button').count(), 46);
   assert.equal(await page.evaluate(() => window.motionLab.state.selected), 'idle_relaxed');
-  assert.match(await page.locator('#clip-count').textContent(), /39/);
+  assert.match(await page.locator('#clip-count').textContent(), /46/);
   const settle = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
   for (const [name, clip] of Object.entries(data.clips)) {
     await page.locator(`[data-clip="${name}"]`).click();
@@ -46,11 +46,16 @@ try {
       // A running recovery passes near the moving hip, not an arbitrary
       // fixed y=.90/.92 plane which pinned the old hands in front of the belt.
       const runningRelaxed = ['run_relaxed', 'sprint_relaxed'].includes(name);
-      const minHandHeight = runningRelaxed ? joints.find((joint) => joint.name === 'hips').position[1] + .02
-        : name.startsWith('dodge') ? 1.0 : ['run', 'jump_down', 'land'].includes(name) ? .95 : relaxed ? .78 : 1.1;
-      assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > (relaxed ? -.1 : .1)), `Hand/hip carriage in ${name}`);
+      const air = name.startsWith('jump_') || name.startsWith('land');
+      const minHandHeight = air ? joints.find((joint) => joint.name === 'hips').position[1] - .06
+        : runningRelaxed ? joints.find((joint) => joint.name === 'hips').position[1] + .02
+        : name.startsWith('dodge') ? 1.0 : name === 'run' ? .95 : relaxed ? .78 : 1.1;
+      assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] > minHandHeight && joint.position[2] > (air ? .02 : relaxed ? -.1 : .1)), `Hand/hip carriage in ${name}`);
+      if (air) {
+        assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < joints.find((joint) => joint.name === 'neck').position[1] + .05), 'Balancing air arms stay below the head');
+      }
       if (relaxed) {
-        assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < (['run_relaxed', 'sprint_relaxed'].includes(name) ? 1.30 : .95)), 'Ordinary arms must not return to face-level guard');
+        assert(joints.filter((joint) => joint.name.startsWith('hand.')).every((joint) => joint.position[1] < (air ? 1.24 : runningRelaxed ? 1.30 : .95)), 'Ordinary arms must not return to face-level guard');
       }
       if (name === 'run') {
         for (const side of ['L', 'R']) {
@@ -87,7 +92,7 @@ try {
       await page.evaluate((t) => window.motionLab.seek(t), clip.duration*fraction);
       const a = await page.evaluate(() => window.motionLab.appearance);
       assert.equal(a.outfit, 'suit');
-      assert(a.suitVertices > 6000 && a.suitVertices < 14000, 'real rigged top + trousers');
+      assert(a.suitVertices > 5000 && a.suitVertices < 14000, 'real rigged continuous fitted subject shell');
       assert.equal(a.handOpen, name.endsWith('_relaxed') ? 1 : 0, 'same hand morph in the suit');
       assert(a.bodyIndices > 1000, 'outfit masking cannot remove the entire body');
       frames++;
@@ -163,7 +168,7 @@ try {
   }
   assert.equal((await fetch(base, { headers: { Host: '5173-session.e2b.app' } })).status, 200);
   assert.deepEqual(errors, []);
-  console.log(`GEN browser suite: 39 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
+  console.log(`GEN browser suite: 46 clips, ${frames} sampled poses, cloth pause/seek/resume, controls, mobile layout and static-server isolation OK.`);
 } finally {
   await browser.close();
 }

@@ -1,0 +1,886 @@
+{
+  "status": "implemented_candidate_NOT_artistic_platform_or_full_cloth_acceptance",
+  "base_commit": "c9d24b157ce7f8366f9a2712e87c01619192cfc8",
+  "branch": "arena/320aeafc-project-gene",
+  "source_hashes": {
+    "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+    "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+    "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+    "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+    "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+    "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+    "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+    "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+    "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+    "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+    "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+    "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+    "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+    "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+    "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+    "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+    "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+    "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+    "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+  },
+  "native": {
+    "suites": [
+      {
+        "name": "GEN native animation suite",
+        "checks": 1036,
+        "failures": 0
+      },
+      {
+        "name": "GEN idle-cache suite",
+        "checks": 7,
+        "failures": 0
+      },
+      {
+        "name": "Presentation suite",
+        "checks": 66,
+        "failures": 0
+      },
+      {
+        "name": "Floor finish suite",
+        "checks": 13,
+        "failures": 0
+      },
+      {
+        "name": "Camera smoothing suite",
+        "checks": 13,
+        "failures": 0
+      },
+      {
+        "name": "Camera jump air suite",
+        "checks": 18,
+        "failures": 0
+      },
+      {
+        "name": "Training sword suite",
+        "checks": 20,
+        "failures": 0
+      },
+      {
+        "name": "Limb demo suite",
+        "checks": 13,
+        "failures": 0
+      },
+      {
+        "name": "Cut manikin suite",
+        "checks": 40,
+        "failures": 0
+      },
+      {
+        "name": "Manikin partition suite",
+        "checks": 10,
+        "failures": 0
+      },
+      {
+        "name": "GEN combined integration suite",
+        "checks": 55,
+        "failures": 0
+      },
+      {
+        "name": "GEN directional suite",
+        "checks": 137,
+        "failures": 0
+      },
+      {
+        "name": "GEN wardrobe suite",
+        "checks": 108,
+        "failures": 0
+      },
+      {
+        "name": "GEN combat-zone suite",
+        "checks": 176,
+        "failures": 0
+      },
+      {
+        "name": "GEN controller-transition suite",
+        "checks": 96,
+        "failures": 0
+      },
+      {
+        "name": "GEN kicks-hotbar suite",
+        "checks": 332,
+        "failures": 0
+      },
+      {
+        "name": "GEN air-contact suite",
+        "checks": 332,
+        "failures": 0
+      }
+    ],
+    "suite_count": 17,
+    "checks": 2472,
+    "failures": 0,
+    "physics_hz": 60,
+    "per_process_timeout_seconds": 900,
+    "source_hashes": {
+      "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+      "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+      "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+      "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+      "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+      "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+      "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+      "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+      "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+      "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+      "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+      "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+      "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+      "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+      "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+      "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+      "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+      "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+      "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+    },
+    "conditions": "Actual headless Godot 4.7.2 project; no check skipped; not raster / artistic / Windows / laptop-performance acceptance."
+  },
+  "python_tests": 63,
+  "browser": {
+    "clips": 46,
+    "sampled_poses": 368
+  },
+  "review_tool_tests": 11,
+  "protected_sources": [
+    {
+      "file": "prototype/scripts/build_scene.gd",
+      "sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+      "base_bytes_exact": true
+    },
+    {
+      "file": "prototype/shaders/toon_light.gd",
+      "sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+      "base_bytes_exact": true
+    },
+    {
+      "file": "prototype/scripts/camera_rig.gd",
+      "sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61",
+      "base_bytes_exact": true
+    },
+    {
+      "file": "prototype/scripts/clone_enemy.gd",
+      "sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+      "base_bytes_exact": true
+    },
+    {
+      "file": "prototype/project.godot",
+      "sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+      "base_bytes_exact": true
+    },
+    {
+      "file": "prototype/assets/heroine/female_A_rigged_safe.glb",
+      "sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+      "base_bytes_exact": true
+    }
+  ],
+  "whole_old_clips_exact": 34,
+  "jog_nonarm_complement_exact": true,
+  "retained_dress_hands_cloth_probes_exact": true,
+  "native_sole_samples": 26,
+  "gameplay_sole_samples": 24,
+  "gameplay_left_and_right_gap_m": [
+    0.00113342050462961,
+    0.00332861975766718
+  ],
+  "recordings": {
+    "contact": {
+      "frames": 48,
+      "distinct_source_pngs": 48,
+      "capture_hz": 20.0,
+      "seconds": 2.4,
+      "physics_hz": 60,
+      "video_pixels": [
+        800,
+        552
+      ],
+      "viewport": [
+        800,
+        450
+      ],
+      "playback_simulation_rate": 1,
+      "interpolated_frames": 0,
+      "video": {
+        "file": "subject-contact.mp4",
+        "sha256": "d1c48b155543ae4939efdfe1d1e91060ebdbe944e522e3920f18fe6eaad7f706"
+      },
+      "sidecar": {
+        "file": "subject-contact.json",
+        "sha256": "d5087935e598b7f1da16cd97ee2caff2e99b68c6ad5b11a2b35a2335437cacac"
+      },
+      "full_decode_pass": true,
+      "source_manifest_sha256": "60fc5cc4ea1312102995a6219beee0dc651101bd323d8337382e05f398dd717b"
+    },
+    "air": {
+      "frames": 420,
+      "distinct_source_pngs": 420,
+      "capture_hz": 20.0,
+      "seconds": 21,
+      "physics_hz": 60,
+      "video_pixels": [
+        800,
+        552
+      ],
+      "viewport": [
+        800,
+        450
+      ],
+      "playback_simulation_rate": 1,
+      "interpolated_frames": 0,
+      "video": {
+        "file": "subject-air.mp4",
+        "sha256": "d16fe9de1af7b6d741e857e8962ae2e56468cfad50ba5568678275a3a30baff2"
+      },
+      "sidecar": {
+        "file": "subject-air.json",
+        "sha256": "295d8dcca0c6ddaae8381223e3c15f08beef4182643fd6ecbcb994798f2a2066"
+      },
+      "full_decode_pass": true,
+      "source_manifest_sha256": "5555ff41afc30c34018a0e7efded021197a8c5a9c82f02e88ce94bc2dac51397"
+    },
+    "kicks": {
+      "frames": 444,
+      "distinct_source_pngs": 443,
+      "capture_hz": 30.0,
+      "seconds": 14.8,
+      "physics_hz": 60,
+      "video_pixels": [
+        800,
+        552
+      ],
+      "viewport": [
+        800,
+        450
+      ],
+      "playback_simulation_rate": 1,
+      "interpolated_frames": 0,
+      "video": {
+        "file": "subject-kicks.mp4",
+        "sha256": "f3734ad9b3358d8bdf8e75c57ee50ba4565f9dab44346294e5e1b2c829e00e73"
+      },
+      "sidecar": {
+        "file": "subject-kicks.json",
+        "sha256": "29cd930d2ca4ff5d77bb5fb3fcf1fbff212f31c6f0be22cbff6b42e7b58d7dcc"
+      },
+      "full_decode_pass": true,
+      "source_manifest_sha256": "469cc6bbcd81bd0ea2afa07a44d1325a0c1a392f3edf2e0ecfa8b48a25bbe93a"
+    },
+    "jog": {
+      "frames": 232,
+      "distinct_source_pngs": 232,
+      "capture_hz": 20.0,
+      "seconds": 11.6,
+      "physics_hz": 60,
+      "video_pixels": [
+        800,
+        552
+      ],
+      "viewport": [
+        800,
+        450
+      ],
+      "playback_simulation_rate": 1,
+      "interpolated_frames": 0,
+      "video": {
+        "file": "subject-jog.mp4",
+        "sha256": "5e62fdd23d2bde4603d0212756a1ffaed6bd947efb41c1a4c7c8cddd1c41bb02"
+      },
+      "sidecar": {
+        "file": "subject-jog.json",
+        "sha256": "767fefe3210d9fde88b686458babd47151605129029073f60a84a38a1f6aeee6"
+      },
+      "full_decode_pass": true,
+      "source_manifest_sha256": "6e7b31a7d95c7dd39c759ea0a78e89ead7fe89fe55cad43177639afeaa88720a"
+    },
+    "plant": {
+      "frames": 132,
+      "distinct_source_pngs": 132,
+      "capture_hz": 20.0,
+      "seconds": 6.6,
+      "physics_hz": 60,
+      "video_pixels": [
+        800,
+        552
+      ],
+      "viewport": [
+        800,
+        450
+      ],
+      "playback_simulation_rate": 1,
+      "interpolated_frames": 0,
+      "video": {
+        "file": "subject-plant.mp4",
+        "sha256": "81ec14075fffd5e61c388256b6b8f132d3abd6aa068c935b5529ef161b4c9897"
+      },
+      "sidecar": {
+        "file": "subject-plant.json",
+        "sha256": "20227ce2305a62e654d73c264f0edb895ca7cf19c94cf9a20b7ff957564cdca4"
+      },
+      "full_decode_pass": true,
+      "source_manifest_sha256": "423bbc29faa073a33612a01589e223d48e4382dd1987358fb73824abf306d52b"
+    }
+  },
+  "comparison": {
+    "video": "before-after.mp4",
+    "sha256": "288c44b6f51e6912cef4a8ddddd801ed5f0f29d136ae9947d2ebd8b213f38661",
+    "frames": 69,
+    "distinct_before_pngs": 69,
+    "distinct_after_pngs": 69,
+    "physics_hz": 60,
+    "capture_hz": 10,
+    "playback_simulation_rate": 1,
+    "seconds": 6.9,
+    "viewport_per_cell": [
+      800,
+      450
+    ],
+    "video_pixels": [
+      1600,
+      552
+    ],
+    "input_timeline_exactly_equal": true,
+    "root_physics_and_observer_exact_pairs": 69,
+    "old_gait_nonarm_exact_pairs": 30,
+    "before_manifest_sha256": "44928e71208a89553c9a28a5935c415e130442e2d5ec32c462a5f7b7ec106907",
+    "after_manifest_sha256": "313caa64c738d93e3a42ad792f3305396374d86ca72d535f59ae9a3258607462",
+    "selected_stills": [
+      {
+        "file": "comparison-subject-front.png",
+        "sha256": "deb0c2fef82fbb6734471f5b0404faf38724fa688a539351d3bc517096369130",
+        "pair": 0,
+        "before_source_png": "e814fd5b3366b7f7d7995e2a0870845c2c0dd560bb2ee6e499e48cbe925cc95e",
+        "after_source_png": "dc3d84827c995b61ca837c2be28787967d6ff6ab22074b58354da5a9263fdd77"
+      },
+      {
+        "file": "comparison-subject-back.png",
+        "sha256": "129694a232698d301d262a9fce1239a0c2ca46d135a931152ead4c3a15160180",
+        "pair": 2,
+        "before_source_png": "0febe05dab484a94e0f964326b4efcabeb2e764b19112f42dfea7451b52bf972",
+        "after_source_png": "7c53dfd8fa0b278c486e2fe1bfc6728c4590f77efae68c3c6e73683f27bf3628"
+      },
+      {
+        "file": "comparison-jump-apex.png",
+        "sha256": "d2433c2254b8a60373d6ac40bdfd7ca39229ff24e907934d51d37d6b49544357",
+        "pair": 6,
+        "before_source_png": "b93252b3ff820bbb69a1ebd111f20c42f3cb7d6b8e6e49bdb9741b9a05d86ed1",
+        "after_source_png": "85acbff8d403246fa269f9c5db94426316679b309d9100e1724deb4c89c0dfc2"
+      },
+      {
+        "file": "comparison-jog.png",
+        "sha256": "cb8a9908bee3b4794cd3e5b0f72d8905ce3fee7bd9ba99ec935681bc6629d399",
+        "pair": 53,
+        "before_source_png": "a32b85758914831dd9d4d497aef1b5eb6f22867af8712e21d60f3381bc63f640",
+        "after_source_png": "6e26f17683b995c6ce7685c8de5be6501431d5da348ecbe094f5f5dd91e956e3"
+      }
+    ],
+    "conditions": "Full c9d24b1 production archive versus current production, same current review driver; only entry point/starting fixtures/observer/UI visibility are review-only. All physical root positions, velocities, grounded flags and observer transforms exactly equal per pair; old gait non-arm keys also checked. No crop/rescale/retouch/interpolation; captions outside original game pixels. Offline Godot Compatibility/WebGL2/SwiftShader, no audio, NOT continuous manual review / Windows / 940MX performance."
+  },
+  "pack_provenance": {
+    "runtime-checked": {
+      "pck_sha256": "0b1ff35265f8f43996f472e54d7016d20ef553709aefc90afc4ece522ff05e1a",
+      "strict_import_and_pack_pass": true,
+      "isolated_project_sha256": "724be8b5560a428ec32892476763ed53def72c76d00defe9e3eb229c2d51b109",
+      "driver": "game",
+      "driver_sha256": "094b4e71fd5dceb8a9b42180e3c5145cf9cfea9ad43b565d0a2e097a6ffa5d21",
+      "native_trace_sha256": "6b3b84d1ea2e2c8e9860b5dda78f7977db3356d3c48574cf92098facc25e2c32",
+      "baseline_appearance_commit": null,
+      "production_source_commit": null,
+      "diagnostic_note": null,
+      "source_hashes": {
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+        "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+        "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+        "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+        "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+        "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+        "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+        "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+        "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+        "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+        "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+        "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+        "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+        "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+      }
+    },
+    "production-checked": {
+      "pck_sha256": "c264c2fc927118051148b3af00b5f5853afdd1cead597135d7b85cb9c18b1485",
+      "strict_import_and_pack_pass": true,
+      "isolated_project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+      "driver": "production",
+      "driver_sha256": null,
+      "native_trace_sha256": null,
+      "baseline_appearance_commit": null,
+      "production_source_commit": null,
+      "diagnostic_note": null,
+      "source_hashes": {
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "player_sha256": "dac1b18ea5375b0e6f2ebfb7d0a0a228431facf0aa44f672570da12b9f3b917b",
+        "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+        "hit_check_sha256": "8e1075d5af3782e1ac71917c198077b444f7466c11c7a67d1e3de4d168e5e70a",
+        "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+        "hud_sha256": "18213e6aeb12c963e7d559ecbaf1ca947923245eed0c91afc44ffac25267cf8f",
+        "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+        "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+        "showcase_sha256": "44dc8b0c257880c94833f2238dfd177d3667d1d437162e9867a5597c7fbdd9a5",
+        "main_sha256": "851652147723662ce017918cdb533de95b8a763b96dfea803dfbc63d1111004f",
+        "tuning_sha256": "34e53db4374462dbbd19fe8a6747a319a7d11421a8a9fa739f17f176c1903011",
+        "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+        "move_catalog_sha256": "047212d0a238ca0cd3657c08a6693b4b4d9dc526832bda862f4b235316e98bd2",
+        "quick_slots_sha256": "e6e3e818db30c4d89e57c4012da327fc461f989b2c7aa08eabbf5422860598ee",
+        "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+      }
+    },
+    "before-checked": {
+      "pck_sha256": "4205205681e000bce3c9a7becfd8fb56f144f43ba653aa838890f0c966affba3",
+      "strict_import_and_pack_pass": true,
+      "isolated_project_sha256": "724be8b5560a428ec32892476763ed53def72c76d00defe9e3eb229c2d51b109",
+      "driver": "game",
+      "driver_sha256": "094b4e71fd5dceb8a9b42180e3c5145cf9cfea9ad43b565d0a2e097a6ffa5d21",
+      "native_trace_sha256": "6b3b84d1ea2e2c8e9860b5dda78f7977db3356d3c48574cf92098facc25e2c32",
+      "baseline_appearance_commit": null,
+      "production_source_commit": "c9d24b157ce7f8366f9a2712e87c01619192cfc8",
+      "diagnostic_note": "ALL production sources archived from the stated commit; CURRENT isolated review driver and test-only dense-sole helper",
+      "source_hashes": {
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "appearance_sha256": "626390e6c358a4bd525c8d6191954942d0d51c8d52490ed725a203106a3dec77",
+        "motion_set_sha256": "5c98372b871550950c0f5cdd8bd7c24ef97bd62316e1caac2b158f60c8f88644",
+        "runtime_sha256": "57899971dd1654872c74627bed91930a69fe26eadfc562f130015ebf0ee3c3c2",
+        "controller_sha256": "ea855b85d8a3ea8ddcf83b98c8cf9eb88e1a6c3f4c15b7b8680cfee6260e346e",
+        "player_sha256": "c3337568b4795de41beb9358941488aacbfcb30724b684b4de40898f3d982b62",
+        "clone_sha256": "97bae22f78c39b97579df6594d7b7bb1108df247dc131c5c25cc8e4f645925ab",
+        "hit_check_sha256": "de2e2968725c047a979658a6a6ce0a1c95f6cf5ef5114af550a6c74ee6531173",
+        "lock_on_sha256": "3d79bd21adc09594bcad8762d0856a6285db048f20de92e8fdfb716a1fec05fc",
+        "hud_sha256": "670085506d4275366dfed4fa3871d43d80eb8c4ab5f42efe0364f8ed8c2cbedc",
+        "world_sha256": "27e6b2d50ab26430ccba89db53e1b8d442fc9af0c74a5a236287e9e9f9873cc2",
+        "lighting_sha256": "8e7a7e971ee1c5580ea320a1bbd1e12a963b7133f1603fbdf772bd85e13d357f",
+        "showcase_sha256": "17ee42a752652f15739c3ddf991f3837e0d662fea9a88192469fb168a900b3f1",
+        "main_sha256": "4b8b00c5203cb979e7c4ab5f3240b1219f10c3a8742ce647a76c5892cb2874f5",
+        "tuning_sha256": "53534499635657427ce8d63031df5fb48c56126d624810fa998131b28bebee27",
+        "project_sha256": "6945877d5860d4980dc7e5acfe1bd697b6240e1f3b7da38d7c7ecdda4b7a2657",
+        "quick_slots_sha256": "db06939f7df2508b2ae99dafed4f12acbbf81f384e596ad309726904c00cc398",
+        "camera_sha256": "e2f9012051de8c3cbe1c7e497448095ac6d5851303a5ec2b8a33a22e72893e61"
+      }
+    }
+  },
+  "native_garment_diagnostics": {
+    "jog": {
+      "dress": {
+        "frames": 576,
+        "outfit": "dress",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "gown": 576,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 530,
+          "gown/forearm.L": 8,
+          "gown/forearm.R": 22,
+          "gown/upper_arm.L": 576,
+          "gown/upper_arm.R": 576
+        },
+        "seconds": 118.127,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "native-jog-dress-contacts.json",
+          "sha256": "3cb95ccb139519ef94c91a7b412d9d2a9376fc8368cee46a5f4f13b13c0eb84c"
+        }
+      },
+      "suit": {
+        "frames": 816,
+        "outfit": "suit",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "suit": 816
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 816,
+          "suit/upper_arm.L": 816,
+          "suit/upper_arm.R": 816
+        },
+        "seconds": 245.174,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "native-jog-suit-contacts.json",
+          "sha256": "d1119088abaf6f890a6ed57cabf04b67f7eb369558ca1742e6596e92e5c1ceb3"
+        }
+      },
+      "sample_hz": 60
+    },
+    "air": {
+      "dress": {
+        "frames": 1260,
+        "outfit": "dress",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "gown": 1260,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 1222,
+          "gown/forearm.L": 10,
+          "gown/forearm.R": 18,
+          "gown/upper_arm.L": 1260,
+          "gown/upper_arm.R": 1260
+        },
+        "seconds": 511.843,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "native-air-dress-contacts.json",
+          "sha256": "665fc0ab2031c87010947034ca78cf3db38d851216702bf69854dd49e896a9ae"
+        }
+      },
+      "suit": {
+        "frames": 1260,
+        "outfit": "suit",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "suit": 1260
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 1260,
+          "suit/upper_arm.L": 1260,
+          "suit/upper_arm.R": 1260
+        },
+        "seconds": 278.305,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "native-air-suit-contacts.json",
+          "sha256": "ee6f0ba2ce8eb88ae778bfc55f4233c7d3d59d8eac91fb8551bc323cbea15847"
+        }
+      },
+      "sample_hz": 60
+    },
+    "kicks": {
+      "dress": {
+        "frames": 444,
+        "outfit": "dress",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "gown": 444,
+          "skirt": 24
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 420,
+          "gown/forearm.L": 60,
+          "gown/forearm.R": 40,
+          "gown/shoulder.R": 34,
+          "gown/thigh.L": 6,
+          "gown/upper_arm.L": 444,
+          "gown/upper_arm.R": 424,
+          "skirt/forearm.R": 2,
+          "skirt/shin.L": 12,
+          "skirt/shin.R": 10,
+          "skirt/thigh.L": 14,
+          "skirt/thigh.R": 10,
+          "skirt/upper_arm.R": 2
+        },
+        "seconds": 155.913,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "native-kicks-dress-contacts.json",
+          "sha256": "fceda6cc460e8b6b8748b5fc122b9b71baaf4034e2deec9cd12dcbde156c0397"
+        }
+      },
+      "suit": {
+        "frames": 444,
+        "outfit": "suit",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "suit": 444
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 444,
+          "suit/shoulder.R": 18,
+          "suit/upper_arm.L": 444,
+          "suit/upper_arm.R": 444
+        },
+        "seconds": 168.935,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "native-kicks-suit-contacts.json",
+          "sha256": "5cb459b98cc78531fe2cf97c2dd5fa14697c4c8daac54888e998cb6fb5422b47"
+        }
+      },
+      "sample_hz": 30
+    }
+  },
+  "web_garment_diagnostics": {
+    "jog": {
+      "dress": {
+        "frames": 192,
+        "outfit": "dress",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "gown": 192,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 177,
+          "gown/forearm.L": 2,
+          "gown/forearm.R": 7,
+          "gown/upper_arm.L": 192,
+          "gown/upper_arm.R": 192
+        },
+        "seconds": 168.928,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "web-jog-dress-contacts.json",
+          "sha256": "3984b112f439903f209e65819e8c9689273acfe4510b848d17aa4237a302dec8"
+        }
+      },
+      "suit": {
+        "frames": 272,
+        "outfit": "suit",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "suit": 272
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 272,
+          "suit/upper_arm.L": 272,
+          "suit/upper_arm.R": 272
+        },
+        "seconds": 144.122,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "web-jog-suit-contacts.json",
+          "sha256": "5a3ed30add294c43d589301143e81611fa21ea15bb1d02be21327fd4053b7798"
+        }
+      },
+      "sample_hz": 20
+    },
+    "air": {
+      "dress": {
+        "frames": 420,
+        "outfit": "dress",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "gown": 420,
+          "skirt": 0
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 408,
+          "gown/forearm.L": 4,
+          "gown/forearm.R": 6,
+          "gown/upper_arm.L": 420,
+          "gown/upper_arm.R": 420
+        },
+        "seconds": 416.09,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "web-air-dress-contacts.json",
+          "sha256": "94d348c25871715dfdcff18828e12f2568ebaf2118f0801cbbaf665d82559d9d"
+        }
+      },
+      "suit": {
+        "frames": 420,
+        "outfit": "suit",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "suit": 420
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 420,
+          "suit/upper_arm.L": 420,
+          "suit/upper_arm.R": 420
+        },
+        "seconds": 465.407,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "web-air-suit-contacts.json",
+          "sha256": "1ab59d4d59a0f13d2869c5e650c03f6c3ac2503eaf53ccf212a35bbddd00725a"
+        }
+      },
+      "sample_hz": 20
+    },
+    "kicks": {
+      "dress": {
+        "frames": 444,
+        "outfit": "dress",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "gown": 444,
+          "skirt": 24
+        },
+        "frames_by_approximate_body_part": {
+          "gown/chest": 420,
+          "gown/forearm.L": 60,
+          "gown/forearm.R": 40,
+          "gown/shoulder.R": 34,
+          "gown/thigh.L": 6,
+          "gown/upper_arm.L": 444,
+          "gown/upper_arm.R": 424,
+          "skirt/forearm.R": 2,
+          "skirt/shin.L": 12,
+          "skirt/shin.R": 10,
+          "skirt/thigh.L": 14,
+          "skirt/thigh.R": 10,
+          "skirt/upper_arm.R": 2
+        },
+        "seconds": 278.702,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "web-kicks-dress-contacts.json",
+          "sha256": "080def0199aac85f926eba97daefd81426b01805215a705cc17a5c6392cb8494"
+        }
+      },
+      "suit": {
+        "frames": 444,
+        "outfit": "suit",
+        "appearance_sha256": "771fa11c762af331a96ae71e9c99d174606fd0661790a825daa56138874fa945",
+        "motion_set_sha256": "7f2a0d7680ba219e7237a80541bcc2384e62b72bdaa2151c0f95ed7e03d4edbf",
+        "model_sha256": "5da0bcd9ce5b4be77f43460a392507ca020ab49c92ae307286051686c80a5186",
+        "runtime_sha256": "04a69680637c5acedfac649fd18f52ebb080f78c6413025b94dc734ecbb55f16",
+        "controller_sha256": "af9cabd8fabf147d083c0de73887f3739aafdc39556b9bd3c28246333a5a5859",
+        "intersecting_frames": {
+          "suit": 444
+        },
+        "frames_by_approximate_body_part": {
+          "suit/chest": 444,
+          "suit/shoulder.R": 18,
+          "suit/upper_arm.L": 444,
+          "suit/upper_arm.R": 444
+        },
+        "seconds": 318.423,
+        "limitations": "Triangle intersection only; not signed depth, visibility, self-collision or an unsampled-pose guarantee.",
+        "artifact": {
+          "file": "web-kicks-suit-contacts.json",
+          "sha256": "43396384196f0d0de62c16140ce335f16eebf62a5d065cb8330e5b0baa78e877"
+        }
+      },
+      "sample_hz": 30
+    }
+  },
+  "web_vs_native_air_difference": {
+    "actor_snapshot_pairs": 840,
+    "state_mismatches": 4,
+    "max_component_difference": {
+      "rotations_sign_invariant": 0.2014545358882092,
+      "hips_m": 0.03662973642349199,
+      "cloth_m": 0.05171322822570798,
+      "root_position_m": 0.09187822043895741,
+      "phase": 0.014926308403077015
+    },
+    "conditions": "Fresh Web sampled frames paired with every third native preflight physics tick; actual source stamps equal. Numerical comparison only; not visual / platform or full geometric equivalence acceptance."
+  },
+  "logs": {
+    "native.log": {
+      "file": "native.log",
+      "sha256": "b2655930db827f63213f7337603ae9a4bcb5d9967dbfacf94f2988f9a74b21fb"
+    },
+    "python.log": {
+      "file": "python.log",
+      "sha256": "f05d242e63772568e231511ed82b28a676c52efc5ba3b170e0023fda4e5ef90c"
+    },
+    "browser.log": {
+      "file": "browser.log",
+      "sha256": "5a7894f85f9ccd5531323eb8d2afcf203f7f3d5e33d9665aecedca698c1819fb"
+    },
+    "review-tools.log": {
+      "file": "review-tools.log",
+      "sha256": "24c87afcb3893c488db0c7c3218862d106055ce6e51930161bd55c7f2b5f3223"
+    },
+    "production-smoke.log": {
+      "file": "production-smoke.log",
+      "sha256": "dc13311ef810219d0717c43c56e59273287a9faa45ebfa594ac7e66bfc5f2f73"
+    },
+    "motion-bake.log": {
+      "file": "motion-bake.log",
+      "sha256": "e1a04fb76479a3739fcef82f1c25b59e3d4c80bb542ec6c647bf6c87ac948b5b"
+    },
+    "appearance-check.log": {
+      "file": "appearance-check.log",
+      "sha256": "dcf21fc1bce98b80e4cf1b7a8ce8b850ae665a09d6a87cb8e1e9825601d939fc"
+    }
+  },
+  "baseline_and_rejected_capture_attempts": {
+    "baseline-native.log": {
+      "file": "baseline-native.log",
+      "sha256": "5ac2cc12ffed12dd51a632f58448b3f5d5eccc623a085c1cf0906fcfe52b622e"
+    },
+    "failed-capture-contact.log": {
+      "file": "failed-capture-contact.log",
+      "sha256": "1ca6c3abfcc01023e4ec8965a3c9ee392fc346e5927d01b159f8e01fa7e251a5"
+    },
+    "failed-production-smoke.log": {
+      "file": "failed-production-smoke.log",
+      "sha256": "6f62ce133d8c194ac14c44299b131452c9864800304eb875b5eeccb262489090"
+    }
+  },
+  "review": {
+    "continuous_manual_1x_review_completed": false,
+    "windows_tested": false,
+    "target_laptop_fps_tested": false,
+    "reviewed_original_stills": 32,
+    "still_inspection": {
+      "file": "still-inspection.json",
+      "sha256": "13978ac60ad9e3a1059d4f01ab72daaef0ea970bc25dbac1de2753bfd80100e3"
+    },
+    "method": "Explicitly enumerated original still inspection plus per-frame recorded state / geometry and full video decoding; no automatic artistic pass."
+  },
+  "limitations": [
+    "No universal cloth / self / hand / wall collision; nonzero gown/suit contacts are published, not hidden.",
+    "Headless traces are the actual same command fixtures through native controllers, but no raster and not Web/Windows equivalence proof.",
+    "Videos are actual offline Godot Compatibility WebGL2 / SwiftShader at labelled simulation cadence, not real-time FPS.",
+    "A first-agent/user 1x gameplay/artistic review and Lenovo i3-7100U/940MX/8GB 720p30 test remain required.",
+    "The floor/gloss and approved gameplay camera are not changed or claimed fixed."
+  ]
+}

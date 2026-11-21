@@ -1,0 +1,199 @@
+{
+  "baseline_commit": "c9d24b157ce7f8366f9a2712e87c01619192cfc8",
+  "canonicalization": "sorted compact JSON; exact IEEE signed zero normalized; no tolerances",
+  "protected_bones_except_arm_chain": [
+    "hips",
+    "spine",
+    "chest",
+    "neck",
+    "head",
+    "thigh.L",
+    "shin.L",
+    "foot.L",
+    "toe.L",
+    "thigh.R",
+    "shin.R",
+    "foot.R",
+    "toe.R"
+  ],
+  "clips": {
+    "guard": {
+      "scope": "full",
+      "sha256": "deaea735a23a3bd8f021f8577dbd029c71a215d4677e26c15a3092d95cdda6fc"
+    },
+    "idle_relaxed": {
+      "scope": "full",
+      "sha256": "7997d1cfbe2550456cdd1e190912a6a2a6f06a205ef1e4d3ab17f571ee542297"
+    },
+    "walk_relaxed": {
+      "scope": "full",
+      "sha256": "0f37e78269e681c230671751b8e97ed5306c5a76eb00ced3f26b5ba63b37d323"
+    },
+    "run_relaxed": {
+      "scope": "except_arm_chain",
+      "sha256": "0e9f245e42729a7a7174fe30f351f79f2316474a319e348587505066a52ea9b5"
+    },
+    "sprint_relaxed": {
+      "scope": "full",
+      "sha256": "73b2edf44cda127efe7546ef2c5fb1eff637de403ac563d0928fbbf52c5641a5"
+    },
+    "walk": {
+      "scope": "full",
+      "sha256": "490d37e17f32222c28ca07ee55125274afb8b43286419cce3ba3c2b5fb33dc0c"
+    },
+    "run": {
+      "scope": "full",
+      "sha256": "e9077296c5c3d5c2ee6856b8baa6037038287c797c691e8debc429db8103b4d1"
+    },
+    "attack_left": {
+      "scope": "full",
+      "sha256": "f04607fad4d48688681a2a7760fd7a7313666c64b5dc4e5d5b1b3ac2c2868145"
+    },
+    "attack_right": {
+      "scope": "full",
+      "sha256": "9d6763d8bfb766bfa141c81789b9bd7d5fbfa44741522aca3f78d2bfb308834a"
+    },
+    "dodge": {
+      "scope": "full",
+      "sha256": "3de930236c5cfff844978af1043a268be0d9ae98fe2fc78db8c0cf495bbef736"
+    },
+    "dodge_back": {
+      "scope": "full",
+      "sha256": "5def0a12b4c2d3fee1de0843a3720d396f715dcdf7a161060edb916bdf2160f9"
+    },
+    "dodge_left": {
+      "scope": "full",
+      "sha256": "82535c1030f7391096f7f8ae4af1a78b5d7da1733ee5caad415e8f10fe22bb81"
+    },
+    "dodge_right": {
+      "scope": "full",
+      "sha256": "16989154912eb06cfd238bcd5e7c6901de4d52a58b51db88c6b4f74ff754108f"
+    },
+    "hit": {
+      "scope": "full",
+      "sha256": "8fab519011e7af6746c79402da3712fbf03db0edd4f3019e164cb870529d621b"
+    },
+    "attack_body_hook": {
+      "scope": "full",
+      "sha256": "dae70f096975406835902da5efa04ba69c3e5c831b09683258b4ec4ed0ea667b"
+    },
+    "hit_head_front": {
+      "scope": "full",
+      "sha256": "2a324d975b48a19ce5c9302b8289070d42e92d6a36c9fb0d1206d3fa48d77393"
+    },
+    "hit_head_back": {
+      "scope": "full",
+      "sha256": "87dad705143e28ea48b74439f96693e558b5acbd8a636e6624fc93f567c3660d"
+    },
+    "hit_head_left": {
+      "scope": "full",
+      "sha256": "0a4490919c997a621d2e72b47829723a7da817ad6e4d06796b734f8bef9c7177"
+    },
+    "hit_head_right": {
+      "scope": "full",
+      "sha256": "968820d3a2369086d8d9c7acac57a4602e9c77e5d3b9d593f249203739faee0f"
+    },
+    "hit_torso_front": {
+      "scope": "full",
+      "sha256": "84930631cf28c7d9d62a848283d698de0e6b454edb03d7c8d1678c4f26ce8d92"
+    },
+    "hit_torso_back": {
+      "scope": "full",
+      "sha256": "076f49685743f76b4905415dc485e03065f6fbfe5b2019868f9abdd83338012d"
+    },
+    "hit_torso_left": {
+      "scope": "full",
+      "sha256": "f91d0ebacac406bd5b510a16c9ae829f5e88b5582413ed58d3cfd0f1999c2010"
+    },
+    "hit_torso_right": {
+      "scope": "full",
+      "sha256": "a9b2a658cad36c205b77bb2b740050769c82bc23c1f6c341181f436caab0e955"
+    },
+    "combat_forward_walk": {
+      "scope": "full",
+      "sha256": "5d1b0c2e8ac041c8904fd6a2651b607db28233c8ecc96f321636ab3d6b15af0b"
+    },
+    "combat_forward_jog": {
+      "scope": "full",
+      "sha256": "0bade02057e6312e40d7fb725fc9ff00b20c1eec879f0c43ea979649786310d3"
+    },
+    "combat_forward_sprint": {
+      "scope": "full",
+      "sha256": "eb49bc3b712454fcb9347e5f2edad3aacb3b510755bf899f548ce4bddb67d8a1"
+    },
+    "combat_left_walk": {
+      "scope": "full",
+      "sha256": "11f6927c7c642a21165c3ba343f62f4414a91c441b79a79209c5b392dacc8418"
+    },
+    "combat_left_jog": {
+      "scope": "full",
+      "sha256": "6cb4f8d39def4d154170a17e8679ef058a04197bab07da9296ebb4a625191511"
+    },
+    "combat_left_sprint": {
+      "scope": "full",
+      "sha256": "e409ac2a122c01423ac249c07f978fcf2a354e3aee5cdab6fbb71782b5994c42"
+    },
+    "combat_right_walk": {
+      "scope": "full",
+      "sha256": "e86c9678df105adf5ab39f1dab0c28e2d7a7b9301039922f59eb58188b114c41"
+    },
+    "combat_right_jog": {
+      "scope": "full",
+      "sha256": "e4338809afe7ce3e6aed606edc2f490d5999d6e996d1bcf7087cbf985748bfb6"
+    },
+    "combat_right_sprint": {
+      "scope": "full",
+      "sha256": "61e4f264e7aa951176fbbbca9e6885a87d7b5b62f429eb5633d630e1a17b9189"
+    },
+    "combat_back_walk": {
+      "scope": "full",
+      "sha256": "e1329388dcf6e8fa4fc62550dfd7850dac865def07ef148535d492b5bc9ecb75"
+    },
+    "combat_back_jog": {
+      "scope": "full",
+      "sha256": "c24ae59027448f8103c031bf3a8eb204ff7117874353a694f4ee62b64417bacb"
+    },
+    "combat_back_sprint": {
+      "scope": "full",
+      "sha256": "a800af21e5bf46d392597ec0ec5da7ab6c2950d3fbf2de55ce03a37576bf7c6f"
+    }
+  },
+  "dress_appearance_sha256": "bcf972863bffecb66ef1ff6a0ea06746b199288ee170d37b3df2618f7084a62e",
+  "old_suit_coverage": {
+    "hem": 0.935,
+    "waist": 1.025,
+    "neck": 1.44,
+    "ankle": 0.125,
+    "skin_overlap": 0.02,
+    "wrists": [
+      {
+        "origin": [
+          0.19999998807907104,
+          1.0800000429153442,
+          0.009999996982514858
+        ],
+        "axis": [
+          0.043396301567554474,
+          -0.9981149435043335,
+          0.04339630529284477
+        ],
+        "end": 0.21843437243705832,
+        "side": "L"
+      },
+      {
+        "origin": [
+          -0.19999998807907104,
+          1.0800000429153442,
+          0.009999996982514858
+        ],
+        "axis": [
+          -0.043396301567554474,
+          -0.9981149435043335,
+          0.04339630529284477
+        ],
+        "end": 0.21843437243705832,
+        "side": "R"
+      }
+    ]
+  }
+}

@@ -16,6 +16,7 @@ var elapsed_ticks := 0
 var physics_states: Array = []
 var stamps: Dictionary = {}
 const T := preload("res://scripts/tuning.gd")
+const DenseSoles := preload("res://tests/native_soles.gd")
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -30,8 +31,13 @@ func _ready() -> void:
 			["hud_sha256","res://scripts/hud.gd"],["world_sha256","res://scripts/build_scene.gd"],
 			["lighting_sha256","res://shaders/toon_light.gd"],["showcase_sha256","res://scripts/showcase.gd"],
 			["main_sha256","res://scripts/main.gd"],["tuning_sha256","res://scripts/tuning.gd"],
-			["project_sha256","res://production-project.godot"]]:
-		stamps[item[0]] = FileAccess.get_sha256(item[1])
+			["project_sha256","res://production-project.godot"],
+			["move_catalog_sha256","res://scripts/move_catalog.gd"],
+			["quick_slots_sha256","res://scripts/quick_slots.gd"],
+			["camera_sha256","res://scripts/camera_rig.gd"]]:
+		# A full, explicitly archived baseline can predate the new selector.
+		# Do not invent files/hashes for sources absent in that commit.
+		if FileAccess.file_exists(item[1]): stamps[item[0]] = FileAccess.get_sha256(item[1])
 	observer = Camera3D.new()
 	observer.fov = 36
 	observer.near = .08
@@ -91,6 +97,12 @@ func update_camera() -> void:
 		# reaches it. Keep this observer INSIDE the room, showing both the
 		# actual blocking wall and both feet. Do not remove scene geometry.
 		direction = Vector3(-1,.18,1)
+	elif view in ["feet-side", "feet-back"]:
+		# EXPLICIT close contact diagnostic, NOT the approved gameplay rig.
+		# Keep production floor, lighting and shadows; no floor/mesh offset.
+		focus = player.global_position+Vector3(0,.055,0)
+		direction = player.character.global_basis*(Vector3(1,.11,0) if view == "feet-side" else Vector3(0,.11,-1))
+		distance = 1.35
 	else:
 		direction = player.character.global_basis*direction
 	observer.global_position = focus+direction.normalized()*distance
@@ -119,11 +131,23 @@ func actor_state(character: Node3D, snapshot: bool) -> Dictionary:
 			"hand_open":character.appearance.hand_open,"cloth_gap":character.appearance.collision_gap()})
 	return result
 
+func player_property(name: String, fallback: Variant) -> Variant:
+	# Only for versioned review compatibility. Do not patch a historical
+	# production controller merely to add the newer selector diagnostic.
+	for property in scene.player.get_property_list():
+		if property.name == name: return scene.player.get(name)
+	return fallback
+
+
 func reply() -> void:
 	update_camera()
 	var size := get_viewport().get_visible_rect().size
+	var cam := get_viewport().get_camera_3d().global_transform
 	var result := {"id":pending_id,"ticks":elapsed_ticks,"mode":mode,"view":view,
-		"stamps":stamps,"viewport":[size.x,size.y],"window_pixels":[get_window().size.x,get_window().size.y]}
+		"stamps":stamps,"viewport":[size.x,size.y],"window_pixels":[get_window().size.x,get_window().size.y],
+		"camera_transform":[cam.origin.x,cam.origin.y,cam.origin.z,
+			cam.basis.x.x,cam.basis.x.y,cam.basis.x.z,cam.basis.y.x,cam.basis.y.y,cam.basis.y.z,
+			cam.basis.z.x,cam.basis.z.y,cam.basis.z.z]}
 	if mode == "game":
 		result["player"] = actor_state(scene.player.character,pending_snapshot)
 		result["clone"] = actor_state(scene.clone.character,pending_snapshot)
@@ -140,6 +164,18 @@ func reply() -> void:
 		result["received_contact"] = scene.player._last_received_hit
 		result["clone_received_contact"] = scene.clone._last_received_hit
 		result["attack_kind"] = scene.player._attack_kind
+		result["selected_slot"] = player_property("selected_attack_slot",null)
+		result["kick_planting"] = player_property("_kick_planting",false)
+		result["stance"] = scene.player.combat_mode
+		result["training_blade"] = scene.player.training_blade
+		result["training_limb"] = scene.player.training_limb
+		result["air_launched"] = scene.player.character._air_launched
+		result["land_time"] = scene.player.character._land_time
+		result["soles"] = DenseSoles.measure(scene.player.character)
+		var query := PhysicsRayQueryParameters3D.create(scene.player.global_position+Vector3.UP*.05,
+			scene.player.global_position+Vector3.DOWN*3,1)
+		var floor_hit := get_world_3d().direct_space_state.intersect_ray(query)
+		result["floor_y"] = floor_hit.position.y if not floor_hit.is_empty() else null
 		result["dodge_local"] = [scene.player._dodge_local_dir.x,scene.player._dodge_local_dir.y,scene.player._dodge_local_dir.z]
 		result["clone_grounded"] = scene.clone.is_on_floor()
 		result["hud_visible"] = scene.player.hud.visible
@@ -179,6 +215,15 @@ func send_action(name: String) -> void:
 		scene.player._unhandled_input(e)
 
 
+func send_key(code: int) -> void:
+	var event := InputEventKey.new()
+	event.physical_keycode = code
+	event.pressed = true
+	# Same actual input handler as the game. Direct call because the isolated
+	# fixture is paused BETWEEN commands, not a mutation of selected_slot.
+	scene.player._unhandled_input(event)
+
+
 func apply(command: Dictionary) -> void:
 	pending_id = int(command["id"])
 	pending_snapshot = command.get("snapshot",false)
@@ -194,6 +239,10 @@ func apply(command: Dictionary) -> void:
 			send_action("toggle_outfit")
 		if command.get("stance",false): send_action("toggle_stance")
 		if command.get("jump",false): send_action("jump")
+		if command.has("select"):
+			var digits := [KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0]
+			send_key(digits[int(command["select"])])
+		for code in command.get("keys",[]): send_key(int(code))
 		if command.has("attack"):
 			send_action({"L":"attack","R":"attack_secondary","Q":"attack_hook"}[command["attack"]])
 		if command.has("dodge"):
@@ -232,6 +281,13 @@ func apply(command: Dictionary) -> void:
 			scene.player.rotation.y = 0
 			scene.player.yaw = 0
 			scene.clone.rotation.y = PI
+		if command.get("deck_edge",false):
+			# Existing 0.72 m observation deck; no new geometry/physics.
+			# Start near its SIDE, then ordinary D+Alt walks off it.
+			scene.player.global_position = Vector3(2.95,.75,-8.0)
+			scene.player.velocity = Vector3.ZERO
+			scene.player.rotation.y = -PI*.5
+			scene.player.yaw = 0
 		if command.get("lock",false): send_action("lock_on")
 		if command.has("view"): view=command["view"]
 		if view == "game": scene.player.rig.spring.get_child(0).make_current()

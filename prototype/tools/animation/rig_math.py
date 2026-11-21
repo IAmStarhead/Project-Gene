@@ -156,7 +156,7 @@ class Pose:
         self.orient(lower, lower_world)
         return lower_world
 
-    def foot(self, side, position, pitch=0.0, yaw=0.0, pivot=True, toe_pitch=None):
+    def foot(self, side, position, pitch=0.0, yaw=0.0, pivot=True, toe_pitch=None, knee_pole=None):
         name = 'foot.' + side
         foot_rotation = rotation(y=yaw) @ rotation(x=pitch) @ self.rig.rest_world[
             self.rig.index[name], :3, :3]
@@ -167,7 +167,7 @@ class Pose:
             position[1] += -.06 - toe_vector[1]
             position[2] += .12 - toe_vector[2]
         self.limb('thigh.' + side, 'shin.' + side, name, position,
-                  [position[0], .42, .70], knee=True)
+                  [position[0], .42, .70] if knee_pole is None else knee_pole, knee=True)
         self.orient(name, foot_rotation)
         self.orient('toe.' + side, rotation(y=yaw) @ rotation(x=min(pitch, 0) if toe_pitch is None else toe_pitch) @
                     self.rig.rest_world[self.rig.index['toe.' + side], :3, :3])

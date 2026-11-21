@@ -76,21 +76,12 @@ class WholeBodyTests(unittest.TestCase):
             payload = {key: c[key] for key in ['hips', 'times', 'duration', 'loop']}
             payload['rotations'] = [[frame[i] for i in lower] for frame in c['rotations']]
             self.assertEqual(digest(payload), sha, name)
-        # Garment repair: preserve ALL ordinary keys from 357ec4d, including
-        # the accepted reciprocal arm/head work.
-        ordinary = {name: self.data['clips'][name] for name in expected}
-        self.assertEqual(digest(ordinary), '6f4f046f014bdff54e43f33cc7457767259e712514d53a2b0289abc8c1a6d3b8')
-        # Report 40 explicitly requests shoulder/arm repair in guard and
-        # actions. Preserve every OTHER bone, pelvis, time and gameplay
-        # marker from 2c9de18 across ALL 18 clips, not a looser pose tolerance.
-        keep = [i for i, name in enumerate(self.rig.names)
-                if not name.startswith(('shoulder.', 'upper_arm.', 'forearm.', 'hand.'))]
-        protected = {name: clip | {'rotations': [[q[i] for i in keep] for q in clip['rotations']]}
-                     for name, clip in self.data['clips'].items() if name in ['guard', 'idle_relaxed', 'walk_relaxed', 'run_relaxed', 'sprint_relaxed', 'walk', 'run', 'attack_left', 'attack_right', 'dodge', 'dodge_back', 'dodge_left', 'dodge_right', 'jump_start', 'jump_up', 'jump_down', 'land', 'hit']}
-        self.assertEqual(len(protected), 18, 'Retain ALL original clips in the exact frozen hash')
-        self.assertEqual(digest(protected), '1e5e906559a064e972a70dd7a2b6945d4768407f88d82065c935cde9229c3ef5')
-        dodges = {name: clip for name, clip in protected.items() if name.startswith('dodge')}
-        self.assertEqual(digest(dodges), '71103f883c1757d5d51ef2d381c7fb651ae6acdc613d065746e207da4c99571e')
+        # The later user handoff explicitly rejects the jog arm carriage and
+        # four air clips. All other old keys, including walk/sprint arms,
+        # Q, reactions, directional clips and all dodges, are now protected
+        # individually against the PRE-EDIT c9d24b1 manifest.
+        from test_subject_and_kicks import assert_protected_motion
+        assert_protected_motion(self, self.data)
 
     def test_dodge_hands_follow_the_chest_without_folding_into_the_shoulder(self):
         r = self.rig
@@ -124,7 +115,10 @@ class WholeBodyTests(unittest.TestCase):
                 # Old arms opened on the forward swing and folded on the
                 # backward one (correlation < -.9). The hand stayed ahead.
                 self.assertGreater(np.corrcoef(angle, bend)[0, 1], .80, (name, side))
-                self.assertGreater(bend.min(), 14 if name == 'walk_relaxed' else 72)
+                # R57 explicitly lowers jog from 91+/-13 to 80+/-10. Its
+                # separate tighter 68..92 deg 3D envelope is tested in
+                # test_subject_and_kicks, not silently applied to sprint.
+                self.assertGreater(bend.min(), 14 if name == 'walk_relaxed' else 68 if name == 'run_relaxed' else 72)
                 self.assertLess(bend.max(), 35 if name == 'walk_relaxed' else 115)
                 self.assertLess((wrist-shoulder)[:, 2].max(), .32, (name, side))
                 if name != 'walk_relaxed':

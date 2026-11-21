@@ -1,0 +1,178 @@
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --editor --import
+Elapsed: 12.049s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+WARNING: Some locales are not properly supported by selected Text Server and are disabled.
+     at: _load_defaults (editor/settings/editor_settings.cpp:427)
+WARNING: Trying to access a non-existing editor theme color '<null>_color' in 'Editor'.
+     at: get_color (editor/themes/editor_theme.cpp:46)
+WARNING: Trying to access a non-existing editor theme color '<null>_color' in 'Editor'.
+     at: get_color (editor/themes/editor_theme.cpp:46)
+[   0% ] first_scan_filesystem | Started Project initialization (5 steps)
+[   0% ] first_scan_filesystem | Scanning file structure...
+[  16% ] first_scan_filesystem | Loading global class names...
+[  33% ] first_scan_filesystem | Verifying GDExtensions...
+[  50% ] first_scan_filesystem | Creating autoload scripts...
+[  66% ] first_scan_filesystem | Initializing plugins...
+[  83% ] first_scan_filesystem | Starting file scan...
+[ DONE ] first_scan_filesystem
+
+[   0% ] loading_editor_layout | Started Loading editor (5 steps)
+[   0% ] loading_editor_layout | Loading editor layout...
+[  16% ] loading_editor_layout | Loading docks...
+[ DONE ] loading_editor_layout
+
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_animation.gd
+Elapsed: 598.806s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Native/source error: quaternion 1-|dot|=0.000000119; hips=0.000000002 m
+Native soft soles: 2410 vertices, 48 blended poses; minimum 1.000 mm; support-set error 0.003 mm
+Cloth LOCAL meridian/circumferential edge max ratio: 1.0411 / 1.9268
+Cloth material length/perimeter max ratio: 1.0175 / 1.5730 (not inextensible woven cloth)
+Clothing: 320 surface nodes; actual imported hand matches 3404; sampled capsule gap 0.000030 m; secondary max 0.012 m
+Hem second difference dodge_back @ 0.240: 36.433 mm
+Hem second difference dodge_left @ 0.240: 32.833 mm
+Hem second difference dodge_right @ 0.240: 35.953 mm
+Hem second difference sprint_relaxed @ 0.310: 23.771 mm
+Native displayed-skirt/soft-skin radial gap: 34.934 mm, 1003 eligible vertex/pose samples
+Dodge physics 30/60/120 Hz: 1.099999–1.100002 m; wall stops all three
+GEN native animation suite: 1036 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_idle_cache.gd
+Elapsed: 19.875s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Idle cache comparison: max displayed vertex difference 1.067 mm, min capsule gap 0.250 mm
+GEN idle-cache suite: 7 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_presentation.gd
+Elapsed: 13.854s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Presentation suite: 66 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_floor_finish.gd
+Elapsed: 0.433s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Floor finish suite: 13 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_camera_smoothing.gd
+Elapsed: 0.339s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Camera smoothing suite: 13 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_camera_jump_air.gd
+Elapsed: 11.886s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Jump 60 Hz measured: height 1.208 m, airborne 38 frames (0.633 s)
+Camera jump air suite: 18 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_training_sword.gd
+Elapsed: 5.479s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Training sword suite: 20 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_limb_demo.gd
+Elapsed: 0.342s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Limb demo suite: 13 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_cut_manikin.gd
+Elapsed: 16.289s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Cut manikin suite: 40 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_manikin_parts.gd
+Elapsed: 10.137s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Manikin partition suite: 10 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_integration.gd
+Elapsed: 6.599s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+GEN combined integration suite: 55 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_directional.gd
+Elapsed: 185.070s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+GEN directional suite: 137 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_outfits.gd
+Elapsed: 23.507s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+Wardrobe dress: two-actor CPU median 115446 us p95 124059 us max 142639 us; per-actor visible mesh triangles 35143. Headless sandbox, NOT GPU FPS.
+Wardrobe suit: two-actor CPU median 2687 us p95 6380 us max 11142 us; per-actor visible mesh triangles 35582. Headless sandbox, NOT GPU FPS.
+GEN wardrobe suite: 108 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_combat_zones.gd
+Elapsed: 5.481s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+GEN combat-zone suite: 176 checks, 0 failures
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_controller_transitions.gd
+Elapsed: 61.129s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+GEN controller-transition suite: 96 checks, 0 failures; 2070 actual physics frames
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_kicks_and_hotbar.gd
+Elapsed: 24.627s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+GEN kicks-hotbar suite: 332 checks, 0 failures; 1065 actual physics frames
+
+Running: /home/user/Project-Gene/.local/godot-source/bin/godot.linuxbsd.editor.x86_64 --headless --path /home/user/Project-Gene/prototype --fixed-fps 60 --script res://tests/test_air_contact.gd
+Elapsed: 61.100s
+Godot Engine v4.7.2.stable.custom_build - https://godotengine.org
+
+WARNING: Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the physics/2d/physics_engine project setting to Dummy.
+     at: initialize_physics (main/main.cpp:391)
+GEN air-contact suite: 332 checks, 0 failures; 2022 actual physics frames
+

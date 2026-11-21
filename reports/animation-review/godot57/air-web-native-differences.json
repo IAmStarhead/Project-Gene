@@ -1,0 +1,12 @@
+{
+  "actor_snapshot_pairs": 840,
+  "state_mismatches": 4,
+  "max_component_difference": {
+    "rotations_sign_invariant": 0.2014545358882092,
+    "hips_m": 0.03662973642349199,
+    "cloth_m": 0.05171322822570798,
+    "root_position_m": 0.09187822043895741,
+    "phase": 0.014926308403077015
+  },
+  "conditions": "Fresh Web sampled frames paired with every third native preflight physics tick; actual source stamps equal. Numerical comparison only; not visual / platform or full geometric equivalence acceptance."
+}
