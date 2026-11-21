@@ -107,12 +107,12 @@ func _make_materials() -> void:
 		_floor_mat.uv1_scale = Vector3(0.55, 0.55, 0.55)
 	else:
 		_floor_mat.albedo_color = Color(0.86, 0.878, 0.90)
-	_floor_mat.roughness = 0.20
+	_floor_mat.roughness = 0.09
 	_floor_mat.metallic = 0.0
-	_floor_mat.metallic_specular = 0.72
+	_floor_mat.metallic_specular = 1.0
 	_floor_mat.clearcoat_enabled = true
-	_floor_mat.clearcoat = 0.24
-	_floor_mat.clearcoat_roughness = 0.32
+	_floor_mat.clearcoat = 0.50
+	_floor_mat.clearcoat_roughness = 0.16
 
 	# Модульные стеновые панели чистой лаборатории — матово-сатиновые, чуть светлее пола.
 	_wall_mat = StandardMaterial3D.new()
@@ -350,7 +350,7 @@ func _apply_surface_mood() -> void:
 	else:
 		# Реалистичный коэффициент отражения белого эпоксидного пола и панелей (как в Mirror's Edge):
 		# зал остаётся стерильно-белым, но швы плитки, ступени, тени и лицо не выбиваются в 255.
-		_floor_mat.albedo_color = Color(0.75, 0.78, 0.82) if not headless else Color(0.82, 0.84, 0.87)
+		_floor_mat.albedo_color = Color(0.62, 0.66, 0.71) if not headless else Color(0.82, 0.84, 0.87)
 		_wall_mat.albedo_color = Color(0.78, 0.81, 0.85) if not headless else Color(0.85, 0.87, 0.90)
 		_ceiling_mat.emission_energy_multiplier = 0.30
 

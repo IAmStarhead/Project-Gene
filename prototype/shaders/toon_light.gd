@@ -173,7 +173,7 @@ static func configure_probe(
 	probe.ambient_mode = ReflectionProbe.AMBIENT_DISABLED
 	# Слой 1 — только статичная архитектура; персонажи на слое 2 не застывают в отражении пола.
 	probe.cull_mask = 1
-	probe.intensity = 0.75
+	probe.intensity = 1.75
 	probe.size = room_size + Vector3(1.2, 1.2, 1.2)
 	probe.max_distance = 28.0
 

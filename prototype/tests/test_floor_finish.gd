@@ -18,18 +18,18 @@ func _run() -> void:
 	await process_frame
 	var mat: StandardMaterial3D = room._floor_mat
 	check(mat != null and is_equal_approx(mat.metallic, 0.0), "floor remains a non-metal")
-	check(is_equal_approx(mat.roughness, .20) and is_equal_approx(mat.metallic_specular, .72),
+	check(is_equal_approx(mat.roughness, .09) and is_equal_approx(mat.metallic_specular, 1.0),
 		"finish has the chosen PBR roughness and reflectivity")
-	check(mat.clearcoat_enabled and is_equal_approx(mat.clearcoat, .24), "thin topcoat enabled")
+	check(mat.clearcoat_enabled and is_equal_approx(mat.clearcoat, .50) and is_equal_approx(mat.clearcoat_roughness, .16), "polished topcoat enabled")
 	check(room._probe.update_mode == ReflectionProbe.UPDATE_ONCE and room._probe.cull_mask == 1,
 		"probe captures world once and excludes character layer")
-	check(is_equal_approx(room._probe.intensity, .75), "static environment reflection intensity")
+	check(is_equal_approx(room._probe.intensity, 1.75), "static environment reflection intensity")
 	for quality in [0, 1, 2]:
 		T.QUALITY = quality
 		room.apply_quality()
-		check(room._floor_mat == mat and is_equal_approx(mat.roughness, .20),
+		check(room._floor_mat == mat and is_equal_approx(mat.roughness, .09),
 			"quality %d preserves the floor material" % quality)
-		check(is_equal_approx(room._probe.intensity, .75), "quality %d preserves probe tuning" % quality)
+		check(is_equal_approx(room._probe.intensity, 1.75), "quality %d preserves probe tuning" % quality)
 		if quality == 0:
 			check(not room._probe.visible, "low quality keeps probe disabled")
 	T.BRIGHTNESS = 0
