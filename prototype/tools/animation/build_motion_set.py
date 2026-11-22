@@ -26,6 +26,7 @@ import locomotion
 import combat_locomotion
 import air_motion
 import kick_motion
+import traversal_motion
 
 ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / 'prototype/assets/heroine/female_A_rigged_safe.glb'
@@ -463,6 +464,7 @@ def definitions():
         ('jump_down_relaxed', JUMP_DOWN, False, lambda r,t: air_pose(r,t,True,True), {}),
         ('land_relaxed', LAND, False, lambda r,t: land(r,t,True), {}),
         *kick_motion.definitions(body, guard_hands, guard_feet, guard_pole),
+        *traversal_motion.definitions(body),
         ('hit', .32, False, hit, {}),
         ('attack_body_hook', .62, False, body_hook,
          {'windup': .22, 'active_end': .32, 'impact': .22, 'side': 'L', 'reach': .60, 'kind': 'hook'}),

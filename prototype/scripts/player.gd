@@ -11,6 +11,7 @@ const Foley := preload("res://scripts/actor_foley.gd")
 const TrainingSword := preload("res://scripts/training_sword.gd")
 const StrikeAir := preload("res://scripts/strike_air.gd")
 const Moves := preload("res://scripts/move_catalog.gd")
+const LedgeProbe := preload("res://scripts/ledge_probe.gd")
 
 @onready var character: Node3D = $Character
 @onready var label: Label = $UI/DebugLabel
@@ -47,7 +48,7 @@ var _health_cooldown: float = 0.0
 var _spawn_pos := Vector3(0.0, 0.08, 5.4)
 var _spawn_recorded := false
 
-# Состояние действия: "" | "attack" | "dodge"
+# Состояние действия: "" | "attack" | "dodge" | "roll" | "ledge_*"
 var _action: String = ""
 var _action_time: float = 0.0
 var _hit_done := false
@@ -56,6 +57,12 @@ var _miss_logged := false
 # Буфер ввода: сколько секунд назад нажата кнопка (BUF_NEVER = не нажимали).
 const BUF_NEVER := 999.0
 var _buf_dodge: float = BUF_NEVER
+var _buf_roll := false
+var _ledge: Dictionary = {}
+var _ledge_start := Vector3.ZERO
+var _ledge_hang := Vector3.ZERO
+var _ledge_cooldown := 0.0
+var _ledge_jump := false
 var _buf_attack: float = BUF_NEVER
 var _buf_secondary: float = BUF_NEVER
 var _buf_hook: float = BUF_NEVER
@@ -163,6 +170,21 @@ func _exit_tree() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Space is contextual: it cannot leak into the dodge buffer while hanging.
+	if _action.begins_with("ledge_"):
+		if event is InputEventKey and event.pressed and not event.echo:
+			var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+			if key in [KEY_CTRL, KEY_C, KEY_SPACE]:
+				if key in [KEY_CTRL, KEY_C]:
+					_drop_ledge()
+				elif _action == "ledge_hang":
+					_start_climb()
+				get_viewport().set_input_as_handled()
+				return
+		if event.is_action_pressed("dodge") or event.is_action_pressed("jump") or event.is_action_pressed("attack") or event.is_action_pressed("attack_secondary") or event.is_action_pressed("attack_hook"):
+			return
+		if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+			return
 	if event is InputEventKey and event.pressed and not event.echo:
 		var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
 		if key == KEY_V:
@@ -237,6 +259,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("dodge"):
 		_buf_dodge = 0.0
 		_buf_dir = _input_direction()
+		_buf_roll = (Input.is_action_pressed("run") or (event is InputEventKey and event.shift_pressed)) and _buf_dir.length_squared() > .01
 	elif event.is_action_pressed("jump"):
 		_jump_buffer = 0.0
 	elif event.is_action_pressed("toggle_stance"):
@@ -349,8 +372,15 @@ func _physics_process(delta: float) -> void:
 	_update_buffers(delta)
 	_update_stamina(delta)
 	_update_health_regen(delta)
+	_ledge_cooldown = maxf(0.0, _ledge_cooldown - delta)
+	if _action.begins_with("ledge_"):
+		_process_ledge(delta)
+		_sync_training_sword()
+		_update_character_anim(delta, global_position - previous_position)
+		_update_camera_lock(delta)
+		return
 
-	if _action == "dodge":
+	if _action == "dodge" or _action == "roll":
 		_process_dodge(delta)
 	elif _action == "attack":
 		_process_attack(delta)
@@ -360,13 +390,14 @@ func _physics_process(delta: float) -> void:
 
 	var on_floor := is_on_floor()
 	if on_floor:
-		if _action != "dodge" and velocity.y <= 0.0:
+		_ledge_jump = false
+		if _action not in ["dodge", "roll"] and velocity.y <= 0.0:
 			velocity.y = 0.0
 	else:
 		var g := T.PLAYER_JUMP_GRAVITY if velocity.y > 0.0 else T.GRAVITY_FALL
 		velocity.y -= g * delta
 
-	if _jump_buffer <= T.INPUT_BUFFER and _action != "dodge" and not (_action == "attack" and Moves.is_kick(_attack_kind)) and _coyote > 0.0:
+	if _jump_buffer <= T.INPUT_BUFFER and _action not in ["dodge", "roll"] and not (_action == "attack" and Moves.is_kick(_attack_kind)) and _coyote > 0.0:
 		_try_jump()
 
 	var stepped_up := false
@@ -376,6 +407,8 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if stepped_up:
 		apply_floor_snap()
+	if _action == "" and _ledge_jump and not is_on_floor() and _ledge_cooldown <= 0.0:
+		_try_grab_ledge()
 
 	var displacement := global_position - previous_position
 	_sync_training_sword()
@@ -389,10 +422,102 @@ func _physics_process(delta: float) -> void:
 
 
 func _try_jump() -> void:
+	_ledge_jump = true
 	velocity.y = sqrt(2.0 * T.PLAYER_JUMP_GRAVITY * T.JUMP_HEIGHT)
 	_jump_started = true
 	_jump_buffer = BUF_NEVER
 	_coyote = 0.0
+
+
+func _try_grab_ledge() -> void:
+	var dir := _input_direction()
+	if dir.length_squared() < .01 or dir.dot(-global_basis.z) < .7:
+		return
+	var found := LedgeProbe.find_candidate(self, dir)
+	if found.is_empty():
+		return
+	var edge: Vector3 = found.edge
+	var normal: Vector3 = found.normal
+	var target := edge + normal * .38 + Vector3.DOWN * 1.62
+	# No teleport through a wall/obstacle on entry.
+	if test_move(global_transform, target - global_position):
+		return
+	_ledge = found
+	_ledge_start = global_position
+	_ledge_hang = target
+	_action = "ledge_catch"
+	_action_time = 0.0
+	velocity = Vector3.ZERO
+	rotation.y = atan2(normal.x, normal.z)
+	_buf_dodge = BUF_NEVER
+	_jump_buffer = BUF_NEVER
+	_buf_attack = BUF_NEVER
+	_buf_secondary = BUF_NEVER
+	_buf_hook = BUF_NEVER
+	_invulnerable = false
+
+
+func _start_climb() -> void:
+	if _ledge.is_empty() or not is_instance_valid(_ledge.surface):
+		_drop_ledge()
+		return
+	# Repeat the clearance/footprint check in case an obstacle appeared.
+	var fresh := LedgeProbe.find_candidate(self, -(_ledge.normal as Vector3))
+	if fresh.is_empty() or fresh.surface != _ledge.surface:
+		return
+	var landing: Vector3 = fresh.landing
+	var up := Vector3.UP * (landing.y - global_position.y)
+	var across := landing - (global_position + up)
+	if test_move(global_transform, up) or test_move(global_transform.translated(up), across):
+		return
+	_ledge = fresh
+	_ledge_start = global_position
+	_action = "ledge_climb"
+	_action_time = 0.0
+
+
+func _drop_ledge() -> void:
+	var normal: Vector3 = _ledge.get("normal", global_basis.z)
+	_action = ""
+	_action_time = 0.0
+	_ledge.clear()
+	_ledge_jump = false
+	_ledge_cooldown = .65
+	_coyote = 0.0
+	velocity = normal * .7 + Vector3.DOWN * .5
+	_buf_dodge = BUF_NEVER
+	_buf_roll = false
+	_jump_buffer = BUF_NEVER
+
+
+func _process_ledge(delta: float) -> void:
+	if _ledge.is_empty() or not is_instance_valid(_ledge.surface) or not _ledge.surface.is_inside_tree():
+		_drop_ledge()
+		return
+	_action_time += delta
+	var target := global_position
+	if _action == "ledge_catch":
+		target = _ledge_start.lerp(_ledge_hang, smoothstep(0.0, T.LEDGE_CATCH_DURATION, _action_time))
+	elif _action == "ledge_climb":
+		var landing: Vector3 = _ledge.landing
+		var above := Vector3(_ledge_start.x, landing.y, _ledge_start.z)
+		target = _ledge_start.lerp(above, smoothstep(0.0, T.LEDGE_CLIMB_DURATION * .65, _action_time))
+		target = target.lerp(landing, smoothstep(T.LEDGE_CLIMB_DURATION * .65, T.LEDGE_CLIMB_DURATION, _action_time))
+	var motion := target - global_position
+	if motion.length_squared() > .0000001 and move_and_collide(motion) != null:
+		_drop_ledge() # never force the capsule through new geometry
+		return
+	velocity = Vector3.ZERO
+	if _action == "ledge_catch" and _action_time >= T.LEDGE_CATCH_DURATION:
+		_action = "ledge_hang"
+		_action_time = 0.0
+	elif _action == "ledge_climb" and _action_time >= T.LEDGE_CLIMB_DURATION:
+		_action = ""
+		_action_time = 0.0
+		_ledge.clear()
+		_ledge_jump = false
+		_ledge_cooldown = .65
+		velocity = Vector3.DOWN * .1
 
 
 func _air_control() -> float:
@@ -588,11 +713,24 @@ func _process_move(delta: float) -> void:
 
 
 func _try_start_actions() -> void:
-	if _buf_dodge <= T.INPUT_BUFFER and _spend_stamina(T.DODGE_STAMINA):
-		_start_dodge()
-		_buf_dodge = BUF_NEVER
+	if _try_buffered_evasion():
 		return
 	_try_start_attacks()
+
+
+func _try_buffered_evasion() -> bool:
+	if _buf_dodge > T.INPUT_BUFFER or (_buf_roll and not is_on_floor()):
+		return false
+	var cost := T.ROLL_STAMINA if _buf_roll else T.DODGE_STAMINA
+	if not _spend_stamina(cost):
+		return false
+	_start_dodge()
+	if _buf_roll:
+		_action = "roll"
+		rotation.y = atan2(-_dodge_dir.x, -_dodge_dir.z)
+	_buf_roll = false
+	_buf_dodge = BUF_NEVER
+	return true
 
 
 func _try_start_attacks() -> void:
@@ -643,15 +781,17 @@ func _camera_forward() -> Vector3:
 
 
 func _process_dodge(delta: float) -> void:
-	var before := T.dodge_progress(_action_time / T.DODGE_DURATION)
+	var rolling := _action == "roll"
+	var duration := T.ROLL_DURATION if rolling else T.DODGE_DURATION
+	var before := T.dodge_progress(_action_time / duration)
 	_action_time += delta
-	_invulnerable = _action_time >= T.DODGE_IFRAMES_START and _action_time <= T.DODGE_IFRAMES_END
-	var after := T.dodge_progress(_action_time / T.DODGE_DURATION)
-	var speed := T.DODGE_DISTANCE * (after - before) / maxf(delta, 0.000001)
+	_invulnerable = _action_time >= (T.ROLL_IFRAMES_START if rolling else T.DODGE_IFRAMES_START) and _action_time <= (T.ROLL_IFRAMES_END if rolling else T.DODGE_IFRAMES_END)
+	var after := T.dodge_progress(_action_time / duration)
+	var speed := (T.ROLL_DISTANCE if rolling else T.DODGE_DISTANCE) * (after - before) / maxf(delta, 0.000001)
 	velocity.x = _dodge_dir.x * speed
 	velocity.z = _dodge_dir.z * speed
 
-	if _action_time >= T.DODGE_DURATION:
+	if _action_time >= duration:
 		_action = ""
 		_invulnerable = false
 		_try_start_attacks()
@@ -739,9 +879,7 @@ func _process_attack(delta: float) -> void:
 
 	# Отмена восстановления уворотом (в пределах ATTACK_CANCEL_WINDOW до конца удара).
 	var cancel_start := maxf(active_end, total - float(Moves.profile(_attack_kind, _attack_side).cancel_window))
-	if _action_time >= cancel_start and _buf_dodge <= T.INPUT_BUFFER and _spend_stamina(T.DODGE_STAMINA):
-		_start_dodge()
-		_buf_dodge = BUF_NEVER
+	if _action_time >= cancel_start and _try_buffered_evasion():
 		return
 
 	if _action_time >= total:
@@ -908,6 +1046,10 @@ func receive_hit(amount: float, hit: Dictionary) -> bool:
 		yaw = 0.0
 		_action = ""
 		_action_time = 0.0
+		_ledge.clear()
+		_ledge_jump = false
+		_ledge_cooldown = .65
+		_buf_roll = false
 		_attack_kind = "straight"
 		_kick_planting = false
 		_hit_done = false

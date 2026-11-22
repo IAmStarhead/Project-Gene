@@ -55,7 +55,8 @@ class SubjectAndKickTests(unittest.TestCase):
         assert_protected_motion(self,self.data)
         self.assertEqual(set(self.data['clips'])-set(FROZEN['clips']),
             {'jump_start','jump_up','jump_down','land','jump_start_relaxed','jump_up_relaxed',
-             'jump_down_relaxed','land_relaxed',*[s['clip'] for s in SPECS.values()]})
+             'jump_down_relaxed','land_relaxed','roll','ledge_hang','ledge_climb',
+             *[s['clip'] for s in SPECS.values()]})
 
     def test_easy_jog_has_its_own_lower_arm_envelope_not_the_sprint_carriage(self):
         # The requested 80 +/- 10 authoring is deliberately less folded than

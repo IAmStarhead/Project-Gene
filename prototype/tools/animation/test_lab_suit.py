@@ -60,7 +60,11 @@ class LabSuitTests(unittest.TestCase):
                 p = r.skin(q,h,mesh)
                 self.assertTrue(np.isfinite(p).all(),name)
                 self.assertLess(abs(p[:,0]).max(),1.2,name)
-                self.assertGreater(p[:,1].min(),-.03,name)
+                # Climb's authored pelvis offsets are relative to an elevated
+                # controller; compare its suit to the world floor, not local 0.
+                rise = np.clip(phase/.65, 0, 1)
+                root_y = .38 + 1.66*rise*rise*(3-2*rise) if name == 'ledge_climb' else 0
+                self.assertGreater(p[:,1].min()+root_y,-.03,name)
                 self.assertLess(p[:,1].max(),2.0,name)
 
 

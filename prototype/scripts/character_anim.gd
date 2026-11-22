@@ -300,6 +300,15 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		pose = sample_dodge(action_time, context.get("dodge_direction", Vector3(0, 0, 1)))
 		if not _combat_mode:
 			pose = _blend_pose(pose, _locomotion_pose(), smoothstep(.38, T.DODGE_DURATION, action_time))
+	elif action == "roll":
+		state = "roll"
+		pose = sample_clip("roll", action_time)
+	elif action in ["ledge_catch", "ledge_hang", "ledge_climb"]:
+		state = action
+		if action == "ledge_climb":
+			pose = sample_clip("ledge_climb", action_time)
+		else:
+			pose = sample_clip("ledge_hang", fposmod(action_time, clip_duration("ledge_hang")))
 	elif not grounded:
 		state = "air"
 		pose = _air_pose(context)
@@ -322,7 +331,7 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 		_transition_elapsed = 0.0
 		# Smooth only the jump/landing and return-to-ground seams; do not
 		# delay combat or alter any authored walk/run leg cycles.
-		_transition_length = .08 if state in ["air", "land"] else .055 if state == "dodge" else .075 if state.begins_with("attack") else .14
+		_transition_length = .08 if state in ["air", "land"] else .055 if state in ["dodge", "roll"] else .075 if state.begins_with("attack") else .18 if state == "ledge_catch" else .14
 		_state = state
 	_transition_elapsed += delta
 	if not _transition_from.is_empty() and _transition_elapsed < _transition_length:
@@ -345,6 +354,8 @@ func update_motion(delta: float, local_velocity: Vector3, action: String,
 	_last_pose = pose
 	if appearance != null:
 		var open_hand := 0.0 if action == "attack" or context.get("hold_weapon", false) else 1.0-_combat_blend
+		if action.begins_with("ledge_"):
+			open_hand = 1.0
 		appearance.set_hands(move_toward(appearance.hand_open, open_hand, delta*12.0))
 		appearance.update_soft_motion(delta)
 		appearance.update_pose(delta, grounded, grounded and planar < .03 and action == ""

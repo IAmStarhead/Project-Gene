@@ -43,6 +43,13 @@ const DODGE_DURATION := 0.48      ## загрузка → толчок → ло�
 const DODGE_IFRAMES_START := 0.04 ## с какого момента включается неуязвимость
 const DODGE_IFRAMES_END := 0.30   ## до какого момента действует неуязвимость
 const DODGE_STAMINA := 22.0
+const ROLL_DISTANCE := 1.65
+const ROLL_DURATION := 0.80
+const ROLL_STAMINA := 26.0
+const ROLL_IFRAMES_START := 0.10
+const ROLL_IFRAMES_END := 0.52
+const LEDGE_CATCH_DURATION := 0.22
+const LEDGE_CLIMB_DURATION := 1.15
 
 # ─────────────────────────────────────────────── АТАКА
 const ATTACK_WINDUP := 0.18       ## замах: ещё нет урона

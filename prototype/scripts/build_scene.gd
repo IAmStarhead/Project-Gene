@@ -90,6 +90,7 @@ func _ready() -> void:
 	_make_trim_and_door()
 	_make_props()
 	_make_stairs_and_deck()
+	_make_climbing_test()
 	apply_quality()
 
 
@@ -335,6 +336,9 @@ func apply_quality() -> void:
 ## Студийный свет для витрины анимаций (H): сохраняется при переключении B, G и F4.
 func showcase_lighting() -> void:
 	_is_showcase = true
+	var fixture := get_node_or_null("ClimbingTestPlatform")
+	if fixture != null:
+		fixture.queue_free()
 	apply_quality()
 
 
@@ -553,6 +557,17 @@ func _make_stairs_and_deck() -> void:
 			_trim_mat,
 			false
 		)
+
+
+## A single explicitly marked fixture; ordinary architecture is not climbable.
+func _make_climbing_test() -> void:
+	if _is_showcase:
+		return
+	var platform := _static_box(Vector3(2.2, 2.0, 2.2), Vector3(-3.3, 1.0, .8), _housing_mat, true)
+	platform.name = "ClimbingTestPlatform"
+	platform.add_to_group("climbable_ledge")
+	# Thin non-colliding edge stripe: geometry and ray hits stay on the block.
+	_decor_box(Vector3(2.2, .035, .035), Vector3(0, .985, 1.102), _status_cyan_mat, false, platform)
 
 
 func _decor_box(
